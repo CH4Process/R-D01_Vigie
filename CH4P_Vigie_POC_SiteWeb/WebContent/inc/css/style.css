@@ -1,0 +1,175 @@
+/* ElÃ©ments principaux de la page */
+
+#page
+{
+	background-color: rgba(255, 255, 255, 0.6);
+	width: 1024px;
+	padding: 20px;
+	margin: auto;
+}
+
+header
+{
+	text-align: center;
+	position: relative;
+}
+
+header img
+{
+	text-align: center;
+	position: relative;
+	z-index: 2;
+	width: 600px;
+	height: 200px;
+}
+
+
+body
+{
+	/* background: url('images/ch4processbg.jpg') no-repeat center fixed; */
+	font-family: 'Trebuchet MS', Arial, sans-serif;
+	color: rgb(0, 0, 0);
+}
+
+/* Corps */
+
+h1, h2
+{
+	color: rgb(0,132,180);
+}
+
+
+
+article, aside
+{
+	display: inline-block;
+	vertical-align: top;
+	text-align: justify;
+}
+
+
+
+aside
+{
+	position: relative;
+	width: 235px;
+	background-color: rgba(253, 119, 0, 1);
+	box-shadow: 0px 2px 5px #1c1a19;
+	border-radius: 5px;
+	padding: 15px;
+	margin: 5px;
+	color: white;
+	font-size: 0.9em;
+}
+
+aside h1
+{
+	text-align: center;
+}
+
+#process_img
+{
+	background-color: rgb(255,255,255);
+	width: 200px;
+	height: 200px;
+}
+
+article
+{
+	width: 725px;
+	margin-right: 15px;
+}
+
+
+
+.milieu
+{
+	text-align: center;
+}
+
+/* Navigation */
+		
+nav
+{
+	display: inline-block;
+	width: 1024px;
+	position: relative;
+	margin-top: 0px;
+}	
+	
+nav ul
+{
+	list-style-type: none;
+}
+
+nav li
+{
+	text-align: center;
+	display: inline-block;
+	top: 200px;
+	list-style-type: none;	
+}
+nav img
+{
+	z-index: 1;
+	width: 100px;
+	height: 100px;
+	border: 1px #999 solid;
+}
+
+/* Footer */
+
+footer
+{
+	margin-top: 5px;
+	border-radius: 10px;
+
+
+}
+
+
+
+/* Général ------------------------------------------------------------------------------------- */
+
+body, p, legend, label, input {
+    font: normal 8pt verdana, helvetica, sans-serif;
+}
+
+fieldset {
+    padding: 10px;
+    border: 1px #0568CD solid;
+}
+
+legend {
+    font-weight: bold;
+    color: #0568CD;
+}
+
+/* Forms --------------------------------------------------------------------------------------- */
+
+form label {
+    float: left;
+    width: 100px;
+    margin: 3px 0px 0px 0px;
+}
+
+form input {
+    margin: 3px 3px 0px 0px;
+    border: 1px #999 solid;
+}
+
+form input.sansLabel {
+    text-align: center;
+}
+
+form .requis {
+    color: #c00;
+}
+
+form .erreur {
+	color: #900;
+}
+
+form .succes {
+	color: #090;
+}
