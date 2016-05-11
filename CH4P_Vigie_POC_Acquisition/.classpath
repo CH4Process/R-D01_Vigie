@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="D:/DEV/CODE/LIBRARIES/JAVA/Yoctopuce/YoctoLib.java.23948/Binaries/yoctoAPI.jar"/>
+	<classpathentry kind="lib" path="D:/DEV/CODE/LIBRARIES/JAVA/Yoctopuce/YoctoLib.java.23948/Binaries/yoctolib-1.10.23948-SNAPSHOT.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:file:/D:/DEV/CODE/LIBRARIES/JAVA/Yoctopuce/YoctoLib.java.23948/Binaries/yoctolib-1.10.23948-SNAPSHOT-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="D:/DEV/CODE/LIBRARIES/JAVA/mysql-connector-java-5.1.38/mysql-connector-java-5.1.38-bin.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
