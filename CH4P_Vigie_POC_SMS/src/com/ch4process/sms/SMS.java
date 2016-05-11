@@ -3,7 +3,7 @@ package com.ch4process.sms;
 import com.ch4process.serialcom.SerialCom;
 import java.util.List;
 
-public class SMS 
+public class SMS extends Thread
 {
 	SerialCom portCom;
 	String portName;
@@ -12,7 +12,11 @@ public class SMS
 	String codePIN;
 	String command;
 	
-	public SMS()
+	static SMS instance = null;
+	Thread thisThread = null;
+	boolean isAvailable = true;
+	
+	private SMS()
 	{
 		this.numTel.clear();
 		this.message = "";
@@ -20,6 +24,37 @@ public class SMS
 		this.portCom = null;
 		this.command = "";
 		this.codePIN = "";
+	}
+	
+	public static SMS getInstance()
+	{
+		// TODO : Handler for multi threadind access
+		if (instance == null)
+		{
+			return new SMS();
+		}
+		
+		return instance;
+	}
+	
+	public void start()
+	{
+		if (thisThread == null)
+		{
+			thisThread = new Thread (this, "SMS");
+			System.out.println("Thread SMS " + " lancé !");
+			thisThread.start();
+		}
+	}
+	
+	public void run()
+	{
+		boolean result = this.send();
+		
+		if (! result)
+		{
+			System.out.println("Erreur lors de l'envoi du SMS !");
+		}
 	}
 	
 	public void setCodePin(String codepin)
@@ -60,9 +95,10 @@ public class SMS
 		return this.portName;
 	}
 	
-	public boolean send(String portname)
+	public boolean send()
 	{
-		portCom = new SerialCom(portname);
+		isAvailable = false;
+		portCom = new SerialCom(this.portName);
 		try
 		{
 			if(portCom.connect())
@@ -105,6 +141,7 @@ public class SMS
 		finally
 		{
 			portCom.disconnect();
+			isAvailable = true;
 		}
 	}
 }
