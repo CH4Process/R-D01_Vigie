@@ -9,158 +9,135 @@ import com.sun.rowset.CachedRowSetImpl;
  *
  */
 
-public class DatabaseRequest implements AutoCloseable
+public class DatabaseRequest extends Thread
 {
-	final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
-	final String URL = "jdbc:mysql://";
-	final String DATABASEPORT = "3306";
-	private String databaseUser = "pi";
-	private String databasePassword = "Crepitus";
-	private String databaseName = "CH4Process_DB";
-	private String connectionString = "";
-	private String databaseAddress = "127.0.0.1";
 
-	private Connection connection = null;
-	private ResultSet resultset = null;
-	private CachedRowSet cachedrowset = null;
-	private boolean error;
-	private PreparedStatement STATEMENT_ListeCapteurs = null;
-	private PreparedStatement STATEMENT_RecordMesure = null;
-	private PreparedStatement STATEMENT_ListeScenarios = null;
+	private ResultSet resultSet = null;
+	private PreparedStatement preparedStatement = null;
+	private Integer rowsUpdated = null;
 	
-	private final String REQUEST_ListeCapteurs = "SELECT c.capteur_id, c.numeroserie, c.adresse, c.libelle, c.periode, tc.coeff, tc.marque, tc.modele, tc.plage_min, tc.plage_max FROM capteur c, type_capteur tc WHERE c.type_capteur_id = tc.type_capteur_id;";
-	private final String REQUEST_RecordMesure = "INSERT INTO mesure (capteur_id, valeur, datetime) VALUES (?,?,?);";
-	private final String REQUEST_ListeScenarios = "SELECT s.scenario_id, s.capteur_id, s.test, s.params FROM scenario;";
+	private ConnectionHandler connectionHandler = null;
+	private String request = null;
+	
+	private boolean error = false;
+	
+	private IDatabaseRequestCallback dbrc;
 	
 	
-	/**
-	 * @param ip = IP Address of the database. Can be the string "localhost"
-	 * @param database = Database name
-	 * @param user = User with rights on the database
-	 * @param password = Password of the User
-	 * Constructor of the class
-	 */
-	public DatabaseRequest(String ip, String database, String user, String password)
+	
+	public DatabaseRequest(ConnectionHandler cnh, String request, IDatabaseRequestCallback dbrc)
 	{
-		this.databaseAddress = ip;
-		this.databaseName = database;
-		this.databaseUser = user;
-		this.databasePassword = password;
+		try
+		{
+			this.connectionHandler = cnh;
+			this.request = request;
+			this.dbrc = dbrc;
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			error = true;
+		}
+	}
+	
+	public void start()
+	{
+		try
+		{
+			this.preparedStatement = connectionHandler.getConnection().prepareStatement(request);
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	public void run()
+	{
+		try
+		{
+			while (true)
+			{
+				Thread.sleep(1000);
+			}
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			error = true;
+		}
+	}
+	
+	public void doQuery()
+	{
+		try
+		{
+			this.resultSet = this.preparedStatement.executeQuery();
+			saveResultSet();
+			doCallback();
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			error = true;
+		}
 		
-		this.connectionString = URL + databaseAddress + ":" + DATABASEPORT + "/" + databaseName;
-		connect();
 	}
 	
-	public DatabaseRequest()
-	{
-		this.connectionString = URL + databaseAddress + ":" + DATABASEPORT + "/" + databaseName;
-		connect();
-	}
-	
-	private boolean connect()
+	public void doUpdate()
 	{
 		try
 		{
-			// Trying to get the driver
-			Class.forName(JDBC_DRIVER);
-			// Creating the connection to the SQL server using the user password and connection string provided
-			connection = DriverManager.getConnection(connectionString, databaseUser, databasePassword);
-			
-			STATEMENT_ListeCapteurs =  connection.prepareStatement(REQUEST_ListeCapteurs);
-			STATEMENT_RecordMesure = connection.prepareStatement(REQUEST_RecordMesure);
-			STATEMENT_ListeScenarios = connection.prepareStatement(REQUEST_ListeScenarios);
-			
-			return true;
+			this.rowsUpdated = this.preparedStatement.executeUpdate();
+			doCallback();
 		}
-		catch(Exception ex)
+		catch (Exception e)
 		{
-			ex.printStackTrace();
-			return false;
-		}
-	}
-
-	public void listeCapteursRequest()
-	{
-		try
-		{
-			resultset = STATEMENT_ListeCapteurs.executeQuery();
-			saveResultSet();
-		}
-		catch (SQLException ex)
-		{
-			ex.printStackTrace();
-		}
-		finally
-		{
-			closeStatement();
-			closeResultset();
+			e.printStackTrace();
+			error = true;
 		}
 	}
 	
-	public CachedRowSet getListeCapteurs()
+	private void doCallback()
 	{
-		if (! error)
-		{
-			return cachedrowset;
-		}
-		else
-		{
-			return null;
-		}	
+		this.dbrc.databaseRequestCallback();
 	}
 	
-	public int recordMesureRequest(int id_capteur, int mesure, long date)
+	public void setStatementIntParameter(int id_parameter, int value)
 	{
 		try
 		{
-			STATEMENT_RecordMesure.setInt(1, id_capteur);
-			STATEMENT_RecordMesure.setInt(2, mesure);
-			Timestamp timestamp = new Timestamp((long) date);
-			STATEMENT_RecordMesure.setTimestamp(3, timestamp);
-			
-			return STATEMENT_RecordMesure.executeUpdate();
-			
+			this.preparedStatement.setInt(id_parameter, value);
 		}
-		catch (SQLException ex)
+		catch (Exception ex)
 		{
 			ex.printStackTrace();
-			return 0;
-		}
-		finally
-		{
-			closeStatement();
-			closeResultset();
 		}
 	}
-
-	public void listeScenariosRequest()
+	public void setStatementDoubleParameter(int id_parameter, double value)
 	{
 		try
 		{
-			resultset = STATEMENT_ListeScenarios.executeQuery();
-			saveResultSet();
+			this.preparedStatement.setDouble(id_parameter, value);
 		}
-		catch (SQLException ex)
+		catch (Exception ex)
 		{
 			ex.printStackTrace();
 		}
-		finally
-		{
-			closeStatement();
-			closeResultset();
-		}
 	}
 	
-	public CachedRowSet getListeScenarios()
+	public void setStatementDateParameter(int id_parameter, long value)
 	{
-		if (! error)
+		try
 		{
-			return cachedrowset;
+			Timestamp timestamp = new Timestamp((long) value);
+			this.preparedStatement.setTimestamp(id_parameter, timestamp);
+			timestamp = null;
 		}
-		else
+		catch (Exception ex)
 		{
-			return null;
-		}	
+			ex.printStackTrace();
+		}
 	}
 	
 	private void saveResultSet()
@@ -169,14 +146,18 @@ public class DatabaseRequest implements AutoCloseable
 		{
 			if (! error)
 			{
-				cachedrowset = new CachedRowSetImpl();
-				cachedrowset.populate(resultset);
+				connectionHandler.setCachedrowset(new CachedRowSetImpl());
+				connectionHandler.getCachedrowset().populate(this.resultSet);
 			}
 		}
 		catch (SQLException ex)
 		{
 			ex.printStackTrace();
 			error = true;
+		}
+		finally
+		{
+			closeResultset();
 		}
 		
 	}
@@ -185,9 +166,9 @@ public class DatabaseRequest implements AutoCloseable
 	{
 		try
 		{
-			if (resultset != null)
+			if (resultSet != null)
 			{
-				resultset.close();
+				resultSet.close();
 			}
 		}
 		catch (SQLException ex)
@@ -196,50 +177,7 @@ public class DatabaseRequest implements AutoCloseable
 		}
 		finally
 		{
-			resultset = null;
+			resultSet = null;
 		}
 	}
-	
-	private void closeStatement()
-	{/*
-		try
-		{
-			if (STATEMENT_ListeCapteurs != null)
-			{
-				STATEMENT_ListeCapteurs.close();
-			}
-		}
-		catch (SQLException ex)
-		{
-			ex.printStackTrace();
-		}
-		finally
-		{
-			statement = null;
-		}
-	*/}
-	
-	public void close()
-	{
-		try
-		{
-			closeResultset();
-			closeStatement();
-			if (connection != null)
-			{
-				connection.close();
-			}
-		}
-		catch (SQLException ex)
-		{
-			ex.printStackTrace();
-		}
-		finally
-		{
-			connection = null;
-			error = false;
-		}
-	}
-
-	
 }
