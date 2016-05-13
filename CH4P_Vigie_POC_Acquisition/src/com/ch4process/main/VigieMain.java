@@ -1,8 +1,5 @@
 package com.ch4process.main;
 
-import com.ch4process.acquisition.VigieAcquisition;
-
-
 public class VigieMain extends Thread
 {
 	static Thread T_Acquisition;
@@ -24,7 +21,4 @@ public class VigieMain extends Thread
 		T_Acquisition = new VigieAcquisition("VigieAcquisition");
 		T_Acquisition.start();
 	}
-	
-	
-	
 }

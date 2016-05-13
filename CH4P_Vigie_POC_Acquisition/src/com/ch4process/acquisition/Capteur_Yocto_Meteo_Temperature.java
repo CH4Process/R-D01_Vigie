@@ -2,7 +2,7 @@ package com.ch4process.acquisition;
 
 import com.yoctopuce.YoctoAPI.YTemperature;
 
-public class Capteur_Yocto_Meteo_Temperature extends Capteur implements ICapteur
+public class Capteur_Yocto_Meteo_Temperature extends Capteur
 {
 	YTemperature sensor;
 	Double value;
@@ -43,6 +43,8 @@ public class Capteur_Yocto_Meteo_Temperature extends Capteur implements ICapteur
 			value = sensor.getCurrentValue();
 			if(value != sensor.CURRENTVALUE_INVALID)
 			{
+				this.countdown = this.periode;
+				fireValueChanged(value);
 				return true;
 			}
 			else
@@ -58,9 +60,53 @@ public class Capteur_Yocto_Meteo_Temperature extends Capteur implements ICapteur
 	}
 	
 	@Override
-	public Double getValue()
+	public Double getDoubleValue()
 	{
 		return value;
+	}
+	
+	protected void fireValueChanged(double value)
+	{
+		for (ICapteurValueListener listener : getValueListeners())
+		{
+			listener.doubleValueChanged(this.capteur_id, this.value, date.getInstance().getTime().getTime());
+		}
+	}
+	
+	@Override
+	public void start()
+	{
+		try
+		{
+			connect();
+			init();
+			refresh();
+			super.start();
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	@Override
+	public void run()
+	{
+		try
+		{
+			while(true)
+			{
+				if(tick() <= 0)
+				{
+					refresh();
+				}
+				Thread.sleep(1000);
+			}
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 }
 

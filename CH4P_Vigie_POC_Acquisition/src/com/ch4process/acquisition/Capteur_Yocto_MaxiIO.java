@@ -6,7 +6,7 @@ import java.util.Map;
 import com.yoctopuce.YoctoAPI.YAPI_Exception;
 import com.yoctopuce.YoctoAPI.YDigitalIO;
 
-public class Capteur_Yocto_MaxiIO extends Capteur implements ICapteur
+public class Capteur_Yocto_MaxiIO extends Capteur
 {
 	Boolean value;
 	
@@ -65,6 +65,9 @@ public class Capteur_Yocto_MaxiIO extends Capteur implements ICapteur
 			{
 				value = ((portState & entree) != 0);
 				this.countdown = this.periode;
+				
+				fireValueChanged(value);
+				
 				return true;
 			}
 			return false;
@@ -77,9 +80,53 @@ public class Capteur_Yocto_MaxiIO extends Capteur implements ICapteur
 	}
 	
 	@Override
-	public Boolean getValue()
+	public Boolean getBoolValue()
 	{
 		return value;
+	}
+	
+	protected void fireValueChanged(boolean value)
+	{
+		for (ICapteurValueListener listener : getValueListeners())
+		{
+			listener.boolValueChanged(this.capteur_id, this.value, date.getInstance().getTime().getTime());
+		}
+	}
+	
+	@Override
+	public void start()
+	{
+		try
+		{
+			connect();
+			init();
+			refresh();
+			super.start();
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	@Override
+	public void run()
+	{
+		try
+		{
+			while(true)
+			{
+				if(tick() <= 0)
+				{
+					refresh();
+				}
+				Thread.sleep(1000);
+			}
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 }

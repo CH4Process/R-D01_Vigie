@@ -9,6 +9,7 @@ public class Scenario
 	String test;
 	String params;
 	Double valueTested;
+	
 	Boolean isTriggered;
 	
 	public void setField(String fieldName, Object fieldValue)
@@ -102,6 +103,11 @@ public class Scenario
 	{
 		return valueTested;
 	}
-	
+
+	public Boolean getIsTriggered()
+	{
+		return isTriggered;
+	}
+
 	
 }

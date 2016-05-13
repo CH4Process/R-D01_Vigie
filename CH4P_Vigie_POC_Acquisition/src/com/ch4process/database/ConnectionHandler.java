@@ -11,7 +11,6 @@ public class ConnectionHandler
 	Connection connection;
 	Integer id;
 	Boolean isAvailable;
-	CachedRowSet cachedrowset;
 	
 	public ConnectionHandler(Connection conn, int id)
 	{
@@ -48,15 +47,5 @@ public class ConnectionHandler
 	public void setIsAvailable(Boolean isAvailable)
 	{
 		this.isAvailable = isAvailable;
-	}
-
-	public CachedRowSet getCachedrowset()
-	{
-		return cachedrowset;
-	}
-
-	public void setCachedrowset(CachedRowSet cachedrowset)
-	{
-		this.cachedrowset = cachedrowset;
 	}
 }

@@ -1,10 +1,16 @@
 package com.ch4process.acquisition;
 
 import java.lang.reflect.Field;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.EventListener;
+
+import javax.swing.event.EventListenerList;
+
 import com.yoctopuce.YoctoAPI.YAPI;
 import com.yoctopuce.YoctoAPI.YAPI_Exception;
 
-public class Capteur
+public class Capteur extends Thread
 {
 	Integer capteur_id = null;
 	String libelle = null;
@@ -20,6 +26,10 @@ public class Capteur
 	int countdown = 0;
 	Boolean isAnalogique = null;
 	int entree;
+	Calendar date;
+	
+	EventListenerList listeners = new EventListenerList();
+	
 	
 	
 	public Capteur()
@@ -143,12 +153,41 @@ public class Capteur
 		return modele;
 	}
 	
-	public Object getValue()
+	public Integer getIntValue()
+	{
+		return null;
+	}
+	
+	public Double getDoubleValue()
+	{
+		return null;
+	}
+	
+	public Boolean getBoolValue()
 	{
 		return null;
 	}
 
-	public boolean connect()
+	public Date getDate()
+	{
+		return date.getInstance().getTime();
+	}
+
+	public Boolean getIsAnalogique()
+	{
+		return isAnalogique;
+	}
+	
+	public void start()
+	{
+		super.start();
+	}
+	
+	public void run()
+	{
+	}
+
+	protected boolean connect()
 	{
 		try
 		{
@@ -162,7 +201,7 @@ public class Capteur
 		}
 	}
 	
-	public int tick()
+	protected int tick()
 	{
 		try
 		{
@@ -174,12 +213,12 @@ public class Capteur
 		}
 	}
 	
-	public boolean refresh()
+	protected boolean refresh()
 	{
 		return false;
 	}
 	
-	public boolean init()
+	protected boolean init()
 	{
 		return false;
 	}
@@ -194,6 +233,18 @@ public class Capteur
 		}
 	}
 	
+	public void addValueListener(ICapteurValueListener listener)
+	{
+		listeners.add(ICapteurValueListener.class, listener);
+	}
 	
+	public void removeValueListener(ICapteurValueListener listener)
+	{
+		listeners.remove(ICapteurValueListener.class, listener);
+	}
 	
+	protected ICapteurValueListener[] getValueListeners()
+	{
+		return this.listeners.getListeners(ICapteurValueListener.class);
+	}
 }

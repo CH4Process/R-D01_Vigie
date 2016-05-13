@@ -15,11 +15,13 @@ public class DatabaseRequest extends Thread
 	private ResultSet resultSet = null;
 	private PreparedStatement preparedStatement = null;
 	private Integer rowsUpdated = null;
+	private CachedRowSet cachedRowSet = null;
 	
 	private ConnectionHandler connectionHandler = null;
 	private String request = null;
 	
 	private boolean error = false;
+	private boolean close = false;
 	
 	private IDatabaseRequestCallback dbrc;
 	
@@ -40,6 +42,11 @@ public class DatabaseRequest extends Thread
 		}
 	}
 	
+	public void setCallback(IDatabaseRequestCallback dbrc)
+	{
+		this.dbrc = dbrc;
+	}
+
 	public void start()
 	{
 		try
@@ -56,7 +63,7 @@ public class DatabaseRequest extends Thread
 	{
 		try
 		{
-			while (true)
+			while (!close)
 			{
 				Thread.sleep(1000);
 			}
@@ -146,8 +153,8 @@ public class DatabaseRequest extends Thread
 		{
 			if (! error)
 			{
-				connectionHandler.setCachedrowset(new CachedRowSetImpl());
-				connectionHandler.getCachedrowset().populate(this.resultSet);
+				this.setCachedRowSet(new CachedRowSetImpl());
+				this.getCachedRowSet().populate(this.resultSet);
 			}
 		}
 		catch (SQLException ex)
@@ -180,4 +187,37 @@ public class DatabaseRequest extends Thread
 			resultSet = null;
 		}
 	}
+
+	public CachedRowSet getCachedRowSet()
+	{
+		return cachedRowSet;
+	}
+
+	public void setCachedRowSet(CachedRowSet cachedRowSet)
+	{
+		this.cachedRowSet = cachedRowSet;
+	}
+	
+	public void close()
+	{
+		try
+		{
+			resultSet.close();
+			preparedStatement.close();
+		}
+		catch (Exception e)
+		{
+		}
+		finally 
+		{
+			resultSet = null;
+			preparedStatement = null;
+			rowsUpdated = null;
+			cachedRowSet = null;
+			connectionHandler = null;
+			request = null;
+			this.close = true;
+		}
+	}
+
 }
