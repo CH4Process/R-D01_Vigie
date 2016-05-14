@@ -1,9 +1,11 @@
 package com.ch4process.acquisition;
 
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import com.ch4process.database.DatabaseRequest;
 import com.ch4process.database.IDatabaseRequestCallback;
+import com.ch4process.events.CapteurValueEvent;
 
 public class RecordWorker extends Thread implements ICapteurValueListener
 {
@@ -11,98 +13,30 @@ public class RecordWorker extends Thread implements ICapteurValueListener
 	IDatabaseRequestCallback recordValueRequestCallback;
 	boolean recordValueRequest_done = true;
 	
-	List<ValueEvent> eventList = new LinkedList<>();
+	Calendar date;
+	
+	List<CapteurValueEvent> eventList = new LinkedList<>();
 	
 	Integer DOUBLE_VALUE_EVENT = 1;
 	Integer INTEGER_VALUE_EVENT = 2;
 	Integer BOOLEAN_VUE_EVENT = 3;
 	
-	
-	private class ValueEvent
-	{
-		int capteur_id;
-		double doubleValue;
-		int intValue;
-		boolean boolValue;
-		long datetime;
-		int type = 0;
-		
-		public ValueEvent(int capteur_id, double value, long datetime)
-		{
-			this.capteur_id = capteur_id;
-			this.doubleValue = value;
-			this.datetime = datetime;
-			this.type = DOUBLE_VALUE_EVENT;
-		}
-		
-		public ValueEvent(int capteur_id, int value, long datetime)
-		{
-			this.capteur_id = capteur_id;
-			this.intValue = value;
-			this.datetime = datetime;
-			this.type = INTEGER_VALUE_EVENT;
-		}
-		
-		public ValueEvent(int capteur_id, boolean value, long datetime)
-		{
-			this.capteur_id = capteur_id;
-			this.boolValue = value;
-			this.datetime = datetime;
-			this.type = BOOLEAN_VUE_EVENT;
-		}
-
-		public int getCapteur_id()
-		{
-			return capteur_id;
-		}
-
-		public double getDoubleValue()
-		{
-			return doubleValue;
-		}
-
-		public int getIntValue()
-		{
-			return intValue;
-		}
-
-		public boolean isBoolValue()
-		{
-			return boolValue;
-		}
-
-		public long getDatetime()
-		{
-			return datetime;
-		}
-		
-		public int getType()
-		{
-			return type;
-		}
-		
-		
-	}
-
 	@Override
 	public void doubleValueChanged(int capteur_id, double value, long datetime)
 	{
-		eventList.add(new ValueEvent(capteur_id, value, datetime));
-		System.out.println("recordWorker double event");
+		eventList.add(new CapteurValueEvent(capteur_id, value, datetime));
 	}
 
 	@Override
 	public void intValueChanged(int capteur_id, int value, long datetime)
 	{
-		eventList.add(new ValueEvent(capteur_id, value, datetime));
-		System.out.println("recordWorker int event");
+		eventList.add(new CapteurValueEvent(capteur_id, value, datetime));
 	}
 
 	@Override
 	public void boolValueChanged(int capteur_id, boolean value, long datetime)
 	{
-		eventList.add(new ValueEvent(capteur_id, value, datetime));
-		System.out.println("recordWorker bool event");
+		eventList.add(new CapteurValueEvent(capteur_id, value, datetime));
 	}
 	
 	public RecordWorker(DatabaseRequest recordValueRequest)
@@ -123,7 +57,7 @@ public class RecordWorker extends Thread implements ICapteurValueListener
 	
 	public void start()
 	{
-		System.out.println("recordWorker start !");
+		System.out.println("recordWorker start : " + date.getInstance().getTime());
 		this.recordValueRequest.setCallback(recordValueRequestCallback);
 		this.recordValueRequest.start();
 		super.start();
@@ -133,7 +67,6 @@ public class RecordWorker extends Thread implements ICapteurValueListener
 	{
 		try
 		{
-			System.out.println("recordWorker run method ..");
 			while (true)
 			{
 				eventHandling();
@@ -148,30 +81,28 @@ public class RecordWorker extends Thread implements ICapteurValueListener
 	
 	private void eventHandling()
 	{
-		System.out.println("recordWorker eventHandling : " + recordValueRequest_done);
 		if (recordValueRequest_done == true)
 		{
 			if (eventList.size() > 0)
 			{
-				System.out.println("recordWorker evenement à gérer ! ");
 				
-				ValueEvent event = eventList.get(0);
+				CapteurValueEvent event = eventList.get(0);
 				int type = event.getType();
 
-				recordValueRequest.setStatementIntParameter(1, event.capteur_id);
-				recordValueRequest.setStatementDateParameter(3, event.datetime);
+				recordValueRequest.setStatementIntParameter(1, event.getCapteur_id());
+				recordValueRequest.setStatementDateParameter(3, event.getDatetime());
 
 				if (type == DOUBLE_VALUE_EVENT)
 				{
-					recordValueRequest.setStatementDoubleParameter(2, event.doubleValue);
+					recordValueRequest.setStatementDoubleParameter(2, event.getDoubleValue());
 				}
 				else if (type == INTEGER_VALUE_EVENT)
 				{
-					recordValueRequest.setStatementIntParameter(2, event.intValue);
+					recordValueRequest.setStatementIntParameter(2, event.getIntValue());
 				}
 				else if (type == BOOLEAN_VUE_EVENT)
 				{
-					if (event.boolValue == true)
+					if (event.getBoolValue() == true)
 					{
 						recordValueRequest.setStatementIntParameter(2, 1);
 					}
@@ -181,7 +112,6 @@ public class RecordWorker extends Thread implements ICapteurValueListener
 					}
 				}
 				
-				System.out.println("recordWorker event enregistré en base ! ");
 				recordValueRequest_done = false;
 				recordValueRequest.doUpdate();
 			}
@@ -193,13 +123,11 @@ public class RecordWorker extends Thread implements ICapteurValueListener
 	{
 		try
 		{
-			System.out.println("recordWorker evenement supprimé");
 			eventList.remove(0);
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
-			System.out.println("recordWorker erreur de suppression d'evenement");
 		}
 		finally
 		{

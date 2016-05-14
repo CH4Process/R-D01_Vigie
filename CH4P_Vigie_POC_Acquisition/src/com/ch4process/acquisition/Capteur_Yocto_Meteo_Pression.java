@@ -95,11 +95,8 @@ public class Capteur_Yocto_Meteo_Pression extends Capteur
 		{
 			while(true)
 			{
-				if(tick() <= 0)
-				{
-					refresh();
-				}
-				Thread.sleep(1000);
+				refresh();
+				Thread.sleep(this.periode * 1000);
 			}
 		}
 		catch (Exception e)

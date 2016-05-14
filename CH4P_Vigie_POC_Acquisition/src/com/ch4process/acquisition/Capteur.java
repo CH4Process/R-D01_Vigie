@@ -1,9 +1,11 @@
 package com.ch4process.acquisition;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.EventListener;
+import java.util.List;
 
 import javax.swing.event.EventListenerList;
 
@@ -48,8 +50,6 @@ public class Capteur extends Thread
 		this.coeff = coeff;
 		this.marque = marque;
 		this.modele = modele;
-		
-		this.countdown = 0;
 	}
 	
 	public void setField(String fieldName, Object fieldValue)
@@ -198,18 +198,6 @@ public class Capteur extends Thread
 		{
 			ex.printStackTrace();
 			return false;
-		}
-	}
-	
-	protected int tick()
-	{
-		try
-		{
-			return this.countdown;
-		}
-		finally
-		{
-			this.countdown -= 1;
 		}
 	}
 	

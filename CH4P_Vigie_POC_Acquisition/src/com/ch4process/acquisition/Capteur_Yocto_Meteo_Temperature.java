@@ -59,6 +59,7 @@ public class Capteur_Yocto_Meteo_Temperature extends Capteur
 		}
 	}
 	
+	
 	@Override
 	public Double getDoubleValue()
 	{
@@ -72,6 +73,7 @@ public class Capteur_Yocto_Meteo_Temperature extends Capteur
 			listener.doubleValueChanged(this.capteur_id, this.value, date.getInstance().getTime().getTime());
 		}
 	}
+
 	
 	@Override
 	public void start()
@@ -96,11 +98,8 @@ public class Capteur_Yocto_Meteo_Temperature extends Capteur
 		{
 			while(true)
 			{
-				if(tick() <= 0)
-				{
-					refresh();
-				}
-				Thread.sleep(1000);
+				refresh();
+				Thread.sleep(this.periode * 1000);
 			}
 		}
 		catch (Exception e)

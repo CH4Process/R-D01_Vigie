@@ -8,17 +8,16 @@ public class Scenario
 	Integer capteur_id;
 	String test;
 	String params;
-	Double valueTested;
-	
-	Boolean isTriggered;
+	Double doubleValueTested;
+	Integer intValueTested;
+	Boolean boolValueTested;
 	
 	public void setField(String fieldName, Object fieldValue)
 	{
 		try
 		{
 			Class thisClass = this.getClass();
-			Class parentClass = thisClass.getSuperclass();
-			Field field = parentClass.getDeclaredField(fieldName);
+			Field field = thisClass.getDeclaredField(fieldName);
 			boolean access = field.isAccessible();
 			field.setAccessible(true);
 			field.set(this, fieldValue);
@@ -32,13 +31,20 @@ public class Scenario
 	
 	public void init()
 	{
-		this.isTriggered = false;
-		
 		String[] testing = this.test.split("\\|");
 		if (testing.length > 1)
 		{
 			this.test = testing[0];
-			this.valueTested = Double.valueOf(testing[1]);
+			this.doubleValueTested = Double.valueOf(testing[1]);
+			this.intValueTested = Integer.valueOf(testing[1]);
+			if(Integer.valueOf(testing[1]) == 1)
+			{
+				this.boolValueTested = true;
+			}
+			else
+			{
+				this.boolValueTested = false;
+			}
 		}
 	}
 
@@ -50,24 +56,79 @@ public class Scenario
 			
 			if (test.equals(">"))
 			{
-				if(value > valueTested) result = true;
+				if(value > doubleValueTested) result = true;
 			}
 			else if (test.equals("<"))
 			{
-				if(value < valueTested) result = true;
+				if(value < doubleValueTested) result = true;
 			}
 			else if (test.equals("="))
 			{
-				if(value == valueTested) result = true;
+				if(value == doubleValueTested) result = true;
 			}
 			else if (test.equals("!="))
 			{
-				if(value != valueTested) result = true;
+				if(value != doubleValueTested) result = true;
 			}
 			
-			this.isTriggered = result;
+			return result;
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+			return false;
+		}
+	}
+	
+	public boolean testValue(Integer value)
+	{
+		try
+		{
+			boolean result = false;
 			
-			return true;
+			if (test.equals(">"))
+			{
+				if(value > intValueTested) result = true;
+			}
+			else if (test.equals("<"))
+			{
+				if(value < intValueTested) result = true;
+			}
+			else if (test.equals("="))
+			{
+				if(value == intValueTested) result = true;
+			}
+			else if (test.equals("!="))
+			{
+				if(value != intValueTested) result = true;
+			}
+			
+			return result;
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+			return false;
+		}
+	}
+	
+	public boolean testValue(Boolean value)
+	{
+		try
+		{
+			boolean result = false;
+			
+
+			if (test.equals("="))
+			{
+				if(value == boolValueTested) result = true;
+			}
+			else if (test.equals("!="))
+			{
+				if(value != boolValueTested) result = true;
+			}
+			
+			return result;
 		}
 		catch (Exception ex)
 		{
@@ -99,15 +160,19 @@ public class Scenario
 	}
 	
 
-	public Double getValueTested()
+	public Double getDoubleValueTested()
 	{
-		return valueTested;
+		return doubleValueTested;
 	}
-
-	public Boolean getIsTriggered()
-	{
-		return isTriggered;
-	}
-
 	
+	public Integer getIntValueTested()
+	{
+		return intValueTested;
+	}
+	
+	public Boolean getBoolValueTested()
+	{
+		return boolValueTested;
+	}
+
 }

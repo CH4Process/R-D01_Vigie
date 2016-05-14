@@ -15,7 +15,9 @@ import com.ch4process.acquisition.Capteur_Yocto_MaxiIO;
 import com.ch4process.acquisition.Capteur_Yocto_Meteo_Humidite;
 import com.ch4process.acquisition.Capteur_Yocto_Meteo_Pression;
 import com.ch4process.acquisition.Capteur_Yocto_Meteo_Temperature;
+import com.ch4process.acquisition.Commande;
 import com.ch4process.acquisition.Scenario;
+import com.ch4process.acquisition.ScenarioWorker;
 import com.ch4process.acquisition.RecordWorker;
 import com.ch4process.database.ConnectionHandler;
 import com.ch4process.database.DatabaseController;
@@ -31,9 +33,8 @@ public class VigieAcquisition extends Thread
 	String threadName;
 	
 	List<Capteur> capteurs = new ArrayList<Capteur>();
-	CachedRowSet listeCapteurs;
 	List<Scenario> scenarios = new ArrayList<Scenario>();
-	CachedRowSet listeScenarios;
+	List<Commande> commandes = new ArrayList<Commande>();
 	
 	Calendar date;
 	
@@ -41,11 +42,18 @@ public class VigieAcquisition extends Thread
 	DatabaseRequest capteurListRequest;
 	DatabaseRequest scenarioListRequest;
 	DatabaseRequest recordValueRequest;
+	DatabaseRequest commandeListRequest;
 	IDatabaseRequestCallback capteurListRequestCallback;
 	IDatabaseRequestCallback scenarioListRequestCallback;
+	IDatabaseRequestCallback commandeListRequestCallback;
 	boolean capteurListRequest_done = false;
 	boolean scenarioListRequest_done = false;
+	boolean commandeListRequest_done = false;
+	
 	RecordWorker recordWorker;
+	ScenarioWorker scenarioWorker;
+	
+	boolean firstRun = true;
 	
 	
 	public VigieAcquisition(String name)
@@ -71,6 +79,7 @@ public class VigieAcquisition extends Thread
 				}
 				capteurs.add(capteur);
 				capteur.addValueListener(recordWorker);
+				capteur.addValueListener(scenarioWorker);
 				capteur.start();
 			}
 		}
@@ -116,24 +125,26 @@ public class VigieAcquisition extends Thread
 		}
 	}
 	
-	private void ScenarioList(CachedRowSet listeScenarios)
+
+	private void CommandeList(CachedRowSet listeCommandes)
 	{
 		try
 		{
-			ResultSetMetaData methadata = listeScenarios.getMetaData();
+			ResultSetMetaData methadata = listeCommandes.getMetaData();
 			Integer columnCount = methadata.getColumnCount();
 
-			while(listeScenarios.next())
+			while(listeCommandes.next())
 			{
-				Scenario scenario = new Scenario();
+				Commande commande = new Commande();
 				for(int i = 1; i <= columnCount; i++)
 				{
 					String arg0 = methadata.getColumnName(i);
-					Object arg1 = listeScenarios.getObject(i);
-					scenario.setField(arg0, arg1);
+					Object arg1 = listeCommandes.getObject(i);
+					commande.setField(arg0, arg1);
 				}
-				scenario.init();
-				scenarios.add(scenario);
+				commandes.add(commande);
+				scenarioWorker.addScenarioCommandListener(commande);
+				commande.start();
 			}
 		}
 		catch(SQLException ex)
@@ -141,6 +152,7 @@ public class VigieAcquisition extends Thread
 			ex.printStackTrace();
 		}
 	}
+	
 	
 	public void start()
 	{
@@ -162,30 +174,36 @@ public class VigieAcquisition extends Thread
 			}
 		};
 		
-		scenarioListRequestCallback = new IDatabaseRequestCallback()
-		{		
+		commandeListRequestCallback = new IDatabaseRequestCallback()
+		{
+			
 			@Override
 			public void databaseRequestCallback()
 			{
-				ScenarioList(scenarioListRequest.getCachedRowSet());
-				scenarioListRequest_done = true;
-				scenarioListRequest.close();
-				scenarioListRequest = null;
+				CommandeList(commandeListRequest.getCachedRowSet());
+				commandeListRequest_done = true;
+				commandeListRequest.close();
+				commandeListRequest = null;
 			}
 		};
 		
+		
 		capteurListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_ListeCapteurs, capteurListRequestCallback);
-		scenarioListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_ListeScenarios, scenarioListRequestCallback);
+		scenarioListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_ListeScenarios, null);
 		recordValueRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_RecordMesure, null);
+		commandeListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_ListeCommandes, commandeListRequestCallback);
 		
 		recordWorker = new RecordWorker(recordValueRequest);
 		recordWorker.start();
 		
-		capteurListRequest.start();
-		scenarioListRequest.start();
+		scenarioWorker = new ScenarioWorker(scenarioListRequest);
+		scenarioWorker.start();
 		
+		commandeListRequest.start();
+		commandeListRequest.doQuery();
+		
+		capteurListRequest.start();
 		capteurListRequest.doQuery();
-		scenarioListRequest.doQuery();
 		
 		if (thisThread == null)
 		{
@@ -203,9 +221,10 @@ public class VigieAcquisition extends Thread
 			try
 			{
 				
-				if (capteurListRequest_done && scenarioListRequest_done)
+				if (capteurListRequest_done && firstRun)
 				{
 					System.out.println("VigieAcq prête :) : " + date.getInstance().getTime());
+					firstRun = false;
 				}
 				Thread.sleep(1000);
 			}
