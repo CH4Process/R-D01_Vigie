@@ -12,6 +12,8 @@ public class Scenario
 	Integer intValueTested;
 	Boolean boolValueTested;
 	
+	Boolean isPresent = false;
+	
 	public void setField(String fieldName, Object fieldValue)
 	{
 		try
@@ -174,5 +176,17 @@ public class Scenario
 	{
 		return boolValueTested;
 	}
+
+	public Boolean getIsPresent()
+	{
+		return isPresent;
+	}
+
+	public void setIsPresent(Boolean isPresent)
+	{
+		this.isPresent = isPresent;
+	}
+	
+	
 
 }

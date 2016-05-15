@@ -118,7 +118,7 @@ public class ScenarioWorker extends Thread implements ICapteurValueListener
 							isTriggered = scenario.testValue(event.getBoolValue());
 						}
 						
-						if (isTriggered)
+						if(checkScenario(scenario, isTriggered))
 						{
 							doScenario(scenario.getParams());
 							busy = true;
@@ -127,6 +127,30 @@ public class ScenarioWorker extends Thread implements ICapteurValueListener
 				}
 				deleteEvent();
 			}
+		}
+	}
+	
+	private boolean checkScenario(Scenario scenario, boolean triggered)
+	{
+		try
+		{
+			if (! scenario.getIsPresent() && triggered)
+			{
+				scenario.setIsPresent(true);
+				return true;
+			}
+			else if (scenario.getIsPresent() && ! triggered)
+			{
+				scenario.setIsPresent(false);
+				return false;
+			}
+			
+			return false;
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			return false;
 		}
 	}
 	
@@ -160,7 +184,7 @@ public class ScenarioWorker extends Thread implements ICapteurValueListener
 			}
 			else if (action.equals("MAIL"))
 			{
-				//doMAIL(params);
+				doMAIL(params[1]);
 			}
 		}
 		catch (Exception e)
@@ -193,10 +217,11 @@ public class ScenarioWorker extends Thread implements ICapteurValueListener
 		{
 			e.printStackTrace();
 		}
-		finally
-		{
-			deleteEvent();
-		}
+	}
+	
+	private void doMAIL(String parameters)
+	{
+		
 	}
 	
 	private void fireCommandEvent(int capteur_id, boolean value)

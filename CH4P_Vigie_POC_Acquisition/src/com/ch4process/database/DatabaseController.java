@@ -7,6 +7,8 @@ import java.util.List;
 
 public class DatabaseController implements AutoCloseable
 {
+	// TODO : From config file instead of hardcoded bullshit
+	
 	static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
 	static final String URL = "jdbc:mysql://";
 	static final String DATABASEPORT = "3306";
