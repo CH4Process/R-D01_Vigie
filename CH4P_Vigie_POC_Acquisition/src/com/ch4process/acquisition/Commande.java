@@ -1,13 +1,11 @@
 package com.ch4process.acquisition;
 
-import java.util.EventListener;
-
 import com.yoctopuce.YoctoAPI.YRelay;
 
 public class Commande extends Capteur implements IScenarioCommandListener
 {
 	YRelay sensor;
-	Double value;
+	Double value; 
 	
 	public Commande()
 	{
@@ -96,5 +94,21 @@ public class Commande extends Capteur implements IScenarioCommandListener
 			this.setBoolValue(value);
 		}
 	}
+	
+	public void addActionEventListener(IActionEventListener listener)
+	{
+		listeners.add(IActionEventListener.class, listener);
+	}
+	
+	public void removeActionEventListener(IActionEventListener listener)
+	{
+		listeners.remove(IActionEventListener.class, listener);
+	}
+	
+	protected IActionEventListener[] getActionEventListeners()
+	{
+		return this.listeners.getListeners(IActionEventListener.class);
+	}
+	
 
 }

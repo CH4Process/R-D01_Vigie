@@ -1,5 +1,7 @@
 package com.ch4process.acquisition;
 
+import java.util.Calendar;
+
 import com.yoctopuce.YoctoAPI.YTemperature;
 
 public class Capteur_Yocto_Meteo_Temperature extends Capteur
@@ -70,7 +72,7 @@ public class Capteur_Yocto_Meteo_Temperature extends Capteur
 	{
 		for (ICapteurValueListener listener : getValueListeners())
 		{
-			listener.doubleValueChanged(this.capteur_id, this.value, date.getInstance().getTime().getTime());
+			listener.doubleValueChanged(this.capteur_id, this.value, Calendar.getInstance().getTime().getTime());
 		}
 	}
 

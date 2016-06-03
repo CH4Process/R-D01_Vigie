@@ -17,8 +17,8 @@ public class DatabaseController implements AutoCloseable
 	static private String databaseName = "CH4Process_DB";
 	static private String connectionString = "";
 	static private String databaseAddress = "127.0.0.1";
-	
 	static private Integer nbConnection = 10;
+	
 	static private Boolean initialized = false;
 	
 	static private List<ConnectionHandler> connectionPool = new ArrayList<ConnectionHandler>();

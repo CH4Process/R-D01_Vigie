@@ -13,8 +13,6 @@ public class RecordWorker extends Thread implements ICapteurValueListener
 	IDatabaseRequestCallback recordValueRequestCallback;
 	boolean recordValueRequest_done = true;
 	
-	Calendar date;
-	
 	List<CapteurValueEvent> eventList = new LinkedList<>();
 	
 	Integer DOUBLE_VALUE_EVENT = 1;
@@ -57,7 +55,7 @@ public class RecordWorker extends Thread implements ICapteurValueListener
 	
 	public void start()
 	{
-		System.out.println("recordWorker start : " + date.getInstance().getTime());
+		System.out.println("recordWorker start : " + Calendar.getInstance().getTime());
 		this.recordValueRequest.setCallback(recordValueRequestCallback);
 		this.recordValueRequest.start();
 		super.start();

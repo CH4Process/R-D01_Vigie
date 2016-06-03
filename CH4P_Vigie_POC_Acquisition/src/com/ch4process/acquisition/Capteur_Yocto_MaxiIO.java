@@ -1,5 +1,6 @@
 package com.ch4process.acquisition;
 
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -89,7 +90,7 @@ public class Capteur_Yocto_MaxiIO extends Capteur
 	{
 		for (ICapteurValueListener listener : getValueListeners())
 		{
-			listener.boolValueChanged(this.capteur_id, this.value, date.getInstance().getTime().getTime());
+			listener.boolValueChanged(this.capteur_id, this.value, Calendar.getInstance().getTime().getTime());
 		}
 	}
 	

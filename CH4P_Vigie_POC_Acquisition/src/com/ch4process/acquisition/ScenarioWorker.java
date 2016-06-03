@@ -20,8 +20,6 @@ public class ScenarioWorker extends Thread implements ICapteurValueListener
 	IDatabaseRequestCallback scenarioListRequestCallback;
 	boolean scenarioListRequest_done = true;
 	
-	Calendar date;
-	
 	List<CapteurValueEvent> eventList = new LinkedList<>();
 	List<Scenario> scenarios = new LinkedList<>();
 	EventListenerList listeners = new EventListenerList();
@@ -63,7 +61,7 @@ public class ScenarioWorker extends Thread implements ICapteurValueListener
 	
 	public void start()
 	{
-		System.out.println("scenarioWorker start : " + date.getInstance().getTime());
+		System.out.println("scenarioWorker start : " + Calendar.getInstance().getTime());
 		super.start();
 	}
 	
@@ -120,8 +118,9 @@ public class ScenarioWorker extends Thread implements ICapteurValueListener
 						
 						if(checkScenario(scenario, isTriggered))
 						{
-							doScenario(scenario.getParams());
 							busy = true;
+							doScenario(scenario.getParams());
+							fireActionEvent(scenario.getScenario_id(), Calendar.getInstance().getTime().getTime());
 						}
 					}
 				}
@@ -231,7 +230,15 @@ public class ScenarioWorker extends Thread implements ICapteurValueListener
 			listener.boolCommand(capteur_id, value);
 		}
 	}
-
+	
+	private void fireActionEvent(int scenario_id, long datetime)
+	{
+		for (IActionEventListener listener : getActionEventListeners())
+		{
+			listener.onActionEvent(scenario_id, datetime);
+		}
+	}
+	
 	@Override
 	public void doubleValueChanged(int capteur_id, double value, long datetime)
 	{
@@ -248,21 +255,6 @@ public class ScenarioWorker extends Thread implements ICapteurValueListener
 	public void boolValueChanged(int capteur_id, boolean value, long datetime)
 	{
 		eventList.add(new CapteurValueEvent(capteur_id, value, datetime));
-	}
-	
-	public void addScenarioCommandListener(IScenarioCommandListener listener)
-	{
-		listeners.add(IScenarioCommandListener.class, listener);
-	}
-	
-	public void removeScenarioCommandListener(IScenarioCommandListener listener)
-	{
-		listeners.remove(IScenarioCommandListener.class, listener);
-	}
-	
-	protected IScenarioCommandListener[] getScenarioCommandListeners()
-	{
-		return this.listeners.getListeners(IScenarioCommandListener.class);
 	}
 	
 	private void ScenarioList(CachedRowSet listeScenarios)
@@ -290,4 +282,37 @@ public class ScenarioWorker extends Thread implements ICapteurValueListener
 			ex.printStackTrace();
 		}
 	}
+
+	
+	public void addScenarioCommandListener(IScenarioCommandListener listener)
+	{
+		listeners.add(IScenarioCommandListener.class, listener);
+	}
+	
+	public void removeScenarioCommandListener(IScenarioCommandListener listener)
+	{
+		listeners.remove(IScenarioCommandListener.class, listener);
+	}
+	
+	protected IScenarioCommandListener[] getScenarioCommandListeners()
+	{
+		return this.listeners.getListeners(IScenarioCommandListener.class);
+	}
+	
+	public void addActionEventListener(IActionEventListener listener)
+	{
+		listeners.add(IActionEventListener.class, listener);
+	}
+	
+	public void removeActionEventListener(IActionEventListener listener)
+	{
+		listeners.remove(IActionEventListener.class, listener);
+	}
+	
+	protected IActionEventListener[] getActionEventListeners()
+	{
+		return this.listeners.getListeners(IActionEventListener.class);
+	}
+	
+	
 }

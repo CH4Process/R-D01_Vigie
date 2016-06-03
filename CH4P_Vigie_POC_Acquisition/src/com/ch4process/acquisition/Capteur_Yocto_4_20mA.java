@@ -1,5 +1,6 @@
 package com.ch4process.acquisition;
 
+import java.util.Calendar;
 import java.util.EventListener;
 
 import com.yoctopuce.YoctoAPI.YGenericSensor;
@@ -101,7 +102,8 @@ public class Capteur_Yocto_4_20mA extends Capteur
 	{
 		for (ICapteurValueListener listener : getValueListeners())
 		{
-			listener.doubleValueChanged(this.capteur_id, this.value, date.getInstance().getTime().getTime());
+			// TODO : Implémenter la validité sur la mesure jusqu'en BDD
+			listener.doubleValueChanged(this.capteur_id, this.value, Calendar.getInstance().getTime().getTime());
 		}
 	}
 	
@@ -109,8 +111,12 @@ public class Capteur_Yocto_4_20mA extends Capteur
 	{
 		if (plage_min != null && plage_max != null)
 		{
-			// TODO : Filtrer la valeur si elle est à -29999 ou + 29999 (valeur invalide)
-			// ajouter une colonne "isValid" dans la table mesure en BDD ?
+			//isValid = true;
+			if (value == -29999.0 || value == 29999.0)
+			{
+				//isValid = false;
+			}
+			
 			int plage = this.plage_max - this.plage_min;
 			value = (plage / 16) * (value - 4);
 			this.countdown = this.periode;

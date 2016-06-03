@@ -16,6 +16,7 @@ import com.ch4process.acquisition.Capteur_Yocto_Meteo_Humidite;
 import com.ch4process.acquisition.Capteur_Yocto_Meteo_Pression;
 import com.ch4process.acquisition.Capteur_Yocto_Meteo_Temperature;
 import com.ch4process.acquisition.Commande;
+import com.ch4process.acquisition.LogWorker;
 import com.ch4process.acquisition.Scenario;
 import com.ch4process.acquisition.ScenarioWorker;
 import com.ch4process.acquisition.RecordWorker;
@@ -36,13 +37,12 @@ public class VigieAcquisition extends Thread
 	List<Scenario> scenarios = new ArrayList<Scenario>();
 	List<Commande> commandes = new ArrayList<Commande>();
 	
-	Calendar date;
-	
 	ConnectionHandler connectionHandler;
 	DatabaseRequest capteurListRequest;
 	DatabaseRequest scenarioListRequest;
 	DatabaseRequest recordValueRequest;
 	DatabaseRequest commandeListRequest;
+	DatabaseRequest logEventRequest;
 	IDatabaseRequestCallback capteurListRequestCallback;
 	IDatabaseRequestCallback scenarioListRequestCallback;
 	IDatabaseRequestCallback commandeListRequestCallback;
@@ -52,6 +52,7 @@ public class VigieAcquisition extends Thread
 	
 	RecordWorker recordWorker;
 	ScenarioWorker scenarioWorker;
+	LogWorker logWorker;
 	
 	boolean firstRun = true;
 	
@@ -156,7 +157,7 @@ public class VigieAcquisition extends Thread
 	
 	public void start()
 	{
-		System.out.println("VigieAcq start : " + date.getInstance().getTime());
+		System.out.println("VigieAcq start : " + Calendar.getInstance().getTime());
 		
 		DatabaseController.init();
 		connectionHandler = DatabaseController.getConnection();
@@ -192,11 +193,16 @@ public class VigieAcquisition extends Thread
 		scenarioListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_ListeScenarios, null);
 		recordValueRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_RecordMesure, null);
 		commandeListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_ListeCommandes, commandeListRequestCallback);
+		logEventRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_LogEvent, null);
+		
+		logWorker = new LogWorker(logEventRequest);
+		logWorker.start();
 		
 		recordWorker = new RecordWorker(recordValueRequest);
 		recordWorker.start();
 		
 		scenarioWorker = new ScenarioWorker(scenarioListRequest);
+		scenarioWorker.addActionEventListener(logWorker);
 		scenarioWorker.start();
 		
 		commandeListRequest.start();
@@ -223,7 +229,7 @@ public class VigieAcquisition extends Thread
 				
 				if (capteurListRequest_done && firstRun)
 				{
-					System.out.println("VigieAcq prête :) : " + date.getInstance().getTime());
+					System.out.println("VigieAcq prête :) : " + Calendar.getInstance().getTime());
 					firstRun = false;
 				}
 				Thread.sleep(1000);

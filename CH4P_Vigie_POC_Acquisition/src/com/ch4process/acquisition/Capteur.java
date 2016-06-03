@@ -1,14 +1,10 @@
 package com.ch4process.acquisition;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.EventListener;
-import java.util.List;
 
 import javax.swing.event.EventListenerList;
-
 import com.yoctopuce.YoctoAPI.YAPI;
 import com.yoctopuce.YoctoAPI.YAPI_Exception;
 
@@ -28,7 +24,8 @@ public class Capteur extends Thread
 	int countdown = 0;
 	Boolean isAnalogique = null;
 	int entree;
-	Calendar date;
+	
+	//Boolean isValid;
 	
 	EventListenerList listeners = new EventListenerList();
 	
@@ -170,7 +167,7 @@ public class Capteur extends Thread
 
 	public Date getDate()
 	{
-		return date.getInstance().getTime();
+		return Calendar.getInstance().getTime();
 	}
 
 	public Boolean getIsAnalogique()
