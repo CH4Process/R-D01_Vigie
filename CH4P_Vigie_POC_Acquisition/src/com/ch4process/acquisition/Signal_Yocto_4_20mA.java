@@ -5,18 +5,18 @@ import java.util.EventListener;
 
 import com.yoctopuce.YoctoAPI.YGenericSensor;
 
-public class Capteur_Yocto_4_20mA extends Capteur
+public class Signal_Yocto_4_20mA extends Signal
 {
 	YGenericSensor sensor;
 	Double value;
 
 	
-	public Capteur_Yocto_4_20mA()
+	public Signal_Yocto_4_20mA()
 	{
 		super();
 	}
 
-	public Capteur_Yocto_4_20mA(String numSerie, String adresse, String libelle, Integer periode,Integer plage_min, Integer plage_max, Float coeff, String marque, String modele)
+	public Signal_Yocto_4_20mA(String numSerie, String adresse, String libelle, Integer periode,Integer plage_min, Integer plage_max, Float coeff, String marque, String modele)
 	{
 		super(numSerie, adresse, libelle, periode, plage_min, plage_max, coeff, marque, modele);
 	}
@@ -100,7 +100,7 @@ public class Capteur_Yocto_4_20mA extends Capteur
 	
 	protected void fireValueChanged(double value)
 	{
-		for (ICapteurValueListener listener : getValueListeners())
+		for (ISignalValueListener listener : getValueListeners())
 		{
 			// TODO : Implémenter la validité sur la mesure jusqu'en BDD
 			listener.doubleValueChanged(this.capteur_id, this.value, Calendar.getInstance().getTime().getTime());

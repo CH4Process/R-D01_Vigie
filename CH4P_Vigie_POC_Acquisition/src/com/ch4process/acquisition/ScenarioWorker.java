@@ -12,15 +12,15 @@ import javax.swing.event.EventListenerList;
 
 import com.ch4process.database.DatabaseRequest;
 import com.ch4process.database.IDatabaseRequestCallback;
-import com.ch4process.events.CapteurValueEvent;
+import com.ch4process.events.SignalValueEvent;
 
-public class ScenarioWorker extends Thread implements ICapteurValueListener
+public class ScenarioWorker extends Thread implements ISignalValueListener
 {
 	DatabaseRequest scenarioListRequest;
 	IDatabaseRequestCallback scenarioListRequestCallback;
 	boolean scenarioListRequest_done = true;
 	
-	List<CapteurValueEvent> eventList = new LinkedList<>();
+	List<SignalValueEvent> eventList = new LinkedList<>();
 	List<Scenario> scenarios = new LinkedList<>();
 	EventListenerList listeners = new EventListenerList();
 	
@@ -95,11 +95,11 @@ public class ScenarioWorker extends Thread implements ICapteurValueListener
 		{
 			while (eventList.size() > 0)
 			{		
-				CapteurValueEvent event = eventList.get(0);
+				SignalValueEvent event = eventList.get(0);
 				
 				for(Scenario scenario : scenarios)
 				{
-					if (scenario.capteur_id.equals(event.getCapteur_id()))
+					if (scenario.capteur_id.equals(event.getIdSignal()))
 					{
 						Boolean isTriggered = false;
 						
@@ -242,19 +242,19 @@ public class ScenarioWorker extends Thread implements ICapteurValueListener
 	@Override
 	public void doubleValueChanged(int capteur_id, double value, long datetime)
 	{
-		eventList.add(new CapteurValueEvent(capteur_id, value, datetime));
+		eventList.add(new SignalValueEvent(capteur_id, value, datetime));
 	}
 
 	@Override
 	public void intValueChanged(int capteur_id, int value, long datetime)
 	{
-		eventList.add(new CapteurValueEvent(capteur_id, value, datetime));
+		eventList.add(new SignalValueEvent(capteur_id, value, datetime));
 	}
 
 	@Override
 	public void boolValueChanged(int capteur_id, boolean value, long datetime)
 	{
-		eventList.add(new CapteurValueEvent(capteur_id, value, datetime));
+		eventList.add(new SignalValueEvent(capteur_id, value, datetime));
 	}
 	
 	private void ScenarioList(CachedRowSet listeScenarios)

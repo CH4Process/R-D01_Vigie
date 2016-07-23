@@ -2,31 +2,32 @@ package com.ch4process.acquisition;
 
 import java.util.Calendar;
 
-import com.yoctopuce.YoctoAPI.YPressure;
+import com.yoctopuce.YoctoAPI.YTemperature;
 
-public class Capteur_Yocto_Meteo_Pression extends Capteur
+public class Signal_Yocto_Meteo_Temperature extends Signal
 {
-	YPressure sensor;
+	YTemperature sensor;
 	Double value;
 
 	
-	public Capteur_Yocto_Meteo_Pression()
+	
+	public Signal_Yocto_Meteo_Temperature()
 	{
 		super();
 	}
 
-	public Capteur_Yocto_Meteo_Pression(String numSerie, String adresse, String libelle, Integer periode,Integer plage_min, Integer plage_max, Float coeff, String marque, String modele)
+	public Signal_Yocto_Meteo_Temperature(String numSerie, String adresse, String libelle, Integer periode,Integer plage_min, Integer plage_max, Float coeff, String marque, String modele)
 	{
 		super(numSerie, adresse, libelle, periode, plage_min, plage_max, coeff, marque, modele);
 	}
-	
+
 	@Override
 	public boolean init()
 	{
 		try
 		{
 			this.isAnalogique = true;
-			sensor = YPressure.FindPressure(this.numeroserie);
+			sensor = YTemperature.FindTemperature(this.numeroserie);
 			return sensor.isOnline(); 
 		}
 		catch (Exception ex)
@@ -42,7 +43,7 @@ public class Capteur_Yocto_Meteo_Pression extends Capteur
 		try
 		{
 			value = sensor.getCurrentValue();
-			if(value != sensor.CURRENTVALUE_INVALID) 
+			if(value != sensor.CURRENTVALUE_INVALID)
 			{
 				this.countdown = this.periode;
 				fireValueChanged(value);
@@ -60,6 +61,7 @@ public class Capteur_Yocto_Meteo_Pression extends Capteur
 		}
 	}
 	
+	
 	@Override
 	public Double getDoubleValue()
 	{
@@ -68,11 +70,12 @@ public class Capteur_Yocto_Meteo_Pression extends Capteur
 	
 	protected void fireValueChanged(double value)
 	{
-		for (ICapteurValueListener listener : getValueListeners())
+		for (ISignalValueListener listener : getValueListeners())
 		{
 			listener.doubleValueChanged(this.capteur_id, this.value, Calendar.getInstance().getTime().getTime());
 		}
 	}
+
 	
 	@Override
 	public void start()
@@ -107,3 +110,4 @@ public class Capteur_Yocto_Meteo_Pression extends Capteur
 		}
 	}
 }
+

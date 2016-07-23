@@ -2,32 +2,31 @@ package com.ch4process.acquisition;
 
 import java.util.Calendar;
 
-import com.yoctopuce.YoctoAPI.YTemperature;
+import com.yoctopuce.YoctoAPI.YPressure;
 
-public class Capteur_Yocto_Meteo_Temperature extends Capteur
+public class Signal_Yocto_Meteo_Pression extends Signal
 {
-	YTemperature sensor;
+	YPressure sensor;
 	Double value;
 
 	
-	
-	public Capteur_Yocto_Meteo_Temperature()
+	public Signal_Yocto_Meteo_Pression()
 	{
 		super();
 	}
 
-	public Capteur_Yocto_Meteo_Temperature(String numSerie, String adresse, String libelle, Integer periode,Integer plage_min, Integer plage_max, Float coeff, String marque, String modele)
+	public Signal_Yocto_Meteo_Pression(String numSerie, String adresse, String libelle, Integer periode,Integer plage_min, Integer plage_max, Float coeff, String marque, String modele)
 	{
 		super(numSerie, adresse, libelle, periode, plage_min, plage_max, coeff, marque, modele);
 	}
-
+	
 	@Override
 	public boolean init()
 	{
 		try
 		{
 			this.isAnalogique = true;
-			sensor = YTemperature.FindTemperature(this.numeroserie);
+			sensor = YPressure.FindPressure(this.numeroserie);
 			return sensor.isOnline(); 
 		}
 		catch (Exception ex)
@@ -43,7 +42,7 @@ public class Capteur_Yocto_Meteo_Temperature extends Capteur
 		try
 		{
 			value = sensor.getCurrentValue();
-			if(value != sensor.CURRENTVALUE_INVALID)
+			if(value != sensor.CURRENTVALUE_INVALID) 
 			{
 				this.countdown = this.periode;
 				fireValueChanged(value);
@@ -61,7 +60,6 @@ public class Capteur_Yocto_Meteo_Temperature extends Capteur
 		}
 	}
 	
-	
 	@Override
 	public Double getDoubleValue()
 	{
@@ -70,12 +68,11 @@ public class Capteur_Yocto_Meteo_Temperature extends Capteur
 	
 	protected void fireValueChanged(double value)
 	{
-		for (ICapteurValueListener listener : getValueListeners())
+		for (ISignalValueListener listener : getValueListeners())
 		{
 			listener.doubleValueChanged(this.capteur_id, this.value, Calendar.getInstance().getTime().getTime());
 		}
 	}
-
 	
 	@Override
 	public void start()
@@ -110,4 +107,3 @@ public class Capteur_Yocto_Meteo_Temperature extends Capteur
 		}
 	}
 }
-

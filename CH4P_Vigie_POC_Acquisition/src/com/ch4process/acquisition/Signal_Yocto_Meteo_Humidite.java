@@ -6,18 +6,18 @@ import com.yoctopuce.YoctoAPI.YHumidity;
 
 
 
-public class Capteur_Yocto_Meteo_Humidite extends Capteur
+public class Signal_Yocto_Meteo_Humidite extends Signal
 {
 	YHumidity sensor;
 	Double value;
 
 	
-	public Capteur_Yocto_Meteo_Humidite()
+	public Signal_Yocto_Meteo_Humidite()
 	{
 		super();
 	}
 
-	public Capteur_Yocto_Meteo_Humidite(String numSerie, String adresse, String libelle, Integer periode,Integer plage_min, Integer plage_max, Float coeff, String marque, String modele)
+	public Signal_Yocto_Meteo_Humidite(String numSerie, String adresse, String libelle, Integer periode,Integer plage_min, Integer plage_max, Float coeff, String marque, String modele)
 	{
 		super(numSerie, adresse, libelle, periode, plage_min, plage_max, coeff, marque, modele);
 	}
@@ -70,7 +70,7 @@ public class Capteur_Yocto_Meteo_Humidite extends Capteur
 	
 	protected void fireValueChanged(double value)
 	{
-		for (ICapteurValueListener listener : getValueListeners())
+		for (ISignalValueListener listener : getValueListeners())
 		{
 			listener.doubleValueChanged(this.capteur_id, this.value, Calendar.getInstance().getTime().getTime());
 		}

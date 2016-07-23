@@ -2,7 +2,7 @@ package com.ch4process.acquisition;
 
 import com.yoctopuce.YoctoAPI.YRelay;
 
-public class Commande extends Capteur implements IScenarioCommandListener
+public class Commande extends Signal implements IScenarioCommandListener
 {
 	YRelay sensor;
 	Double value; 

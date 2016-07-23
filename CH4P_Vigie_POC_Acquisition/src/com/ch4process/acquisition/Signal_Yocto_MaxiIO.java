@@ -7,7 +7,7 @@ import java.util.Map;
 import com.yoctopuce.YoctoAPI.YAPI_Exception;
 import com.yoctopuce.YoctoAPI.YDigitalIO;
 
-public class Capteur_Yocto_MaxiIO extends Capteur
+public class Signal_Yocto_MaxiIO extends Signal
 {
 	Boolean value;
 	
@@ -20,12 +20,12 @@ public class Capteur_Yocto_MaxiIO extends Capteur
 	Map<Integer, Integer> channelsState = new HashMap<Integer, Integer>();
 
 	
-	public Capteur_Yocto_MaxiIO()
+	public Signal_Yocto_MaxiIO()
 	{
 		super();
 	}
 
-	public Capteur_Yocto_MaxiIO(String numSerie, String adresse, String libelle, Integer periode,Integer plage_min, Integer plage_max, Float coeff, String marque, String modele)
+	public Signal_Yocto_MaxiIO(String numSerie, String adresse, String libelle, Integer periode,Integer plage_min, Integer plage_max, Float coeff, String marque, String modele)
 	{
 		super(numSerie, adresse, libelle, periode, plage_min, plage_max, coeff, marque, modele);
 	}
@@ -88,7 +88,7 @@ public class Capteur_Yocto_MaxiIO extends Capteur
 	
 	protected void fireValueChanged(boolean value)
 	{
-		for (ICapteurValueListener listener : getValueListeners())
+		for (ISignalValueListener listener : getValueListeners())
 		{
 			listener.boolValueChanged(this.capteur_id, this.value, Calendar.getInstance().getTime().getTime());
 		}

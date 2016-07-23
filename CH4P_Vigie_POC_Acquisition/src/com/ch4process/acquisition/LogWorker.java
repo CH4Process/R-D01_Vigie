@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import com.ch4process.database.DatabaseRequest;
 import com.ch4process.database.IDatabaseRequestCallback;
-import com.ch4process.events.CapteurValueEvent;
+import com.ch4process.events.SignalValueEvent;
 
 public class LogWorker extends Thread implements IActionEventListener
 {

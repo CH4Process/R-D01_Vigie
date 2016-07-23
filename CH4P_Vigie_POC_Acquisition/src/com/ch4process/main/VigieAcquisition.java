@@ -9,12 +9,12 @@ import java.util.List;
 
 import javax.sql.rowset.CachedRowSet;
 
-import com.ch4process.acquisition.Capteur;
-import com.ch4process.acquisition.Capteur_Yocto_4_20mA;
-import com.ch4process.acquisition.Capteur_Yocto_MaxiIO;
-import com.ch4process.acquisition.Capteur_Yocto_Meteo_Humidite;
-import com.ch4process.acquisition.Capteur_Yocto_Meteo_Pression;
-import com.ch4process.acquisition.Capteur_Yocto_Meteo_Temperature;
+import com.ch4process.acquisition.Signal;
+import com.ch4process.acquisition.Signal_Yocto_4_20mA;
+import com.ch4process.acquisition.Signal_Yocto_MaxiIO;
+import com.ch4process.acquisition.Signal_Yocto_Meteo_Humidite;
+import com.ch4process.acquisition.Signal_Yocto_Meteo_Pression;
+import com.ch4process.acquisition.Signal_Yocto_Meteo_Temperature;
 import com.ch4process.acquisition.Commande;
 import com.ch4process.acquisition.LogWorker;
 import com.ch4process.acquisition.Scenario;
@@ -33,7 +33,7 @@ public class VigieAcquisition extends Thread
 	Thread thisThread;
 	String threadName;
 	
-	List<Capteur> capteurs = new ArrayList<Capteur>();
+	List<Signal> capteurs = new ArrayList<Signal>();
 	List<Scenario> scenarios = new ArrayList<Scenario>();
 	List<Commande> commandes = new ArrayList<Commande>();
 	
@@ -71,7 +71,7 @@ public class VigieAcquisition extends Thread
 
 			while(listeCapteurs.next())
 			{
-				Capteur capteur = CapteurInstance(listeCapteurs.getString("marque"),listeCapteurs.getString("modele"));
+				Signal capteur = CapteurInstance(listeCapteurs.getString("marque"),listeCapteurs.getString("modele"));
 				for(int i = 1; i <= columnCount; i++)
 				{
 					String arg0 = methadata.getColumnName(i);
@@ -90,7 +90,7 @@ public class VigieAcquisition extends Thread
 		}
 	}
 	
-	private Capteur CapteurInstance(String marque, String modele)
+	private Signal CapteurInstance(String marque, String modele)
 	{
 		try
 		{
@@ -98,23 +98,23 @@ public class VigieAcquisition extends Thread
 			{
 				if (modele.equals("YOCTO-4-20-MA-RX"))
 				{
-					return new Capteur_Yocto_4_20mA();
+					return new Signal_Yocto_4_20mA();
 				}
 				else if (modele.equals("YOCTO-METEO-HUMIDITE"))
 				{
-					return new Capteur_Yocto_Meteo_Humidite();
+					return new Signal_Yocto_Meteo_Humidite();
 				}
 				else if (modele.equals("YOCTO-METEO-PRESSION"))
 				{
-					return new Capteur_Yocto_Meteo_Pression();
+					return new Signal_Yocto_Meteo_Pression();
 				}
 				else if (modele.equals("YOCTO-METEO-Temperature"))
 				{
-					return new Capteur_Yocto_Meteo_Temperature();
+					return new Signal_Yocto_Meteo_Temperature();
 				}
 				else if (modele.equals("YOCTO-MAXIIO") )
 				{
-					return new Capteur_Yocto_MaxiIO();
+					return new Signal_Yocto_MaxiIO();
 				}
 			}
 			return null;
