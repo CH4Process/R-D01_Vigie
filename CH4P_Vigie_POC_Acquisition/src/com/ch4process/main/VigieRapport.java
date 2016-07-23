@@ -209,7 +209,6 @@ public class VigieRapport extends Thread
 				Integer value = weekMeasures.getInt("valeur");
 				
 				if (value.equals(1)) 
-					// TODO : Ajouter une colonne "ActiveState" dans la BDD pour savoir si le contact est NO ou NF et compter les passage à cet état. Stocker ça dans une MAP pour faciliter le contrôle.
 				{
 					Integer id = weekMeasures.getInt("capteur_id");
 					occurrences.putIfAbsent(id, 0);

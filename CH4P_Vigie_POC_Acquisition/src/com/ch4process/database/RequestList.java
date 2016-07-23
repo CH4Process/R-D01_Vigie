@@ -2,9 +2,6 @@ package com.ch4process.database;
 
 public class RequestList
 {
-	// TODO : Renommer les tables en anglais et partir sur une table device plutôt que capteur. InputDevice OutputDevice hériteront de Device etc...
-	// TODO : Renommer les ID de toutes les tables en "id" tout simplement - homogénéiser les noms de colonnes etc...
-	
 	public static final String REQUEST_ListeCapteurs =
 			"SELECT c.capteur_id, c.numeroserie, c.adresse, c.libelle, c.periode, tc.coeff, tc.marque, tc.modele, tc.plage_min, tc.plage_max FROM capteur c, type_capteur tc WHERE c.type_capteur_id = tc.type_capteur_id AND c.isOutput = false;";
 	public static final String REQUEST_RecordMesure = 
