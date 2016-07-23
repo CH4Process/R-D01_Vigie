@@ -2,33 +2,23 @@ package com.ch4process.acquisition;
 
 import java.util.Calendar;
 
+import com.ch4process.utils.CH4P_Exception;
 import com.yoctopuce.YoctoAPI.YHumidity;
 
 
 
-public class Signal_Yocto_Meteo_Humidite extends Signal
+public class Signal_Yocto_Meteo_Humidite extends Signal implements ISignal
 {
 	YHumidity sensor;
 	Double value;
 
-	
-	public Signal_Yocto_Meteo_Humidite()
-	{
-		super();
-	}
-
-	public Signal_Yocto_Meteo_Humidite(String numSerie, String adresse, String libelle, Integer periode,Integer plage_min, Integer plage_max, Float coeff, String marque, String modele)
-	{
-		super(numSerie, adresse, libelle, periode, plage_min, plage_max, coeff, marque, modele);
-	}
 	
 	@Override
 	public boolean init()
 	{
 		try
 		{
-			this.isAnalogique = true;
-			sensor = YHumidity.FindHumidity(this.numeroserie);
+			sensor = YHumidity.FindHumidity(this.device.serialNumber + ".humidity");
 			return sensor.isOnline(); 
 		}
 		catch (Exception ex)
@@ -46,7 +36,7 @@ public class Signal_Yocto_Meteo_Humidite extends Signal
 			value = sensor.getCurrentValue();
 			if(value != sensor.CURRENTVALUE_INVALID)
 			{
-				this.countdown = this.periode;
+				this.countdown = this.refreshRate;
 				fireValueChanged(value);
 				return true;
 			}
@@ -62,7 +52,6 @@ public class Signal_Yocto_Meteo_Humidite extends Signal
 		}
 	}
 	
-	@Override
 	public Double getDoubleValue()
 	{
 		return value;
@@ -72,40 +61,29 @@ public class Signal_Yocto_Meteo_Humidite extends Signal
 	{
 		for (ISignalValueListener listener : getValueListeners())
 		{
-			listener.doubleValueChanged(this.capteur_id, this.value, Calendar.getInstance().getTime().getTime());
+			listener.doubleValueChanged(this.idSignal, this.value, Calendar.getInstance().getTime().getTime());
 		}
 	}
-	
+
 	@Override
-	public void start()
+	public Integer call() throws CH4P_Exception
 	{
 		try
 		{
 			connect();
 			init();
 			refresh();
-			super.start();
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-	}
-	
-	@Override
-	public void run()
-	{
-		try
-		{
+			
 			while(true)
 			{
 				refresh();
-				Thread.sleep(this.periode * 1000);
+				Thread.sleep(this.refreshRate * 1000);
 			}
+			
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			throw new CH4P_Exception(e.getMessage(), e.getCause());
 		}
 	}
 }

@@ -1,69 +1,31 @@
 package com.ch4process.acquisition;
 
+import java.util.concurrent.Callable;
+
+import com.ch4process.utils.CH4P_Exception;
 import com.yoctopuce.YoctoAPI.YRelay;
 
-public class Commande extends Signal implements IScenarioCommandListener
+public class Commande extends Signal implements IScenarioCommandListener, Callable
 {
 	YRelay sensor;
 	Double value; 
+	Integer offset;
 	
-	public Commande()
-	{
-		super();
-	}
-
-	public Commande(String numSerie, String adresse, String libelle, Integer periode,Integer plage_min, Integer plage_max, Float coeff, String marque, String modele)
-	{
-		super(numSerie, adresse, libelle, periode, plage_min, plage_max, coeff, marque, modele);
-	}
 	
-	@Override
 	public boolean init()
 	{
 		try
 		{
-			parseParams();
-			this.numeroserie = this.numeroserie + ".relay" + this.entree;
-			this.isAnalogique = false;
-			sensor = YRelay.FindRelay(this.numeroserie);
-			this.periode = 5;
+			offset = Integer.valueOf(this.address);
+			sensor = YRelay.FindRelay(this.device.serialNumber + ".relay" + this.offset);
+			
+			this.refreshRate = 5;
 			return sensor.isOnline(); 
 		}
 		catch (Exception ex)
 		{
 			ex.printStackTrace();
 			return false;
-		}
-	}
-	
-	@Override
-	public void start()
-	{
-		try
-		{
-			connect();
-			init();
-			super.start();
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-	}
-	
-	@Override
-	public void run()
-	{
-		try
-		{
-			while(true)
-			{
-				Thread.sleep(this.periode * 1000);
-			}
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
 		}
 	}
 	
@@ -87,9 +49,9 @@ public class Commande extends Signal implements IScenarioCommandListener
 	}
 
 	@Override
-	public void boolCommand(int capteur_id, boolean value)
+	public void boolCommand(int idSignal, boolean value)
 	{
-		if (this.capteur_id.equals(capteur_id))
+		if (this.idSignal.equals(idSignal))
 		{
 			this.setBoolValue(value);
 		}
@@ -108,6 +70,26 @@ public class Commande extends Signal implements IScenarioCommandListener
 	protected IActionEventListener[] getActionEventListeners()
 	{
 		return this.listeners.getListeners(IActionEventListener.class);
+	}
+
+	@Override
+	public Object call() throws Exception
+	{
+		try
+		{
+			connect();
+			init();
+			
+			while(true)
+			{
+				Thread.sleep(this.refreshRate * 1000);
+			}
+			
+		}
+		catch (Exception e)
+		{
+			throw new CH4P_Exception(e.getMessage(), e.getCause());
+		}
 	}
 	
 

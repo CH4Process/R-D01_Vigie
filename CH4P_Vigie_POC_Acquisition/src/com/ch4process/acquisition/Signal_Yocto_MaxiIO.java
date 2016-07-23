@@ -4,41 +4,32 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.ch4process.utils.CH4P_Exception;
 import com.yoctopuce.YoctoAPI.YAPI_Exception;
 import com.yoctopuce.YoctoAPI.YDigitalIO;
 
-public class Signal_Yocto_MaxiIO extends Signal
+public class Signal_Yocto_MaxiIO extends Signal implements ISignal
 {
+	// Variables
 	Boolean value;
-	
 	Integer portMapping;
 	Integer portState;
 	Integer portSize;
+	Integer offset;
 	YDigitalIO ioSensor;
-	
 	Map<Integer, String> channels = new HashMap<Integer, String>();
 	Map<Integer, Integer> channelsState = new HashMap<Integer, Integer>();
 
 	
-	public Signal_Yocto_MaxiIO()
-	{
-		super();
-	}
-
-	public Signal_Yocto_MaxiIO(String numSerie, String adresse, String libelle, Integer periode,Integer plage_min, Integer plage_max, Float coeff, String marque, String modele)
-	{
-		super(numSerie, adresse, libelle, periode, plage_min, plage_max, coeff, marque, modele);
-	}
+	// Operational code
 	
 	@Override
 	public boolean init()
 	{
 		try
 		{
-			parseParams();
-			this.numeroserie = this.numeroserie + ".digitalIO";
-			this.isAnalogique = false;
-			ioSensor = YDigitalIO.FindDigitalIO(this.numeroserie);
+			offset = Integer.valueOf(this.address);
+			ioSensor = YDigitalIO.FindDigitalIO(this.device.serialNumber + ".digitalIO");
 			portMapping = ioSensor.get_portDirection();
 			portSize = ioSensor.get_portSize();
 			
@@ -49,7 +40,7 @@ public class Signal_Yocto_MaxiIO extends Signal
 			return false;
 			
 		}
-		catch (YAPI_Exception ex)
+		catch (Exception ex)
 		{
 			ex.printStackTrace();
 			return false;
@@ -64,8 +55,8 @@ public class Signal_Yocto_MaxiIO extends Signal
 			portState = ioSensor.get_portState();
 			if (portState != ioSensor.PORTSTATE_INVALID)
 			{
-				value = ((portState & entree) != 0);
-				this.countdown = this.periode;
+				value = ((portState & offset) != 0);
+				this.countdown = this.refreshRate;
 				
 				fireValueChanged(value);
 				
@@ -81,6 +72,28 @@ public class Signal_Yocto_MaxiIO extends Signal
 	}
 	
 	@Override
+	public Integer call() throws CH4P_Exception
+	{
+		try
+		{
+			connect();
+			init();
+			refresh();
+			
+			while(true)
+			{
+				refresh();
+				Thread.sleep(this.refreshRate * 1000);
+			}
+		}
+			
+		catch (Exception e)
+		{
+			throw new CH4P_Exception(e.getMessage(), e.getCause());
+		}
+		
+	}
+
 	public Boolean getBoolValue()
 	{
 		return value;
@@ -90,40 +103,7 @@ public class Signal_Yocto_MaxiIO extends Signal
 	{
 		for (ISignalValueListener listener : getValueListeners())
 		{
-			listener.boolValueChanged(this.capteur_id, this.value, Calendar.getInstance().getTime().getTime());
-		}
-	}
-	
-	@Override
-	public void start()
-	{
-		try
-		{
-			connect();
-			init();
-			refresh();
-			super.start();
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-	}
-	
-	@Override
-	public void run()
-	{
-		try
-		{
-			while(true)
-			{
-				refresh();
-				Thread.sleep(this.periode * 1000);
-			}
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
+			listener.boolValueChanged(this.idSignal, this.value, Calendar.getInstance().getTime().getTime());
 		}
 	}
 

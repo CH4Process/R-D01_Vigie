@@ -1,14 +1,11 @@
 package com.ch4process.acquisition;
 
 import java.lang.reflect.Field;
-import java.util.Calendar;
-import java.util.Date;
-
 import javax.swing.event.EventListenerList;
 import com.yoctopuce.YoctoAPI.YAPI;
 import com.yoctopuce.YoctoAPI.YAPI_Exception;
 
-public class Signal extends Thread
+public class Signal
 {
 	// Classes used as containers for configuration values
 	SignalType signalType;
@@ -23,19 +20,22 @@ public class Signal extends Thread
 	String shortName = null;
 	String address = null;
 	String label = null;
-	String refreshRate = null;
-	String logRate = null;
+	Integer refreshRate = null;
+	Integer logRate = null;
 	
 	// Other variables
 	int countdown = 0;
-	int entree;
 	boolean isValid;
 	
 	// Event handling
 	EventListenerList listeners = new EventListenerList();
 	
+	// Error handling
+	Integer errorCode = 0;
+	
 	
 	// Constructors
+	
 	/**
 	 * This constructor sets everything to null.
 	 * This constructor needs to be used with the setField method to autogenerate
@@ -59,7 +59,7 @@ public class Signal extends Thread
 	 * @param logRate
 	 */
 	public Signal(Integer idSignal, Integer idDevice, Integer idSignalType, Integer idSignalLevel, String shortName,
-			String address, String label, String refreshRate, String logRate)
+			String address, String label, Integer refreshRate, Integer logRate)
 	{
 		this.idSignal = idSignal;
 		this.idDevice = idDevice;
@@ -199,22 +199,22 @@ public class Signal extends Thread
 		this.label = label;
 	}
 
-	public String getRefreshRate()
+	public Integer getRefreshRate()
 	{
 		return refreshRate;
 	}
 
-	public void setRefreshRate(String refreshRate)
+	public void setRefreshRate(Integer refreshRate)
 	{
 		this.refreshRate = refreshRate;
 	}
 
-	public String getLogRate()
+	public Integer getLogRate()
 	{
 		return logRate;
 	}
 
-	public void setLogRate(String logRate)
+	public void setLogRate(Integer logRate)
 	{
 		this.logRate = logRate;
 	}
@@ -229,16 +229,6 @@ public class Signal extends Thread
 		this.countdown = countdown;
 	}
 
-	public int getEntree()
-	{
-		return entree;
-	}
-
-	public void setEntree(int entree)
-	{
-		this.entree = entree;
-	}
-
 	public boolean isValid()
 	{
 		return isValid;
@@ -251,15 +241,6 @@ public class Signal extends Thread
 	
 	
 	// Operationnal code
-	
-	public void start()
-	{
-		super.start();
-	}
-	
-	public void run()
-	{
-	}
 
 	protected boolean connect()
 	{
@@ -273,16 +254,6 @@ public class Signal extends Thread
 			ex.printStackTrace();
 			return false;
 		}
-	}
-	
-	protected boolean refresh()
-	{
-		return false;
-	}
-	
-	protected boolean init()
-	{
-		return false;
 	}
 	
 	// Event handling code
