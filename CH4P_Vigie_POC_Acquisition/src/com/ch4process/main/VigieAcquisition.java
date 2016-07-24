@@ -5,17 +5,23 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.sql.rowset.CachedRowSet;
 
 import com.ch4process.acquisition.Signal;
+import com.ch4process.acquisition.SignalLevel;
+import com.ch4process.acquisition.SignalType;
 import com.ch4process.acquisition.Signal_Yocto_4_20mA;
 import com.ch4process.acquisition.Signal_Yocto_MaxiIO;
 import com.ch4process.acquisition.Signal_Yocto_Meteo_Humidite;
 import com.ch4process.acquisition.Signal_Yocto_Meteo_Pression;
 import com.ch4process.acquisition.Signal_Yocto_Meteo_Temperature;
 import com.ch4process.acquisition.Commande;
+import com.ch4process.acquisition.Device;
+import com.ch4process.acquisition.DeviceType;
 import com.ch4process.acquisition.LogWorker;
 import com.ch4process.acquisition.Scenario;
 import com.ch4process.acquisition.ScenarioWorker;
@@ -34,20 +40,36 @@ public class VigieAcquisition extends Thread
 	Thread thisThread;
 	String threadName;
 	
-	List<Signal> signals = new ArrayList<Signal>();
-	List<Scenario> scenarios = new ArrayList<Scenario>();
+	Map<Integer, Signal> signals = new HashMap<Integer,Signal>();
+	Map<Integer,Device> devices = new HashMap<Integer,Device>();
+	Map<Integer,DeviceType> deviceTypes = new HashMap<Integer,DeviceType>();
+	Map<Integer,SignalLevel> signalLevels = new HashMap<Integer,SignalLevel>();
+	Map<Integer,SignalType> signalTypes = new HashMap<Integer,SignalType>();
+	Map<Integer,Scenario> scenarios = new HashMap<Integer,Scenario>();
 	//List<Commande> commandes = new ArrayList<Commande>();
 	
 	ConnectionHandler connectionHandler;
 	DatabaseRequest signalListRequest;
+	DatabaseRequest deviceListRequest;
+	DatabaseRequest deviceTypeListRequest;
+	DatabaseRequest signalLevelListRequest;
+	DatabaseRequest signalTypeListRequest;
 	DatabaseRequest scenarioListRequest;
 	DatabaseRequest recordValueRequest;
 	//DatabaseRequest commandeListRequest;
 	DatabaseRequest logEventRequest;
 	IDatabaseRequestCallback signalListRequestCallback;
+	IDatabaseRequestCallback deviceListRequestCallback;
+	IDatabaseRequestCallback deviceTypeListRequestCallback;
+	IDatabaseRequestCallback signalLevelListRequestCallback;
+	IDatabaseRequestCallback signalTypeListRequestCallback;
 	IDatabaseRequestCallback scenarioListRequestCallback;
 	//IDatabaseRequestCallback commandeListRequestCallback;
 	boolean signalListRequest_done = false;
+	boolean deviceListRequest_done = false;
+	boolean deviceTypeListRequest_done = false;
+	boolean signalLevelListRequest_done = false;
+	boolean signalTypeListRequest_done = false;
 	boolean scenarioListRequest_done = false;
 	boolean commandeListRequest_done = false;
 	
@@ -57,63 +79,195 @@ public class VigieAcquisition extends Thread
 	
 	boolean firstRun = true;
 	
+	// Constructor
 	
+	/**
+	 * Creates the VigieAcquisition main thread with the given name
+	 * @param name
+	 */
 	public VigieAcquisition(String name)
 	{
 		this.threadName = name;
 	}
 	
+	
+	// Configuration objects creation
+	
+	/**
+	 * Initialize the list of signals
+	 * @param listSignals
+	 * @throws CH4P_Exception
+	 */
 	private void SignalList(CachedRowSet listSignals) throws CH4P_Exception
 	{
 		try
 		{
-			ResultSetMetaData methadata = listSignals.getMetaData();
-			Integer columnCount = methadata.getColumnCount();
-
 			while(listSignals.next())
 			{
-				Signal signal = SignalInstance(listSignals.getString("marque"),listSignals.getString("modele"));
-				for(int i = 1; i <= columnCount; i++)
-				{
-					String arg0 = methadata.getColumnName(i);
-					Object arg1 = listSignals.getObject(i);
-					signal.SetField(arg0, arg1);
-				}
-				signals.add(signal);
+				Signal signal = SignalInstance(listSignals.getString("brandName"),listSignals.getString("modelName"));
+				
+				signal.setIdSignal(listSignals.getInt("idSignal"));
+				signal.setIdDevice(listSignals.getInt("idDevice"));
+				signal.setIdSignalType(listSignals.getInt("idSignalType"));
+				signal.setIdSignalLevel(listSignals.getInt("idSignalLevel"));
+				signal.setShortName(listSignals.getString("shortName"));
+				signal.setAddress(listSignals.getString("address"));
+				signal.setLabel(listSignals.getString("label"));
+				signal.setRefreshRate(listSignals.getInt("refreshrate"));
+				signal.setLogRate(listSignals.getInt("logRate"));
+				
+				signals.put(signal.getIdSignal(),signal);
 				signal.addValueListener(recordWorker);
 				signal.addValueListener(scenarioWorker);
-				signal.call();
+				signal = null;
 			}
 		}
-		catch(SQLException ex)
+		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
 		}
 	}
-	
-	private Signal SignalInstance(String marque, String modele)
+	/**
+	 * Initialize the list of devices
+	 * @param listDevices
+	 * @throws CH4P_Exception
+	 */
+	private void DeviceList(CachedRowSet listDevices) throws CH4P_Exception
 	{
 		try
 		{
-			if (marque.equals("YOCTOPUCE"))
+			while (listDevices.next())
 			{
-				if (modele.equals("YOCTO-4-20-MA-RX"))
+				Device device = new Device();
+				
+				device.setIdDevice(listDevices.getInt("idDevice"));
+				device.setIdDeviceType(listDevices.getInt("idDeviceType"));
+				device.setSerialNumber(listDevices.getString("serialNumber"));
+				device.setAddress(listDevices.getString("address"));
+				
+				devices.put(device.getIdDevice(), device);
+				device = null;
+			}
+		}
+		catch(Exception ex)
+		{
+			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
+		}
+	}
+	/**
+	 * Initialize the list of deviceTypes
+	 * @param listDeviceTypes
+	 * @throws CH4P_Exception
+	 */
+	private void DeviceTypeList(CachedRowSet listDeviceTypes) throws CH4P_Exception
+	{
+		try
+		{
+			while (listDeviceTypes.next())
+			{
+				DeviceType deviceType = new DeviceType();
+				
+				deviceType.setIdDeviceType(listDeviceTypes.getInt("idDeviceType"));
+				deviceType.setBrandName(listDeviceTypes.getString("brandName"));
+				deviceType.setModelName(listDeviceTypes.getString("modelName"));
+				
+				deviceTypes.put(deviceType.getIdDeviceType(), deviceType);
+				deviceType = null;
+			}
+		}
+		catch(Exception ex)
+		{
+			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
+		}
+	}
+	/**
+	 * Initialize the list of signalTypes
+	 * @param listSignalTypes
+	 * @throws CH4P_Exception
+	 */
+	private void SignalTypeList(CachedRowSet listSignalTypes) throws CH4P_Exception
+	{
+		try
+		{
+			while(listSignalTypes.next())
+			{
+				SignalType signalType = new SignalType();
+				
+				signalType.setIdSignalType(listSignalTypes.getInt("idSignalType"));
+				signalType.setIsTor(listSignalTypes.getBoolean("isTor"));
+				signalType.setIsOutput(listSignalTypes.getBoolean("isOutput"));
+				signalType.setIsNormallyOpen(listSignalTypes.getBoolean("isNormallyOpen"));
+				signalType.setIsCom(listSignalTypes.getBoolean("isCom"));
+				signalType.setIsTotalizer(listSignalTypes.getBoolean("isTotalizer"));
+				signalType.setCoeff(listSignalTypes.getFloat("coeff"));
+				signalType.setUnit(listSignalTypes.getString("unit"));
+				signalType.setMaxValue(listSignalTypes.getInt("maxValue"));
+				signalType.setMinValue(listSignalTypes.getInt("minValue"));
+				signalType.setComFormat(listSignalTypes.getString("comFormat"));
+				
+				signalTypes.put(signalType.getIdSignalType(), signalType);
+				signalType = null;
+			}
+		}
+		catch (Exception ex)
+		{
+			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
+		}
+	}
+	/**
+	 * Initialize the list of signalLevels
+	 * @param listSignalLevels
+	 * @throws CH4P_Exception
+	 */
+	private void SignalLevelList(CachedRowSet listSignalLevels) throws CH4P_Exception
+	{
+		try
+		{
+			while(listSignalLevels.next())
+			{
+				SignalLevel signalLevel = new SignalLevel();
+				
+				signalLevel.setIdSignalLevel(listSignalLevels.getInt("idSignalLevel"));
+				signalLevel.setLabel(listSignalLevels.getString("label"));
+					
+				signalLevels.put(signalLevel.getIdSignalLevel(), signalLevel);
+				signalLevel = null;
+			}
+		}
+		catch (Exception ex)
+		{
+			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
+		}
+	}
+	/**
+	 * Determines the right type of signal class to create using it's model and brand names
+	 * @param brand
+	 * @param model
+	 * @return
+	 */
+	private Signal SignalInstance(String brand, String model)
+	{
+		try
+		{
+			if (brand.equals("YOCTOPUCE"))
+			{
+				if (model.equals("YOCTO-4-20-MA-RX"))
 				{
 					return new Signal_Yocto_4_20mA();
 				}
-				else if (modele.equals("YOCTO-METEO-HUMIDITE"))
+				else if (model.equals("YOCTO-METEO-HUMIDITE"))
 				{
 					return new Signal_Yocto_Meteo_Humidite();
 				}
-				else if (modele.equals("YOCTO-METEO-PRESSION"))
+				else if (model.equals("YOCTO-METEO-PRESSION"))
 				{
 					return new Signal_Yocto_Meteo_Pression();
 				}
-				else if (modele.equals("YOCTO-METEO-Temperature"))
+				else if (model.equals("YOCTO-METEO-TEMPERATURE"))
 				{
 					return new Signal_Yocto_Meteo_Temperature();
 				}
-				else if (modele.equals("YOCTO-MAXIIO") )
+				else if (model.equals("YOCTO-MAXIIO") )
 				{
 					return new Signal_Yocto_MaxiIO();
 				}
@@ -127,20 +281,55 @@ public class VigieAcquisition extends Thread
 		}
 	}
 	
+	private void SignalConfiguration()
+	{
+		if (signalListRequest_done && signalTypeListRequest_done && signalLevelListRequest_done && deviceListRequest_done && deviceTypeListRequest_done)
+		{
+			// We put the DeviceType variables values in each Device
+			for (Device device:devices.values())
+			{
+				device.setDeviceType(deviceTypes.get(device.getIdDeviceType()));
+			}
+			
+			// We put everything in the Signal object
+			for(Signal signal:signals.values())
+			{
+				signal.setDevice(devices.get(signal.getIdDevice()));
+				signal.setSignalType(signalTypes.get(signal.getIdSignalType()));
+				signal.setSignalLevel(signalLevels.get(signal.getIdSignalLevel()));
+				
+				// Now that everything is set, we can start the threads
+				try
+				{
+					signal.call();
+				}
+				catch (CH4P_Exception e)
+				{
+					e.printStackTrace();
+				}
+				
+				// We have to clean up some memory space
+				devices = null;
+				deviceTypes = null;
+				signalLevels = null;
+				signalTypes = null;
+			}
+		}
+	}
 
 //	private void CommandeList(CachedRowSet listeCommandes)
 //	{
 //		try
 //		{
-//			ResultSetMetaData methadata = listeCommandes.getMetaData();
-//			Integer columnCount = methadata.getColumnCount();
+//			ResultSetMetaData metadata = listeCommandes.getMetaData();
+//			Integer columnCount = metadata.getColumnCount();
 //
 //			while(listeCommandes.next())
 //			{
 //				Commande commande = new Commande();
 //				for(int i = 1; i <= columnCount; i++)
 //				{
-//					String arg0 = methadata.getColumnName(i);
+//					String arg0 = metadata.getColumnName(i);
 //					Object arg1 = listeCommandes.getObject(i);
 //					commande.SetField(arg0, arg1);
 //				}
@@ -155,6 +344,8 @@ public class VigieAcquisition extends Thread
 //		}
 //	}
 	
+	
+	// Thread code
 	
 	public void start()
 	{
@@ -180,6 +371,92 @@ public class VigieAcquisition extends Thread
 				signalListRequest_done = true;
 				signalListRequest.close();
 				signalListRequest = null;
+				
+				SignalConfiguration();
+			}
+		};
+		deviceListRequestCallback = new IDatabaseRequestCallback()
+		{
+			
+			@Override
+			public void databaseRequestCallback()
+			{
+				try
+				{
+					DeviceList(deviceListRequest.getCachedRowSet());
+				}
+				catch (CH4P_Exception e)
+				{
+					e.printStackTrace();
+				}
+				deviceListRequest_done = true;
+				deviceListRequest.close();
+				deviceListRequest = null;
+				
+				SignalConfiguration();
+			}
+		};
+		deviceTypeListRequestCallback = new IDatabaseRequestCallback()
+		{
+			
+			@Override
+			public void databaseRequestCallback()
+			{
+				try
+				{
+					DeviceTypeList(deviceTypeListRequest.getCachedRowSet());
+				}
+				catch (CH4P_Exception e)
+				{
+					e.printStackTrace();
+				}
+				deviceTypeListRequest_done = true;
+				deviceTypeListRequest.close();
+				deviceTypeListRequest = null;
+				
+				SignalConfiguration();
+			}
+		};
+		signalTypeListRequestCallback = new IDatabaseRequestCallback()
+		{
+			
+			@Override
+			public void databaseRequestCallback()
+			{
+				try
+				{
+					SignalTypeList(signalTypeListRequest.getCachedRowSet());
+				}
+				catch (CH4P_Exception e)
+				{
+					e.printStackTrace();
+				}
+				signalTypeListRequest_done = true;
+				signalTypeListRequest.close();
+				signalTypeListRequest = null;
+				
+				SignalConfiguration();
+			}
+		};
+		signalLevelListRequestCallback = new IDatabaseRequestCallback()
+		{
+			
+			@Override
+			public void databaseRequestCallback()
+			{
+				try
+				{
+					SignalLevelList(signalLevelListRequest.getCachedRowSet());
+				}
+				catch (CH4P_Exception e)
+				{
+					e.printStackTrace();
+				}
+				signalLevelListRequest_done = true;
+				signalLevelListRequest.close();
+				signalLevelListRequest = null;
+				
+				SignalConfiguration();
 			}
 		};
 		
@@ -198,6 +475,10 @@ public class VigieAcquisition extends Thread
 		
 		
 		signalListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_SignalList, signalListRequestCallback);
+		signalTypeListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_SignalTypeList, signalListRequestCallback);
+		signalLevelListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_SignalLevelList, signalListRequestCallback);
+		deviceListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_DeviceList, signalListRequestCallback);
+		deviceTypeListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_DeviceTypeList, signalListRequestCallback);
 		scenarioListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_ScenarioList, null);
 		recordValueRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_MeasureRecord, null);
 		//commandeListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_ListeCommandes, commandeListRequestCallback);
@@ -218,13 +499,16 @@ public class VigieAcquisition extends Thread
 		
 		signalListRequest.start();
 		signalListRequest.doQuery();
+		signalTypeListRequest.start();
+		signalTypeListRequest.doQuery();
+		signalLevelListRequest.start();
+		signalLevelListRequest.doQuery();
+		deviceListRequest.start();
+		deviceListRequest.doQuery();
+		deviceTypeListRequest.start();
+		deviceTypeListRequest.doQuery();
 		
-		if (thisThread == null)
-		{
-			thisThread = new Thread (this, threadName);
-			System.out.println("Thread " + threadName + " lancé !");
-			thisThread.start();
-		}
+		super.start();
 	}
 	
 	public void run()
@@ -235,7 +519,7 @@ public class VigieAcquisition extends Thread
 			try
 			{
 				
-				if (signalListRequest_done && firstRun)
+				if (signalListRequest_done && signalTypeListRequest_done && signalLevelListRequest_done && deviceListRequest_done && deviceTypeListRequest_done &&  firstRun)
 				{
 					System.out.println("VigieAcq prête :) : " + Calendar.getInstance().getTime());
 					firstRun = false;

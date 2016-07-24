@@ -3,7 +3,15 @@ package com.ch4process.database;
 public class RequestList
 {
 	public static final String REQUEST_SignalList =
-			"SELECT c.capteur_id, c.numeroserie, c.adresse, c.libelle, c.periode, tc.coeff, tc.marque, tc.modele, tc.plage_min, tc.plage_max FROM capteur c, type_capteur tc WHERE c.type_capteur_id = tc.type_capteur_id AND c.isOutput = false;";
+			"SELECT * FROM Signal;";
+	public static final String REQUEST_SignalTypeList =
+			"SELECT * FROM SignalType;";
+	public static final String REQUEST_SignalLevelList =
+			"SELECT * FROM SignalLevel;";
+	public static final String REQUEST_DeviceList =
+			"SELECT * FROM Device;";
+	public static final String REQUEST_DeviceTypeList =
+			"SELECT * FROM DeviceType;";
 	public static final String REQUEST_MeasureRecord = 
 			"INSERT INTO mesure (capteur_id, valeur, datetime) VALUES (?,?,?);";
 	public static final String REQUEST_ScenarioList = 

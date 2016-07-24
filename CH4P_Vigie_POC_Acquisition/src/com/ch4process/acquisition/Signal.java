@@ -74,30 +74,6 @@ public class Signal
 		this.logRate = logRate;
 	}
 
-	/**
-	 * 
-	 * @param fieldName
-	 * @param fieldValue
-	 */
-	public void SetField(String fieldName, Object fieldValue)
-	{
-		try
-		{
-			Class thisClass = this.getClass();
-			Class parentClass = thisClass.getSuperclass();
-			Field field = parentClass.getDeclaredField(fieldName);
-			boolean access = field.isAccessible();
-			field.setAccessible(true);
-			field.set(this, fieldValue);
-			field.setAccessible(access);
-		}
-		catch(NoSuchFieldException | IllegalArgumentException | IllegalAccessException ex)
-		{
-			ex.printStackTrace();
-		}
-		
-	}
-
 	
 	// Getters and Setters
 	

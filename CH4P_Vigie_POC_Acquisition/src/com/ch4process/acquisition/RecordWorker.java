@@ -132,7 +132,4 @@ public class RecordWorker extends Thread implements ISignalValueListener
 			recordValueRequest_done = true;
 		}
 	}
-	
-	
-
 }

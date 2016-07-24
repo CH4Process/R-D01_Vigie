@@ -28,10 +28,10 @@ public class VigieMain extends Thread
 						//Est-ce qu’il est possible de faire cela avec des bases de temps fixes ou faut-il mettre en place un contrôle temps-réel ? (avec quelque chose du genre Time.deltaTime ?)
 						
 						// +0 Signal emmet un fireValueChanged pour signaler un changement de valeur. Les alertes et alarmes fonctionnent différemment : on notifie dés que la valeur change ou au bout du refreshrate si la valeur n'a pas changé
-						// +0 Les workers doivent être ThreadSafes !!
+						// -0 Les workers doivent être ThreadSafes !! --> FAIT via l'utilisation de LinkedLists
 
-			Acquisition_Init();
-			Report_Init();
+			Init_VigieAcquisition();
+			Init_VigieReport();
 		}
 		catch (Exception ex)
 		{
@@ -39,13 +39,13 @@ public class VigieMain extends Thread
 		}
 	}
 	
-	private static void Acquisition_Init()
+	private static void Init_VigieAcquisition()
 	{
 		T_Acquisition = new VigieAcquisition("VigieAcquisition");
 		T_Acquisition.start();
 	}
 	
-	private static void Report_Init()
+	private static void Init_VigieReport()
 	{
 		T_Report = new VigieRapport("VigieRapport");
 		T_Report.start();
