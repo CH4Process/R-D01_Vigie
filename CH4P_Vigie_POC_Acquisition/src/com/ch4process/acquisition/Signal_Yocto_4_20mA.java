@@ -13,7 +13,7 @@ public class Signal_Yocto_4_20mA extends Signal implements ISignal
 	Double value;
 	
 	@Override
-	public boolean init()
+	public boolean Init()
 	{
 		try
 		{
@@ -29,14 +29,14 @@ public class Signal_Yocto_4_20mA extends Signal implements ISignal
 	}
 
 	@Override
-	public boolean refresh()
+	public boolean Refresh()
 	{
 		try
 		{
 			value = sensor.getCurrentRawValue();
 			if (value != sensor.CURRENTRAWVALUE_INVALID)
 			{
-				return scaleValue();
+				return ScaleValue();
 			}
 			return false;
 		}
@@ -47,7 +47,7 @@ public class Signal_Yocto_4_20mA extends Signal implements ISignal
 		}
 	}
 	
-	private boolean scaleValue()
+	private boolean ScaleValue()
 	{
 		if (this.signalType.minValue != null && this.signalType.maxValue != null)
 		{
@@ -79,13 +79,13 @@ public class Signal_Yocto_4_20mA extends Signal implements ISignal
 	{
 		try
 		{
-			connect();
-			init();
-			refresh();
+			Connect();
+			Init();
+			Refresh();
 			
 			while(true)
 			{
-				refresh();
+				Refresh();
 				Thread.sleep(this.refreshRate * 1000);
 			}
 			

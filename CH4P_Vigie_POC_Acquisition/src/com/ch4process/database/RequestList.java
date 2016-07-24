@@ -2,16 +2,16 @@ package com.ch4process.database;
 
 public class RequestList
 {
-	public static final String REQUEST_ListeCapteurs =
+	public static final String REQUEST_SignalList =
 			"SELECT c.capteur_id, c.numeroserie, c.adresse, c.libelle, c.periode, tc.coeff, tc.marque, tc.modele, tc.plage_min, tc.plage_max FROM capteur c, type_capteur tc WHERE c.type_capteur_id = tc.type_capteur_id AND c.isOutput = false;";
-	public static final String REQUEST_RecordMesure = 
+	public static final String REQUEST_MeasureRecord = 
 			"INSERT INTO mesure (capteur_id, valeur, datetime) VALUES (?,?,?);";
-	public static final String REQUEST_ListeScenarios = 
+	public static final String REQUEST_ScenarioList = 
 			"SELECT s.scenario_id, s.capteur_id, s.test, s.params FROM scenario s ORDER BY s.priorite;";
-	public static final String REQUEST_ListeCommandes = 
+	public static final String REQUEST_ActionList = 
 			"SELECT c.capteur_id, c.numeroserie, c.adresse, c.libelle, c.periode, tc.coeff, tc.marque, tc.modele, tc.plage_min, tc.plage_max FROM capteur c, type_capteur tc WHERE c.type_capteur_id = tc.type_capteur_id AND c.isOutput = true;";
 	
-	public static final String REQUEST_LogEvent = 
+	public static final String REQUEST_EventLog = 
 			"INSERT INTO evenement (scenario_id, date) VALUES (?,?);";
 	
 	public static final String REQUEST_WeekMeasures = 

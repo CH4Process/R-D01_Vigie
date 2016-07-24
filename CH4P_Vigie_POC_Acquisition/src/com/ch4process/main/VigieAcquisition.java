@@ -25,6 +25,7 @@ import com.ch4process.database.DatabaseController;
 import com.ch4process.database.DatabaseRequest;
 import com.ch4process.database.IDatabaseRequestCallback;
 import com.ch4process.database.RequestList;
+import com.ch4process.utils.CH4P_Exception;
 
 import sun.security.jca.GetInstance;
 
@@ -33,20 +34,20 @@ public class VigieAcquisition extends Thread
 	Thread thisThread;
 	String threadName;
 	
-	List<Signal> capteurs = new ArrayList<Signal>();
+	List<Signal> signals = new ArrayList<Signal>();
 	List<Scenario> scenarios = new ArrayList<Scenario>();
-	List<Commande> commandes = new ArrayList<Commande>();
+	//List<Commande> commandes = new ArrayList<Commande>();
 	
 	ConnectionHandler connectionHandler;
-	DatabaseRequest capteurListRequest;
+	DatabaseRequest signalListRequest;
 	DatabaseRequest scenarioListRequest;
 	DatabaseRequest recordValueRequest;
-	DatabaseRequest commandeListRequest;
+	//DatabaseRequest commandeListRequest;
 	DatabaseRequest logEventRequest;
-	IDatabaseRequestCallback capteurListRequestCallback;
+	IDatabaseRequestCallback signalListRequestCallback;
 	IDatabaseRequestCallback scenarioListRequestCallback;
-	IDatabaseRequestCallback commandeListRequestCallback;
-	boolean capteurListRequest_done = false;
+	//IDatabaseRequestCallback commandeListRequestCallback;
+	boolean signalListRequest_done = false;
 	boolean scenarioListRequest_done = false;
 	boolean commandeListRequest_done = false;
 	
@@ -62,26 +63,26 @@ public class VigieAcquisition extends Thread
 		this.threadName = name;
 	}
 	
-	private void CapteurList(CachedRowSet listeCapteurs)
+	private void SignalList(CachedRowSet listSignals) throws CH4P_Exception
 	{
 		try
 		{
-			ResultSetMetaData methadata = listeCapteurs.getMetaData();
+			ResultSetMetaData methadata = listSignals.getMetaData();
 			Integer columnCount = methadata.getColumnCount();
 
-			while(listeCapteurs.next())
+			while(listSignals.next())
 			{
-				Signal capteur = CapteurInstance(listeCapteurs.getString("marque"),listeCapteurs.getString("modele"));
+				Signal signal = SignalInstance(listSignals.getString("marque"),listSignals.getString("modele"));
 				for(int i = 1; i <= columnCount; i++)
 				{
 					String arg0 = methadata.getColumnName(i);
-					Object arg1 = listeCapteurs.getObject(i);
-					capteur.setField(arg0, arg1);
+					Object arg1 = listSignals.getObject(i);
+					signal.SetField(arg0, arg1);
 				}
-				capteurs.add(capteur);
-				capteur.addValueListener(recordWorker);
-				capteur.addValueListener(scenarioWorker);
-				capteur.start();
+				signals.add(signal);
+				signal.addValueListener(recordWorker);
+				signal.addValueListener(scenarioWorker);
+				signal.call();
 			}
 		}
 		catch(SQLException ex)
@@ -90,7 +91,7 @@ public class VigieAcquisition extends Thread
 		}
 	}
 	
-	private Signal CapteurInstance(String marque, String modele)
+	private Signal SignalInstance(String marque, String modele)
 	{
 		try
 		{
@@ -127,32 +128,32 @@ public class VigieAcquisition extends Thread
 	}
 	
 
-	private void CommandeList(CachedRowSet listeCommandes)
-	{
-		try
-		{
-			ResultSetMetaData methadata = listeCommandes.getMetaData();
-			Integer columnCount = methadata.getColumnCount();
-
-			while(listeCommandes.next())
-			{
-				Commande commande = new Commande();
-				for(int i = 1; i <= columnCount; i++)
-				{
-					String arg0 = methadata.getColumnName(i);
-					Object arg1 = listeCommandes.getObject(i);
-					commande.setField(arg0, arg1);
-				}
-				commandes.add(commande);
-				scenarioWorker.addScenarioCommandListener(commande);
-				commande.start();
-			}
-		}
-		catch(SQLException ex)
-		{
-			ex.printStackTrace();
-		}
-	}
+//	private void CommandeList(CachedRowSet listeCommandes)
+//	{
+//		try
+//		{
+//			ResultSetMetaData methadata = listeCommandes.getMetaData();
+//			Integer columnCount = methadata.getColumnCount();
+//
+//			while(listeCommandes.next())
+//			{
+//				Commande commande = new Commande();
+//				for(int i = 1; i <= columnCount; i++)
+//				{
+//					String arg0 = methadata.getColumnName(i);
+//					Object arg1 = listeCommandes.getObject(i);
+//					commande.SetField(arg0, arg1);
+//				}
+//				commandes.add(commande);
+//				scenarioWorker.addScenarioCommandListener(commande);
+//				commande.start();
+//			}
+//		}
+//		catch(SQLException ex)
+//		{
+//			ex.printStackTrace();
+//		}
+//	}
 	
 	
 	public void start()
@@ -162,38 +163,45 @@ public class VigieAcquisition extends Thread
 		DatabaseController.init();
 		connectionHandler = DatabaseController.getConnection();
 		
-		capteurListRequestCallback = new IDatabaseRequestCallback()
+		signalListRequestCallback = new IDatabaseRequestCallback()
 		{
 			
 			@Override
 			public void databaseRequestCallback()
 			{
-				CapteurList(capteurListRequest.getCachedRowSet());
-				capteurListRequest_done = true;
-				capteurListRequest.close();
-				capteurListRequest = null;
+				try
+				{
+					SignalList(signalListRequest.getCachedRowSet());
+				}
+				catch (CH4P_Exception e)
+				{
+					e.printStackTrace();
+				}
+				signalListRequest_done = true;
+				signalListRequest.close();
+				signalListRequest = null;
 			}
 		};
 		
-		commandeListRequestCallback = new IDatabaseRequestCallback()
-		{
-			
-			@Override
-			public void databaseRequestCallback()
-			{
-				CommandeList(commandeListRequest.getCachedRowSet());
-				commandeListRequest_done = true;
-				commandeListRequest.close();
-				commandeListRequest = null;
-			}
-		};
+//		commandeListRequestCallback = new IDatabaseRequestCallback()
+//		{
+//			
+//			@Override
+//			public void databaseRequestCallback()
+//			{
+//				CommandeList(commandeListRequest.getCachedRowSet());
+//				commandeListRequest_done = true;
+//				commandeListRequest.close();
+//				commandeListRequest = null;
+//			}
+//		};
 		
 		
-		capteurListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_ListeCapteurs, capteurListRequestCallback);
-		scenarioListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_ListeScenarios, null);
-		recordValueRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_RecordMesure, null);
-		commandeListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_ListeCommandes, commandeListRequestCallback);
-		logEventRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_LogEvent, null);
+		signalListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_SignalList, signalListRequestCallback);
+		scenarioListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_ScenarioList, null);
+		recordValueRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_MeasureRecord, null);
+		//commandeListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_ListeCommandes, commandeListRequestCallback);
+		logEventRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_EventLog, null);
 		
 		logWorker = new LogWorker(logEventRequest);
 		logWorker.start();
@@ -205,11 +213,11 @@ public class VigieAcquisition extends Thread
 		scenarioWorker.addActionEventListener(logWorker);
 		scenarioWorker.start();
 		
-		commandeListRequest.start();
-		commandeListRequest.doQuery();
+		//commandeListRequest.start();
+		//commandeListRequest.doQuery();
 		
-		capteurListRequest.start();
-		capteurListRequest.doQuery();
+		signalListRequest.start();
+		signalListRequest.doQuery();
 		
 		if (thisThread == null)
 		{
@@ -227,7 +235,7 @@ public class VigieAcquisition extends Thread
 			try
 			{
 				
-				if (capteurListRequest_done && firstRun)
+				if (signalListRequest_done && firstRun)
 				{
 					System.out.println("VigieAcq prête :) : " + Calendar.getInstance().getTime());
 					firstRun = false;

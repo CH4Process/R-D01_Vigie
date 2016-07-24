@@ -2,6 +2,8 @@ package com.ch4process.acquisition;
 
 import java.lang.reflect.Field;
 import javax.swing.event.EventListenerList;
+
+import com.ch4process.utils.CH4P_Exception;
 import com.yoctopuce.YoctoAPI.YAPI;
 import com.yoctopuce.YoctoAPI.YAPI_Exception;
 
@@ -77,7 +79,7 @@ public class Signal
 	 * @param fieldName
 	 * @param fieldValue
 	 */
-	public void setField(String fieldName, Object fieldValue)
+	public void SetField(String fieldName, Object fieldValue)
 	{
 		try
 		{
@@ -242,7 +244,7 @@ public class Signal
 	
 	// Operationnal code
 
-	protected boolean connect()
+	protected boolean Connect()
 	{
 		try
 		{
@@ -253,6 +255,19 @@ public class Signal
 		{
 			ex.printStackTrace();
 			return false;
+		}
+	}
+	
+	// Empty method for polymorphism purposes
+	public Integer call() throws CH4P_Exception
+	{
+		try
+		{
+			return null;
+		}
+		catch (Exception ex)
+		{
+			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
 		}
 	}
 	

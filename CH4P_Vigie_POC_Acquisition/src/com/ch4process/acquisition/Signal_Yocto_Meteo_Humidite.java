@@ -14,7 +14,7 @@ public class Signal_Yocto_Meteo_Humidite extends Signal implements ISignal
 
 	
 	@Override
-	public boolean init()
+	public boolean Init()
 	{
 		try
 		{
@@ -29,7 +29,7 @@ public class Signal_Yocto_Meteo_Humidite extends Signal implements ISignal
 	}
 
 	@Override
-	public boolean refresh()
+	public boolean Refresh()
 	{
 		try
 		{
@@ -70,13 +70,13 @@ public class Signal_Yocto_Meteo_Humidite extends Signal implements ISignal
 	{
 		try
 		{
-			connect();
-			init();
-			refresh();
+			Connect();
+			Init();
+			Refresh();
 			
 			while(true)
 			{
-				refresh();
+				Refresh();
 				Thread.sleep(this.refreshRate * 1000);
 			}
 			
