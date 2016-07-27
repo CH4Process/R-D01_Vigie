@@ -5,7 +5,7 @@ import java.util.Calendar;
 import com.ch4process.utils.CH4P_Exception;
 import com.yoctopuce.YoctoAPI.YPressure;
 
-public class Signal_Yocto_Meteo_Pression extends Signal implements ISignal
+public class Signal_Yocto_Meteo_Pression extends Signal
 {
 	YPressure sensor;
 	Double value;

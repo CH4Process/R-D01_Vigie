@@ -24,7 +24,7 @@ public class DatabaseController implements AutoCloseable
 	static private List<ConnectionHandler> connectionPool = new ArrayList<ConnectionHandler>();
 
 		
-	public static boolean init()
+	public static boolean Init()
 	{	
 		if (! initialized)
 		{
@@ -99,7 +99,7 @@ public class DatabaseController implements AutoCloseable
 		}
 	}
 
-	public static void free(ConnectionHandler cnh)
+	public static void Free(ConnectionHandler cnh)
 	{
 		try
 		{

@@ -8,7 +8,7 @@ import com.ch4process.utils.CH4P_Exception;
 import com.yoctopuce.YoctoAPI.YAPI_Exception;
 import com.yoctopuce.YoctoAPI.YDigitalIO;
 
-public class Signal_Yocto_MaxiIO extends Signal implements ISignal
+public class Signal_Yocto_MaxiIO extends Signal
 {
 	// Variables
 	Boolean value;

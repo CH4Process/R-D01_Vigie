@@ -23,6 +23,7 @@ import com.ch4process.acquisition.Commande;
 import com.ch4process.acquisition.Device;
 import com.ch4process.acquisition.DeviceType;
 import com.ch4process.acquisition.LogWorker;
+import com.ch4process.acquisition.ModbusDevice;
 import com.ch4process.acquisition.Scenario;
 import com.ch4process.acquisition.ScenarioWorker;
 import com.ch4process.acquisition.RecordWorker;
@@ -32,6 +33,7 @@ import com.ch4process.database.DatabaseRequest;
 import com.ch4process.database.IDatabaseRequestCallback;
 import com.ch4process.database.RequestList;
 import com.ch4process.utils.CH4P_Exception;
+import com.ch4process.utils.CH4P_Multithreading;
 
 import sun.security.jca.GetInstance;
 
@@ -42,6 +44,7 @@ public class VigieAcquisition extends Thread
 	
 	Map<Integer, Signal> signals = new HashMap<Integer,Signal>();
 	Map<Integer,Device> devices = new HashMap<Integer,Device>();
+	Map<Integer,ModbusDevice> modbusDevices = new HashMap<Integer,ModbusDevice>();
 	Map<Integer,DeviceType> deviceTypes = new HashMap<Integer,DeviceType>();
 	Map<Integer,SignalLevel> signalLevels = new HashMap<Integer,SignalLevel>();
 	Map<Integer,SignalType> signalTypes = new HashMap<Integer,SignalType>();
@@ -51,6 +54,7 @@ public class VigieAcquisition extends Thread
 	ConnectionHandler connectionHandler;
 	DatabaseRequest signalListRequest;
 	DatabaseRequest deviceListRequest;
+	DatabaseRequest modbusDeviceListRequest;
 	DatabaseRequest deviceTypeListRequest;
 	DatabaseRequest signalLevelListRequest;
 	DatabaseRequest signalTypeListRequest;
@@ -60,6 +64,7 @@ public class VigieAcquisition extends Thread
 	DatabaseRequest logEventRequest;
 	IDatabaseRequestCallback signalListRequestCallback;
 	IDatabaseRequestCallback deviceListRequestCallback;
+	IDatabaseRequestCallback modbusDeviceListRequestCallback;
 	IDatabaseRequestCallback deviceTypeListRequestCallback;
 	IDatabaseRequestCallback signalLevelListRequestCallback;
 	IDatabaseRequestCallback signalTypeListRequestCallback;
@@ -67,6 +72,7 @@ public class VigieAcquisition extends Thread
 	//IDatabaseRequestCallback commandeListRequestCallback;
 	boolean signalListRequest_done = false;
 	boolean deviceListRequest_done = false;
+	boolean modbusDeviceListRequest_done = false;
 	boolean deviceTypeListRequest_done = false;
 	boolean signalLevelListRequest_done = false;
 	boolean signalTypeListRequest_done = false;
@@ -104,7 +110,8 @@ public class VigieAcquisition extends Thread
 		{
 			while(listSignals.next())
 			{
-				Signal signal = SignalInstance(listSignals.getString("brandName"),listSignals.getString("modelName"));
+				//Signal signal = SignalInstance(listSignals.getString("brandName"),listSignals.getString("modelName"));
+				Signal signal = new Signal();
 				
 				signal.setIdSignal(listSignals.getInt("idSignal"));
 				signal.setIdDevice(listSignals.getInt("idDevice"));
@@ -154,6 +161,31 @@ public class VigieAcquisition extends Thread
 			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
 		}
 	}
+	
+	private void ModbusDeviceList(CachedRowSet listModbusDevices) throws CH4P_Exception
+	{
+		try
+		{
+			while (listModbusDevices.next())
+			{
+				ModbusDevice modbusDevice = new ModbusDevice();
+				
+				modbusDevice.setIdModbusDevice(listModbusDevices.getInt("idModbusDevice"));
+				modbusDevice.setIdDevice(listModbusDevices.getInt("idDevice"));
+				modbusDevice.setSlaveNumber(listModbusDevices.getInt("slaveNumber"));
+				modbusDevice.setByteOrder(listModbusDevices.getString("byteOrder"));
+				modbusDevice.setSpeed(listModbusDevices.getInt("speed"));
+				
+				modbusDevices.put(modbusDevice.getIdDevice(), modbusDevice);
+				modbusDevice = null;
+			}
+		}
+		catch(Exception ex)
+		{
+			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
+		}
+	}
+	
 	/**
 	 * Initialize the list of deviceTypes
 	 * @param listDeviceTypes
@@ -283,7 +315,7 @@ public class VigieAcquisition extends Thread
 	
 	private void SignalConfiguration()
 	{
-		if (signalListRequest_done && signalTypeListRequest_done && signalLevelListRequest_done && deviceListRequest_done && deviceTypeListRequest_done)
+		if (signalListRequest_done && signalTypeListRequest_done && signalLevelListRequest_done && deviceListRequest_done && deviceTypeListRequest_done && modbusDeviceListRequest_done)
 		{
 			// We put the DeviceType variables values in each Device
 			for (Device device:devices.values())
@@ -298,22 +330,27 @@ public class VigieAcquisition extends Thread
 				signal.setSignalType(signalTypes.get(signal.getIdSignalType()));
 				signal.setSignalLevel(signalLevels.get(signal.getIdSignalLevel()));
 				
-				// Now that everything is set, we can start the threads
-				try
+				// If the Signal is from a Modbus Device we have to initialize this
+				if(signal.getSignalType().getIsCom())
 				{
-					signal.call();
-				}
-				catch (CH4P_Exception e)
-				{
-					e.printStackTrace();
+					if (modbusDevices.containsKey(signal.getIdDevice()))
+					{
+						modbusDevices.get(signal.getIdDevice()).addSignal(signal);
+					}
 				}
 				
-				// We have to clean up some memory space
-				devices = null;
-				deviceTypes = null;
-				signalLevels = null;
-				signalTypes = null;
+				// We have to cast the Signal object into the correct children
+				signals.replace(signal.getIdSignal(), SignalInstance(signal.getDevice().getDeviceType().getBrandName(), signal.getDevice().getDeviceType().getModelName()));
+				
+				// Now that everything is set, we can start the threads
+				CH4P_Multithreading.Submit(signal);
 			}
+			
+			// We have to clean up some memory space
+			devices = null;
+			deviceTypes = null;
+			signalLevels = null;
+			signalTypes = null;
 		}
 	}
 
@@ -351,7 +388,7 @@ public class VigieAcquisition extends Thread
 	{
 		System.out.println("VigieAcq start : " + Calendar.getInstance().getTime());
 		
-		DatabaseController.init();
+		DatabaseController.Init();
 		connectionHandler = DatabaseController.getConnection();
 		
 		signalListRequestCallback = new IDatabaseRequestCallback()
@@ -396,6 +433,29 @@ public class VigieAcquisition extends Thread
 				SignalConfiguration();
 			}
 		};
+		
+		modbusDeviceListRequestCallback = new IDatabaseRequestCallback()
+		{
+			
+			@Override
+			public void databaseRequestCallback()
+			{
+				try
+				{
+					ModbusDeviceList(modbusDeviceListRequest.getCachedRowSet());
+				}
+				catch (CH4P_Exception e)
+				{
+					e.printStackTrace();
+				}
+				modbusDeviceListRequest_done = true;
+				modbusDeviceListRequest.close();
+				modbusDeviceListRequest = null;
+				
+				SignalConfiguration();
+			}
+		};
+		
 		deviceTypeListRequestCallback = new IDatabaseRequestCallback()
 		{
 			
@@ -475,10 +535,10 @@ public class VigieAcquisition extends Thread
 		
 		
 		signalListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_SignalList, signalListRequestCallback);
-		signalTypeListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_SignalTypeList, signalListRequestCallback);
-		signalLevelListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_SignalLevelList, signalListRequestCallback);
-		deviceListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_DeviceList, signalListRequestCallback);
-		deviceTypeListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_DeviceTypeList, signalListRequestCallback);
+		signalTypeListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_SignalTypeList, signalTypeListRequestCallback);
+		signalLevelListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_SignalLevelList, signalLevelListRequestCallback);
+		deviceListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_DeviceList, deviceListRequestCallback);
+		deviceTypeListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_DeviceTypeList, deviceTypeListRequestCallback);
 		scenarioListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_ScenarioList, null);
 		recordValueRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_MeasureRecord, null);
 		//commandeListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_ListeCommandes, commandeListRequestCallback);

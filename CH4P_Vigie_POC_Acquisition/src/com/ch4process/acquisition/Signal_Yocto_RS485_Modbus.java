@@ -6,7 +6,7 @@ import java.util.EventListener;
 import com.ch4process.utils.CH4P_Exception;
 import com.yoctopuce.YoctoAPI.YGenericSensor;
 
-public class Signal_Yocto_4_20mA extends Signal
+public class Signal_Yocto_RS485_Modbus extends Signal implements ISignalValueListener
 {
 	Integer offset;
 	YGenericSensor sensor;
@@ -103,6 +103,27 @@ public class Signal_Yocto_4_20mA extends Signal
 			// TODO : Implémenter la validité sur la mesure jusqu'en BDD
 			listener.doubleValueChanged(this.idSignal, this.value, Calendar.getInstance().getTime().getTime());
 		}
+	}
+
+	@Override
+	public void doubleValueChanged(int idSignal, double value, long datetime)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void intValueChanged(int idSignal, int value, long datetime)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void boolValueChanged(int idSignal, boolean value, long datetime)
+	{
+		// TODO Auto-generated method stub
+		
 	}
 	
 }

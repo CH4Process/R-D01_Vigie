@@ -1,13 +1,15 @@
 package com.ch4process.acquisition;
 
 import java.lang.reflect.Field;
+import java.util.concurrent.Callable;
+
 import javax.swing.event.EventListenerList;
 
 import com.ch4process.utils.CH4P_Exception;
 import com.yoctopuce.YoctoAPI.YAPI;
 import com.yoctopuce.YoctoAPI.YAPI_Exception;
 
-public class Signal
+public class Signal implements ISignal
 {
 	// Classes used as containers for configuration values
 	SignalType signalType;
@@ -234,7 +236,7 @@ public class Signal
 		}
 	}
 	
-	// Empty method for polymorphism purposes
+	// Empty methods for polymorphism purposes
 	public Integer call() throws CH4P_Exception
 	{
 		try
@@ -245,6 +247,20 @@ public class Signal
 		{
 			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
 		}
+	}
+	
+	@Override
+	public boolean Refresh()
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean Init()
+	{
+		// TODO Auto-generated method stub
+		return false;
 	}
 	
 	// Event handling code
@@ -263,4 +279,5 @@ public class Signal
 	{
 		return this.listeners.getListeners(ISignalValueListener.class);
 	}
+
 }

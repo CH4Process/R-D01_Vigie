@@ -102,7 +102,7 @@ public class VigieRapport extends Thread
 	
 	private void initDatabaseRelations()
 	{
-		DatabaseController.init();
+		DatabaseController.Init();
 		connectionHandler = DatabaseController.getConnection();
 		
 		getWeekMeasuresRequestCallback = new IDatabaseRequestCallback()

@@ -5,14 +5,14 @@ import java.util.concurrent.Callable;
 import com.ch4process.utils.CH4P_Exception;
 import com.yoctopuce.YoctoAPI.YRelay;
 
-public class Commande extends Signal implements IScenarioCommandListener, Callable
+public class Commande extends Signal implements IScenarioCommandListener
 {
 	YRelay sensor;
 	Double value; 
 	Integer offset;
 	
 	
-	public boolean init()
+	public boolean Init()
 	{
 		try
 		{
@@ -73,12 +73,12 @@ public class Commande extends Signal implements IScenarioCommandListener, Callab
 	}
 
 	@Override
-	public Object call() throws Exception
+	public Integer call() throws CH4P_Exception
 	{
 		try
 		{
-			connect();
-			init();
+			Connect();
+			Init();
 			
 			while(true)
 			{

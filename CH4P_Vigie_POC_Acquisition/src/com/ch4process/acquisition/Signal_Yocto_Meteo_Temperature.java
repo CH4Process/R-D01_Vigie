@@ -5,7 +5,7 @@ import java.util.Calendar;
 import com.ch4process.utils.CH4P_Exception;
 import com.yoctopuce.YoctoAPI.YTemperature;
 
-public class Signal_Yocto_Meteo_Temperature extends Signal implements ISignal
+public class Signal_Yocto_Meteo_Temperature extends Signal
 {
 	YTemperature sensor;
 	Double value;

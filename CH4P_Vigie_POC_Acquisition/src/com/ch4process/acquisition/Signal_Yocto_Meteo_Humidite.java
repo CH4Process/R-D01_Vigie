@@ -7,7 +7,7 @@ import com.yoctopuce.YoctoAPI.YHumidity;
 
 
 
-public class Signal_Yocto_Meteo_Humidite extends Signal implements ISignal
+public class Signal_Yocto_Meteo_Humidite extends Signal
 {
 	YHumidity sensor;
 	Double value;
