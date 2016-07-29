@@ -8,6 +8,10 @@ public class Device
 	Integer idDeviceType = null;
 	String serialNumber = null;
 	String address = null;
+	
+	
+	// Getters and Setters
+	
 	public DeviceType getDeviceType()
 	{
 		return deviceType;

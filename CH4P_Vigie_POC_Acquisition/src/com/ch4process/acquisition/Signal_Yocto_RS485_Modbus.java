@@ -74,6 +74,9 @@ public class Signal_Yocto_RS485_Modbus extends Signal implements ISignalValueLis
 		return value;
 	}
 	
+	
+	// Operational code
+	
 	@Override
 	public Integer call() throws CH4P_Exception
 	{
@@ -96,34 +99,49 @@ public class Signal_Yocto_RS485_Modbus extends Signal implements ISignalValueLis
 		}
 	}
 
+	protected void fireValueChanged(int value)
+	{
+		for (ISignalValueListener listener : getValueListeners())
+		{
+			// TODO : Implémenter la validité sur la mesure jusqu'en BDD
+			listener.intValueChanged(this.idSignal, value, Calendar.getInstance().getTime().getTime());
+		}
+	}
+	
 	protected void fireValueChanged(double value)
 	{
 		for (ISignalValueListener listener : getValueListeners())
 		{
 			// TODO : Implémenter la validité sur la mesure jusqu'en BDD
-			listener.doubleValueChanged(this.idSignal, this.value, Calendar.getInstance().getTime().getTime());
+			listener.doubleValueChanged(this.idSignal, value, Calendar.getInstance().getTime().getTime());
+		}
+	}
+	
+	protected void fireValueChanged(boolean value)
+	{
+		for (ISignalValueListener listener : getValueListeners())
+		{
+			// TODO : Implémenter la validité sur la mesure jusqu'en BDD
+			listener.boolValueChanged(this.idSignal, value, Calendar.getInstance().getTime().getTime());
 		}
 	}
 
 	@Override
 	public void doubleValueChanged(int idSignal, double value, long datetime)
 	{
-		// TODO Auto-generated method stub
-		
+		fireValueChanged(value);
 	}
 
 	@Override
 	public void intValueChanged(int idSignal, int value, long datetime)
 	{
-		// TODO Auto-generated method stub
-		
+		fireValueChanged(value);
 	}
 
 	@Override
 	public void boolValueChanged(int idSignal, boolean value, long datetime)
 	{
-		// TODO Auto-generated method stub
-		
+		fireValueChanged(value);
 	}
 	
 }

@@ -1,11 +1,18 @@
 package com.ch4process.acquisition;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import javax.swing.event.EventListenerList;
 
-public class ModbusDevice
+import com.yoctopuce.YoctoAPI.YAPI;
+import com.yoctopuce.YoctoAPI.YAPI_Exception;
+import com.yoctopuce.YoctoAPI.YGenericSensor;
+import com.yoctopuce.YoctoAPI.YSerialPort;
+
+public class ModbusDevice extends Device implements Callable
 {
 	// Database variables
 	Integer idModbusDevice = null;
@@ -19,6 +26,7 @@ public class ModbusDevice
 	Integer baseAddress;
 	Integer baseRefreshRate;
 	Integer requestLength;
+	YSerialPort serialPort;
 	
 	// Event handling
 		EventListenerList listeners = new EventListenerList();
@@ -74,6 +82,41 @@ public class ModbusDevice
 		this.signals.add(signal);
 	}
 	
+	public boolean Init()
+	{
+		try
+		{
+			serialPort = YSerialPort.FindSerialPort(this.serialNumber);
+			return serialPort.isOnline(); 
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+			return false;
+		}
+	}
+	
+	public boolean Connect()
+	{
+		try
+		{
+			 YAPI.RegisterHub(this.address);
+			 return true;
+		} 
+		catch (YAPI_Exception ex)
+		{
+			ex.printStackTrace();
+			return false;
+		}
+	}
+	
+	@Override
+	public Object call() throws Exception
+	{
+		// TODO : Modbus routine
+		return null;
+	}
+	
 	
 	// Event handling code
 	
@@ -91,6 +134,14 @@ public class ModbusDevice
 		{
 			return this.listeners.getListeners(ISignalValueListener.class);
 		}
-	
+		
+		protected void fireValueChanged(double value)
+		{
+			for (ISignalValueListener listener : getValueListeners())
+			{
+				// TODO : Notifier le signal que sa valeur a été mise à jour
+				//listener.doubleValueChanged(this.idSignal, this.value, Calendar.getInstance().getTime().getTime());
+			}
+		}
 	
 }
