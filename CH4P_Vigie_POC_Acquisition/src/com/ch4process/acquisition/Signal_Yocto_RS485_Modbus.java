@@ -6,74 +6,10 @@ import java.util.EventListener;
 import com.ch4process.utils.CH4P_Exception;
 import com.yoctopuce.YoctoAPI.YGenericSensor;
 
-public class Signal_Yocto_RS485_Modbus extends Signal implements ISignalValueListener
+public class Signal_Yocto_RS485_Modbus extends Signal
 {
 	Integer offset;
 	YGenericSensor sensor;
-	Double value;
-	
-	@Override
-	public boolean Init()
-	{
-		try
-		{
-			offset = Integer.valueOf(this.address);
-			sensor = YGenericSensor.FindGenericSensor(this.device.serialNumber + ".genericSensor" + offset);
-			return sensor.isOnline(); 
-		}
-		catch (Exception ex)
-		{
-			ex.printStackTrace();
-			return false;
-		}
-	}
-
-	@Override
-	public boolean Refresh()
-	{
-		try
-		{
-			value = sensor.getCurrentRawValue();
-			if (value != sensor.CURRENTRAWVALUE_INVALID)
-			{
-				return ScaleValue();
-			}
-			return false;
-		}
-		catch (Exception ex)
-		{
-			ex.printStackTrace();
-			return false;
-		}
-	}
-	
-	private boolean ScaleValue()
-	{
-		if (this.signalType.minValue != null && this.signalType.maxValue != null)
-		{
-			this.isValid = true;
-			
-			if (value == -29999.0 || value == 29999.0)
-			{
-				this.isValid = false;
-			}
-			
-			int range = this.signalType.maxValue - this.signalType.minValue;
-			value = (range / 16) * (value - 4);
-			this.countdown = this.refreshRate;
-			
-			fireValueChanged(value);
-			
-			return true;			
-		}
-		return false;
-	}
-
-	public Double getDoubleValue()
-	{
-		return value;
-	}
-	
 	
 	// Operational code
 	
@@ -82,66 +18,14 @@ public class Signal_Yocto_RS485_Modbus extends Signal implements ISignalValueLis
 	{
 		try
 		{
-			Connect();
-			Init();
-			Refresh();
-			
 			while(true)
 			{
-				Refresh();
 				Thread.sleep(this.refreshRate * 1000);
 			}
-			
 		}
 		catch (Exception e)
 		{
 			throw new CH4P_Exception(e.getMessage(), e.getCause());
 		}
 	}
-
-	protected void fireValueChanged(int value)
-	{
-		for (ISignalValueListener listener : getValueListeners())
-		{
-			// TODO : Implémenter la validité sur la mesure jusqu'en BDD
-			listener.intValueChanged(this.idSignal, value, Calendar.getInstance().getTime().getTime());
-		}
-	}
-	
-	protected void fireValueChanged(double value)
-	{
-		for (ISignalValueListener listener : getValueListeners())
-		{
-			// TODO : Implémenter la validité sur la mesure jusqu'en BDD
-			listener.doubleValueChanged(this.idSignal, value, Calendar.getInstance().getTime().getTime());
-		}
-	}
-	
-	protected void fireValueChanged(boolean value)
-	{
-		for (ISignalValueListener listener : getValueListeners())
-		{
-			// TODO : Implémenter la validité sur la mesure jusqu'en BDD
-			listener.boolValueChanged(this.idSignal, value, Calendar.getInstance().getTime().getTime());
-		}
-	}
-
-	@Override
-	public void doubleValueChanged(int idSignal, double value, long datetime)
-	{
-		fireValueChanged(value);
-	}
-
-	@Override
-	public void intValueChanged(int idSignal, int value, long datetime)
-	{
-		fireValueChanged(value);
-	}
-
-	@Override
-	public void boolValueChanged(int idSignal, boolean value, long datetime)
-	{
-		fireValueChanged(value);
-	}
-	
 }

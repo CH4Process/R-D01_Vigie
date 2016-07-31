@@ -118,7 +118,7 @@ public class VigieAcquisition extends Thread
 				signal.setIdSignalType(listSignals.getInt("idSignalType"));
 				signal.setIdSignalLevel(listSignals.getInt("idSignalLevel"));
 				signal.setShortName(listSignals.getString("shortName"));
-				signal.setAddress(listSignals.getString("address"));
+				signal.setAddress(listSignals.getInt("address"));
 				signal.setLabel(listSignals.getString("label"));
 				signal.setRefreshRate(listSignals.getInt("refreshrate"));
 				signal.setLogRate(listSignals.getInt("logRate"));

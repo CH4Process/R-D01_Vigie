@@ -61,17 +61,12 @@ public class Signal_Yocto_4_20mA extends Signal
 			int range = this.signalType.maxValue - this.signalType.minValue;
 			value = (range / 16) * (value - 4);
 			this.countdown = this.refreshRate;
-			
+			this.value = value;
 			fireValueChanged(value);
 			
 			return true;			
 		}
 		return false;
-	}
-
-	public Double getDoubleValue()
-	{
-		return value;
 	}
 	
 	@Override
@@ -93,15 +88,6 @@ public class Signal_Yocto_4_20mA extends Signal
 		catch (Exception e)
 		{
 			throw new CH4P_Exception(e.getMessage(), e.getCause());
-		}
-	}
-
-	protected void fireValueChanged(double value)
-	{
-		for (ISignalValueListener listener : getValueListeners())
-		{
-			// TODO : Implémenter la validité sur la mesure jusqu'en BDD
-			listener.doubleValueChanged(this.idSignal, this.value, Calendar.getInstance().getTime().getTime());
 		}
 	}
 	

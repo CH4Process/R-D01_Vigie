@@ -37,6 +37,7 @@ public class Signal_Yocto_Meteo_Humidite extends Signal
 			if(value != sensor.CURRENTVALUE_INVALID)
 			{
 				this.countdown = this.refreshRate;
+				this.value = value;
 				fireValueChanged(value);
 				return true;
 			}
@@ -52,18 +53,6 @@ public class Signal_Yocto_Meteo_Humidite extends Signal
 		}
 	}
 	
-	public Double getDoubleValue()
-	{
-		return value;
-	}
-	
-	protected void fireValueChanged(double value)
-	{
-		for (ISignalValueListener listener : getValueListeners())
-		{
-			listener.doubleValueChanged(this.idSignal, this.value, Calendar.getInstance().getTime().getTime());
-		}
-	}
 
 	@Override
 	public Integer call() throws CH4P_Exception

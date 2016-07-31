@@ -1,6 +1,7 @@
 package com.ch4process.acquisition;
 
 import java.lang.reflect.Field;
+import java.util.Calendar;
 import java.util.concurrent.Callable;
 
 import javax.swing.event.EventListenerList;
@@ -22,7 +23,7 @@ public class Signal implements ISignal
 	Integer idSignalType = null;
 	Integer idSignalLevel = null;
 	String shortName = null;
-	String address = null;
+	Integer address = null;
 	String label = null;
 	Integer refreshRate = null;
 	Integer logRate = null;
@@ -63,7 +64,7 @@ public class Signal implements ISignal
 	 * @param logRate
 	 */
 	public Signal(Integer idSignal, Integer idDevice, Integer idSignalType, Integer idSignalLevel, String shortName,
-			String address, String label, Integer refreshRate, Integer logRate)
+			Integer address, String label, Integer refreshRate, Integer logRate)
 	{
 		this.idSignal = idSignal;
 		this.idDevice = idDevice;
@@ -159,12 +160,12 @@ public class Signal implements ISignal
 		this.shortName = shortName;
 	}
 
-	public String getAddress()
+	public Integer getAddress()
 	{
 		return address;
 	}
 
-	public void setAddress(String address)
+	public void setAddress(Integer address)
 	{
 		this.address = address;
 	}
@@ -226,7 +227,7 @@ public class Signal implements ISignal
 	{
 		try
 		{
-			 YAPI.RegisterHub(this.address);
+			 YAPI.RegisterHub(this.device.getAddress());
 			 return true;
 		} 
 		catch (YAPI_Exception ex)
@@ -278,6 +279,33 @@ public class Signal implements ISignal
 	protected ISignalValueListener[] getValueListeners()
 	{
 		return this.listeners.getListeners(ISignalValueListener.class);
+	}
+	
+	protected void fireValueChanged(int value)
+	{
+		for (ISignalValueListener listener : getValueListeners())
+		{
+			// TODO : Implémenter la validité sur la mesure jusqu'en BDD
+			listener.intValueChanged(this.idSignal, value, Calendar.getInstance().getTime().getTime());
+		}
+	}
+	
+	protected void fireValueChanged(double value)
+	{
+		for (ISignalValueListener listener : getValueListeners())
+		{
+			// TODO : Implémenter la validité sur la mesure jusqu'en BDD
+			listener.doubleValueChanged(this.idSignal, value, Calendar.getInstance().getTime().getTime());
+		}
+	}
+	
+	protected void fireValueChanged(boolean value)
+	{
+		for (ISignalValueListener listener : getValueListeners())
+		{
+			// TODO : Implémenter la validité sur la mesure jusqu'en BDD
+			listener.boolValueChanged(this.idSignal, value, Calendar.getInstance().getTime().getTime());
+		}
 	}
 
 }

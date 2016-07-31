@@ -9,6 +9,8 @@ public class Device
 	String serialNumber = null;
 	String address = null;
 	
+	Integer errorCode = 0;
+	
 	
 	// Getters and Setters
 	

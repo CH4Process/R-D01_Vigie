@@ -1,5 +1,6 @@
 package com.ch4process.acquisition;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.concurrent.Callable;
 
 import javax.swing.event.EventListenerList;
 
+import com.ch4process.utils.CH4P_Exception;
 import com.yoctopuce.YoctoAPI.YAPI;
 import com.yoctopuce.YoctoAPI.YAPI_Exception;
 import com.yoctopuce.YoctoAPI.YGenericSensor;
@@ -23,10 +25,12 @@ public class ModbusDevice extends Device implements Callable
 	
 	// Internal variables
 	List<Signal> signals = new ArrayList<Signal>();
-	Integer baseAddress;
-	Integer baseRefreshRate;
-	Integer requestLength;
-	YSerialPort serialPort;
+	Integer baseAddress = 0;
+	Integer baseRefreshRate = 1;
+	Integer requestLength = 0;
+	YSerialPort serialPort = null;
+	boolean init_done = false;
+	List<Integer> values = new ArrayList<Integer>();
 	
 	// Event handling
 		EventListenerList listeners = new EventListenerList();
@@ -87,7 +91,29 @@ public class ModbusDevice extends Device implements Callable
 		try
 		{
 			serialPort = YSerialPort.FindSerialPort(this.serialNumber);
-			return serialPort.isOnline(); 
+			
+			if (serialPort.isOnline())
+			{
+				for(Signal signal: signals)
+				{
+					// Set up of the request length for the Modbus request
+					requestLength += 2;
+					
+					// Set up of the base address for the Modbus request
+					if (signal.getAddress() < baseAddress)
+					{
+						baseAddress = signal.getAddress();
+					}
+					
+					// Set up of the base refreshrate for the Modbus request
+					if (signal.getRefreshRate() < baseRefreshRate)
+					{
+						baseRefreshRate = signal.getRefreshRate();
+					}
+				}
+				return true;
+			}
+			return false;
 		}
 		catch (Exception ex)
 		{
@@ -109,39 +135,53 @@ public class ModbusDevice extends Device implements Callable
 			return false;
 		}
 	}
+
 	
 	@Override
-	public Object call() throws Exception
+	public Integer call() throws CH4P_Exception
 	{
-		// TODO : Modbus routine
-		return null;
+		try
+		{
+			while (true)
+			{
+				if (! init_done)
+				{
+					init_done = Connect() && Init();
+				}
+				
+				if (init_done)
+				{
+					// First we read the values in the Modbus device
+					values = serialPort.modbusReadRegisters(slaveNumber, baseAddress, requestLength);
+					
+					// And now we give each signal his value ! 
+					for(Signal signal:signals)
+					{
+						// The datas in the values ArrayList returned by the Yoctopuce Modbus card are ordered based on the Modbus request
+						// So we have to determine which data to provide to which signal
+						Integer index = baseAddress - signal.address;
+						
+						// TODO : THIS IS HARDCODED AND THIS IS SHIT !
+						// The datas are Float32 so we have to merge two 16-digit integers into one and then transform it to a Float
+						double data = (double) Float.intBitsToFloat(values.get(index) & values.get(index+1));
+						
+						signal.fireValueChanged(data);
+					}
+				}
+				
+				Thread.sleep(baseRefreshRate * 1000);
+			}
+		}
+		catch(Exception ex)
+		{
+			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
+		}
+		finally
+		{
+			return errorCode;
+		}
 	}
 	
 	
-	// Event handling code
-	
-		public void addValueListener(ISignalValueListener listener)
-		{
-			listeners.add(ISignalValueListener.class, listener);
-		}
-		
-		public void removeValueListener(ISignalValueListener listener)
-		{
-			listeners.remove(ISignalValueListener.class, listener);
-		}
-		
-		protected ISignalValueListener[] getValueListeners()
-		{
-			return this.listeners.getListeners(ISignalValueListener.class);
-		}
-		
-		protected void fireValueChanged(double value)
-		{
-			for (ISignalValueListener listener : getValueListeners())
-			{
-				// TODO : Notifier le signal que sa valeur a été mise à jour
-				//listener.doubleValueChanged(this.idSignal, this.value, Calendar.getInstance().getTime().getTime());
-			}
-		}
 	
 }

@@ -34,6 +34,7 @@ public class Signal_Yocto_Meteo_Temperature extends Signal
 			if(value != sensor.CURRENTVALUE_INVALID)
 			{
 				this.countdown = this.refreshRate;
+				this.value = value;
 				fireValueChanged(value);
 				return true;
 			}
@@ -46,19 +47,6 @@ public class Signal_Yocto_Meteo_Temperature extends Signal
 		{
 			ex.printStackTrace();
 			return false;
-		}
-	}
-	
-	public Double getDoubleValue()
-	{
-		return value;
-	}
-	
-	protected void fireValueChanged(double value)
-	{
-		for (ISignalValueListener listener : getValueListeners())
-		{
-			listener.doubleValueChanged(this.idSignal, this.value, Calendar.getInstance().getTime().getTime());
 		}
 	}
 

@@ -57,7 +57,7 @@ public class Signal_Yocto_MaxiIO extends Signal
 			{
 				value = ((portState & offset) != 0);
 				this.countdown = this.refreshRate;
-				
+				this.value = value;
 				fireValueChanged(value);
 				
 				return true;
@@ -93,18 +93,4 @@ public class Signal_Yocto_MaxiIO extends Signal
 		}
 		
 	}
-
-	public Boolean getBoolValue()
-	{
-		return value;
-	}
-	
-	protected void fireValueChanged(boolean value)
-	{
-		for (ISignalValueListener listener : getValueListeners())
-		{
-			listener.boolValueChanged(this.idSignal, this.value, Calendar.getInstance().getTime().getTime());
-		}
-	}
-
 }
