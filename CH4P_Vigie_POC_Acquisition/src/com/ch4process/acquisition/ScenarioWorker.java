@@ -240,21 +240,30 @@ public class ScenarioWorker extends Thread implements ISignalValueListener
 	}
 	
 	@Override
-	public void doubleValueChanged(int capteur_id, double value, long datetime)
+	public void doubleValueChanged(int capteur_id, double value, boolean quality, long datetime)
 	{
-		eventList.add(new SignalValueEvent(capteur_id, value, datetime));
+		if (quality == true)
+		{
+			eventList.add(new SignalValueEvent(capteur_id, value, quality, datetime));
+		}
 	}
 
 	@Override
-	public void intValueChanged(int capteur_id, int value, long datetime)
+	public void intValueChanged(int capteur_id, int value, boolean quality, long datetime)
 	{
-		eventList.add(new SignalValueEvent(capteur_id, value, datetime));
+		if (quality == true)
+		{
+			eventList.add(new SignalValueEvent(capteur_id, value, quality, datetime));
+		}
 	}
 
 	@Override
-	public void boolValueChanged(int capteur_id, boolean value, long datetime)
+	public void boolValueChanged(int capteur_id, boolean value, boolean quality, long datetime)
 	{
-		eventList.add(new SignalValueEvent(capteur_id, value, datetime));
+		if (quality == true)
+		{
+			eventList.add(new SignalValueEvent(capteur_id, value, quality, datetime));
+		}
 	}
 	
 	private void ScenarioList(CachedRowSet listeScenarios)

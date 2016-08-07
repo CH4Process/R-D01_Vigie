@@ -1,17 +1,13 @@
 package com.ch4process.acquisition;
 
-import java.math.BigDecimal;
+
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.Callable;
-
 import javax.swing.event.EventListenerList;
-
 import com.ch4process.utils.CH4P_Exception;
 import com.yoctopuce.YoctoAPI.YAPI;
 import com.yoctopuce.YoctoAPI.YAPI_Exception;
-import com.yoctopuce.YoctoAPI.YGenericSensor;
 import com.yoctopuce.YoctoAPI.YSerialPort;
 
 public class ModbusDevice extends Device implements Callable
@@ -24,13 +20,16 @@ public class ModbusDevice extends Device implements Callable
 	Integer speed = null;
 	
 	// Internal variables
-	List<Signal> signals = new ArrayList<Signal>();
+	List<Signal> HoldingRegisterSignals = new ArrayList<Signal>();
+	List<Signal> CoilSignals = new ArrayList<Signal>();
+	List<Integer> values = new ArrayList<Integer>();
+	List<ModbusRequest> requests = new ArrayList<ModbusRequest>();
 	Integer baseAddress = 0;
 	Integer baseRefreshRate = 1;
 	Integer requestLength = 0;
 	YSerialPort serialPort = null;
 	boolean init_done = false;
-	List<Integer> values = new ArrayList<Integer>();
+	boolean isValid = true;
 	
 	// Event handling
 		EventListenerList listeners = new EventListenerList();
@@ -83,7 +82,48 @@ public class ModbusDevice extends Device implements Callable
 	
 	public void addSignal(Signal signal)
 	{
-		this.signals.add(signal);
+		if(signal.getSignalType().getIsTor())
+		{
+			// This is a boolean signal
+			CoilSignals.add(signal);
+		}
+		else 
+		{
+			// It's not a boolean so it's a holding register
+			HoldingRegisterSignals.add(signal);
+		}
+	}	
+	
+	private void InitRequest(List<Signal> SignalList)
+	{
+		try
+		{
+			SignalList.sort((signal1,signal2) -> signal1.getAddress().compareTo(signal2.getAddress()));
+			
+			// Here we create a new modbus request starting at the address of the first element in the list and ending with the 
+			ModbusRequest request = new ModbusRequest(SignalList.get(0).getAddress(), SignalList.get(SignalList.size()).getAddress() + 1);
+			
+			for(Signal signal:SignalList)
+			{
+				request.getSignals().add(signal.getAddress());
+			}
+			
+			// We have to remember what type of request this is for a possible priority check later
+			if (SignalList.get(0).getSignalType().getIsTor())
+			{
+				request.setRequestType(ModbusRequest.REQUEST_READ_COILS);
+			}
+			else
+			{
+				request.setRequestType(ModbusRequest.REQUEST_READ_HOLDING_REGISTERS);
+			}
+			
+			requests.add(request);
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
 	}
 	
 	public boolean Init()
@@ -94,23 +134,9 @@ public class ModbusDevice extends Device implements Callable
 			
 			if (serialPort.isOnline())
 			{
-				for(Signal signal: signals)
-				{
-					// Set up of the request length for the Modbus request
-					requestLength += 2;
-					
-					// Set up of the base address for the Modbus request
-					if (signal.getAddress() < baseAddress)
-					{
-						baseAddress = signal.getAddress();
-					}
-					
-					// Set up of the base refreshrate for the Modbus request
-					if (signal.getRefreshRate() < baseRefreshRate)
-					{
-						baseRefreshRate = signal.getRefreshRate();
-					}
-				}
+				InitRequest(HoldingRegisterSignals);
+				InitRequest(CoilSignals);
+				
 				return true;
 			}
 			return false;
@@ -152,7 +178,17 @@ public class ModbusDevice extends Device implements Callable
 				if (init_done)
 				{
 					// First we read the values in the Modbus device
-					values = serialPort.modbusReadRegisters(slaveNumber, baseAddress, requestLength);
+					for(ModbusRequest request:requests)
+					{
+						if (request.getRequestType() == ModbusRequest.REQUEST_READ_HOLDING_REGISTERS)
+						{
+							request.setValues(serialPort.modbusReadRegisters(this.getSlaveNumber(), request.getStartAddress(), request.getRequestlength()));
+						}
+						else if (request.getRequestType() == ModbusRequest.REQUEST_READ_COILS)
+						{
+							request.setValues(serialPort.modbusReadBits(this.getSlaveNumber(), request.getStartAddress(), request.getRequestlength()));
+						}
+					}
 					
 					// And now we give each signal his value ! 
 					for(Signal signal:signals)
@@ -161,11 +197,14 @@ public class ModbusDevice extends Device implements Callable
 						// So we have to determine which data to provide to which signal
 						Integer index = baseAddress - signal.address;
 						
-						// TODO : THIS IS HARDCODED AND THIS IS SHIT !
+						// TODO : Put some smart code here to determine the correct size, index and format of the data to provide.
 						// The datas are Float32 so we have to merge two 16-digit integers into one and then transform it to a Float
 						double data = (double) Float.intBitsToFloat(values.get(index) & values.get(index+1));
 						
-						signal.fireValueChanged(data);
+						if (! signal.getSignalType().isTotalizer)
+						{
+							signal.fireValueChanged(data, isValid);
+						}
 					}
 				}
 				

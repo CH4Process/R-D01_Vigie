@@ -53,16 +53,16 @@ public class Signal_Yocto_MaxiIO extends Signal
 		try
 		{
 			portState = ioSensor.get_portState();
-			if (portState != ioSensor.PORTSTATE_INVALID)
-			{
+
 				value = ((portState & offset) != 0);
 				this.countdown = this.refreshRate;
 				this.value = value;
-				fireValueChanged(value);
+				this.isValid = !(portState == ioSensor.PORTSTATE_INVALID);
+				
+				fireValueChanged(value, isValid);
 				
 				return true;
-			}
-			return false;
+
 		}
 		catch (YAPI_Exception ex)
 		{

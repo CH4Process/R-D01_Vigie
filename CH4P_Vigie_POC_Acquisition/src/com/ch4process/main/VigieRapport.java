@@ -59,7 +59,7 @@ public class VigieRapport extends Thread
 		reportTime.set(Calendar.MINUTE, Integer.valueOf(time[1]));
 		reportTime.set(Calendar.SECOND, 0);
 		
-		// TODO : DEBUG !!
+		// TODO : Remove this code (here for debug purpose)
 		Calendar now = Calendar.getInstance();
 		reportTime.setTime(now.getTime());
 		reportTime.add(Calendar.MINUTE, -1);

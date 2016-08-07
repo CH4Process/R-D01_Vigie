@@ -34,11 +34,9 @@ public class Signal_Yocto_4_20mA extends Signal
 		try
 		{
 			value = sensor.getCurrentRawValue();
-			if (value != sensor.CURRENTRAWVALUE_INVALID)
-			{
-				return ScaleValue();
-			}
-			return false;
+
+			return ScaleValue();
+
 		}
 		catch (Exception ex)
 		{
@@ -53,7 +51,7 @@ public class Signal_Yocto_4_20mA extends Signal
 		{
 			this.isValid = true;
 			
-			if (value == -29999.0 || value == 29999.0)
+			if (value == -29999.0 || value == 29999.0 || value == sensor.CURRENTVALUE_INVALID)
 			{
 				this.isValid = false;
 			}
@@ -62,7 +60,8 @@ public class Signal_Yocto_4_20mA extends Signal
 			value = (range / 16) * (value - 4);
 			this.countdown = this.refreshRate;
 			this.value = value;
-			fireValueChanged(value);
+			
+			fireValueChanged(value, isValid);
 			
 			return true;			
 		}

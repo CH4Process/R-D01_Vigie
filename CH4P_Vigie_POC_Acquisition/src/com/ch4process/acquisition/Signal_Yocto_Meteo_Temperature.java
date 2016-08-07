@@ -31,17 +31,14 @@ public class Signal_Yocto_Meteo_Temperature extends Signal
 		try
 		{
 			value = sensor.getCurrentValue();
-			if(value != sensor.CURRENTVALUE_INVALID)
-			{
-				this.countdown = this.refreshRate;
-				this.value = value;
-				fireValueChanged(value);
-				return true;
-			}
-			else
-			{
-				return false;
-			}
+	
+			this.countdown = this.refreshRate;
+			this.value = value;
+			this.isValid = !(value == sensor.CURRENTVALUE_INVALID);
+			
+			fireValueChanged(value, isValid);
+			return true;
+
 		}
 		catch (Exception ex)
 		{

@@ -20,21 +20,21 @@ public class RecordWorker extends Thread implements ISignalValueListener
 	Integer BOOLEAN_VUE_EVENT = 3;
 	
 	@Override
-	public void doubleValueChanged(int idSignal, double value, long datetime)
+	public void doubleValueChanged(int idSignal, double value, boolean quality, long datetime)
 	{
-		eventList.add(new SignalValueEvent(idSignal, value, datetime));
+		eventList.add(new SignalValueEvent(idSignal, value, quality, datetime));
 	}
 
 	@Override
-	public void intValueChanged(int idSignal, int value, long datetime)
+	public void intValueChanged(int idSignal, int value, boolean quality, long datetime)
 	{
-		eventList.add(new SignalValueEvent(idSignal, value, datetime));
+		eventList.add(new SignalValueEvent(idSignal, value, quality, datetime));
 	}
 
 	@Override
-	public void boolValueChanged(int idSignal, boolean value, long datetime)
+	public void boolValueChanged(int idSignal, boolean value, boolean quality, long datetime)
 	{
-		eventList.add(new SignalValueEvent(idSignal, value, datetime));
+		eventList.add(new SignalValueEvent(idSignal, value, quality, datetime));
 	}
 	
 	public RecordWorker(DatabaseRequest recordValueRequest)

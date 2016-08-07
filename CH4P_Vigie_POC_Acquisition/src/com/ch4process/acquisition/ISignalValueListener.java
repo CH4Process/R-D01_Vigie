@@ -4,7 +4,7 @@ import java.util.EventListener;
 
 public interface ISignalValueListener extends EventListener
 {
-	void doubleValueChanged(int idSignal, double value, long datetime);
-	void intValueChanged(int idSignal, int value, long datetime);
-	void boolValueChanged(int idSignal, boolean value, long datetime);
+	void doubleValueChanged(int idSignal, double value, boolean quality, long datetime);
+	void intValueChanged(int idSignal, int value, boolean quality, long datetime);
+	void boolValueChanged(int idSignal, boolean value, boolean quality, long datetime);
 }

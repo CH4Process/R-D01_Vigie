@@ -12,23 +12,37 @@ public class VigieMain extends Thread
 		try
 		{
 			// TODO : Liste des évolutions
-						// +0* Logs en BDD
-						// +1 Logs des erreurs (LOG4J ?)
-						// +0* Vraie gestion des exceptions
-						// +0* Contrôleur qui relance les modules crashés
-						// +1 Visu des applications (JavaFX ou Swing ?)
-						// +1 Envoi de mail sur lancement / arrêt de module et sur exception
-						// +1 Fichiers XML
-						// +1 Mots de passe cryptés via le JDK et pas par une bibliothèque externe : https://www.javacodegeeks.com/2012/05/secure-password-storage-donts-dos-and.html
-						// +0* Utiliser Executor pour les Threads et basculer les modules en Callable plutôt qu'en Threads.
-						// +0* InternalEmail en fichier de conf pour les mails internes
-						// +0* InternalName pour les variables en BDD pour les rapports
-						// +0** Il peut être sympa de suivre le nombre de défauts acquis et le nombre de sms envoyés dans les rapports
-						// +0* Signal emmet un fireValueChanged pour signaler un changement de valeur. Les alertes et alarmes fonctionnent différemment : on notifie dés que la valeur change ou au bout du refreshrate si la valeur n'a pas changé
-						// principe de lograte et refreshrate
-						// -0 Les workers doivent être ThreadSafes !! --> FAIT via l'utilisation de LinkedLists
-						// +1 Gérer de potentielles valeurs de retour des callable via des Futures dans la classe CH4P_Multithreading -> Executor
 
+			//EVO DONE : 
+				// Utiliser Executor pour les Threads et basculer les modules en Callable plutôt qu'en Threads.
+				// Les workers doivent être ThreadSafes !! --> FAIT via l'utilisation de LinkedLists
+			
+			//EVO 5 : 
+				// Mieux gérer le modbus !
+				// Travailler la mise à jour des valeurs de type Totalizer pour éviter une mise à jour trop fréquente. Peut être en utilisant le countdown ? !!
+
+			//EVO 10 : 
+				// Logs en BDD
+				// Vraie gestion des exceptions
+				// Contrôleur qui relance les modules crashés
+				// Envoi de mail sur lancement / arrêt de module et sur exception
+			
+			//EVO 20 : 
+				// InternalEmail en fichier de conf pour les mails internes
+				// InternalName pour les variables en BDD pour les rapports
+				// Il peut être sympa de suivre le nombre de défauts acquis et le nombre de sms envoyés dans les rapports
+				// Signal emmet un fireValueChanged pour signaler un changement de valeur. Les alertes et alarmes fonctionnent différemment : on notifie dés que la valeur change ou au bout du refreshrate si la valeur n'a pas changé
+				// principe de lograte et refreshrate
+				// Gérer de potentielles valeurs de retour des callable via des Futures dans la classe CH4P_Multithreading -> Executor
+			
+			//EVO 50 : 
+				// Logs des erreurs (LOG4J ?)
+				// Visu des applications (JavaFX ou Swing ?)
+				// Fichiers XML
+				// Mots de passe cryptés via le JDK et pas par une bibliothèque externe : https://www.javacodegeeks.com/2012/05/secure-password-storage-donts-dos-and.html
+			
+			
+						
 			Init_Utils();
 			Init_VigieAcquisition();
 			Init_VigieReport();

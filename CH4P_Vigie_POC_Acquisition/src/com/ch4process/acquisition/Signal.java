@@ -253,14 +253,12 @@ public class Signal implements ISignal
 	@Override
 	public boolean Refresh()
 	{
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean Init()
 	{
-		// TODO Auto-generated method stub
 		return false;
 	}
 	
@@ -281,30 +279,27 @@ public class Signal implements ISignal
 		return this.listeners.getListeners(ISignalValueListener.class);
 	}
 	
-	protected void fireValueChanged(int value)
+	protected void fireValueChanged(int value, boolean quality)
 	{
 		for (ISignalValueListener listener : getValueListeners())
 		{
-			// TODO : Implémenter la validité sur la mesure jusqu'en BDD
-			listener.intValueChanged(this.idSignal, value, Calendar.getInstance().getTime().getTime());
+			listener.intValueChanged(this.idSignal, value, quality, Calendar.getInstance().getTime().getTime());
 		}
 	}
 	
-	protected void fireValueChanged(double value)
+	protected void fireValueChanged(double value, boolean quality)
 	{
 		for (ISignalValueListener listener : getValueListeners())
 		{
-			// TODO : Implémenter la validité sur la mesure jusqu'en BDD
-			listener.doubleValueChanged(this.idSignal, value, Calendar.getInstance().getTime().getTime());
+			listener.doubleValueChanged(this.idSignal, value, quality, Calendar.getInstance().getTime().getTime());
 		}
 	}
 	
-	protected void fireValueChanged(boolean value)
+	protected void fireValueChanged(boolean value, boolean quality)
 	{
 		for (ISignalValueListener listener : getValueListeners())
 		{
-			// TODO : Implémenter la validité sur la mesure jusqu'en BDD
-			listener.boolValueChanged(this.idSignal, value, Calendar.getInstance().getTime().getTime());
+			listener.boolValueChanged(this.idSignal, value, quality, Calendar.getInstance().getTime().getTime());
 		}
 	}
 

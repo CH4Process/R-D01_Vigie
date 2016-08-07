@@ -3,35 +3,76 @@ package com.ch4process.database;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
+import com.ch4process.utils.PropertiesReader;
 
 
 public class DatabaseController implements AutoCloseable
-{
-	// TODO : From config file instead of hardcoded bullshit
-	
-	static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
-	static final String URL = "jdbc:mysql://";
-	static final String DATABASEPORT = "3306";
-	static private String databaseUser = "pi";
-	static private String databasePassword = "Crepitus";
-	static private String databaseName = "CH4Process_DB";
-	static private String connectionString = "";
-	static private String databaseAddress = "127.0.0.1";
-	static private Integer nbConnection = 10;
+{	
+	static private String JDBC_DRIVER = null;
+	static private String URL = null;
+	static private String DATABASEPORT = null;
+	static private String databaseUser = null;
+	static private String databasePassword = null;
+	static private String databaseName = null;
+	static private String connectionString = null;
+	static private String databaseAddress = null;
+	static private Integer nbConnection = null;
+	static private String configFile = "database.properties";
 	
 	static private Boolean initialized = false;
 	
 	static private List<ConnectionHandler> connectionPool = new ArrayList<ConnectionHandler>();
 
-		
+	private static boolean ReadConfigFile()
+	{
+		try
+		{
+			PropertiesReader propReader = new PropertiesReader();
+			Properties prop = propReader.getPropValues(configFile);
+			
+			if (prop != null)
+			{
+				JDBC_DRIVER = prop.getProperty("JDBC_DRIVER");
+				URL = prop.getProperty("URL");
+				DATABASEPORT = prop.getProperty("DATABASEPORT");
+				databaseUser = prop.getProperty("databaseUser");
+				databasePassword = prop.getProperty("databasePassword");
+				databaseName = prop.getProperty("databaseName");
+				databaseAddress = prop.getProperty("databaseAddress");
+				nbConnection = Integer.valueOf(prop.getProperty("nbConnection"));
+			}
+			else
+			{
+				// Default values
+				JDBC_DRIVER = "com.mysql.jdbc.Driver";
+				URL = "jdbc:mysql://";
+				DATABASEPORT = "3306";
+				databaseUser = "pi";
+				databasePassword = "Crepitus";
+				databaseName = "CH4Process_DB";
+				databaseAddress = "127.0.0.1";
+				nbConnection = 10;
+			}
+			
+			connectionString = URL + databaseAddress + ":" + DATABASEPORT + "/" + databaseName;
+			return true;
+			
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+			return false;
+		}
+	}
 	public static boolean Init()
 	{	
 		if (! initialized)
 		{
-			connectionString = URL + databaseAddress + ":" + DATABASEPORT + "/" + databaseName;
-
 			try
 			{
+				ReadConfigFile();
+				
 				for (int i = 0; i < nbConnection; i++)
 				{
 					Connection conn = DriverManager.getConnection(connectionString, databaseUser, databasePassword);

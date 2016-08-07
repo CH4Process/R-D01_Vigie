@@ -1,4 +1,4 @@
-package com.ch4process.properties;
+package com.ch4process.utils;
 
 import java.io.InputStream;
 import java.util.Properties;
