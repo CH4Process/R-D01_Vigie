@@ -2,9 +2,12 @@ package com.ch4process.acquisition;
 
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.Callable;
 import javax.swing.event.EventListenerList;
+
+import com.ch4process.events.SignalValueEvent;
 import com.ch4process.utils.CH4P_Exception;
 import com.yoctopuce.YoctoAPI.YAPI;
 import com.yoctopuce.YoctoAPI.YAPI_Exception;
@@ -22,17 +25,14 @@ public class ModbusDevice extends Device implements Callable
 	// Internal variables
 	List<Signal> HoldingRegisterSignals = new ArrayList<Signal>();
 	List<Signal> CoilSignals = new ArrayList<Signal>();
-	List<Integer> values = new ArrayList<Integer>();
 	List<ModbusRequest> requests = new ArrayList<ModbusRequest>();
-	Integer baseAddress = 0;
 	Integer baseRefreshRate = 1;
-	Integer requestLength = 0;
 	YSerialPort serialPort = null;
 	boolean init_done = false;
 	boolean isValid = true;
 	
 	// Event handling
-		EventListenerList listeners = new EventListenerList();
+	EventListenerList listeners = new EventListenerList();
 	
 	
 	// Getters and Setters
@@ -98,25 +98,11 @@ public class ModbusDevice extends Device implements Callable
 	{
 		try
 		{
-			SignalList.sort((signal1,signal2) -> signal1.getAddress().compareTo(signal2.getAddress()));
 			
-			// Here we create a new modbus request starting at the address of the first element in the list and ending with the 
-			ModbusRequest request = new ModbusRequest(SignalList.get(0).getAddress(), SignalList.get(SignalList.size()).getAddress() + 1);
+			// Here we create a new modbus request based on the list of Signals
+			ModbusRequest request = new ModbusRequest(SignalList);
 			
-			for(Signal signal:SignalList)
-			{
-				request.getSignals().add(signal.getAddress());
-			}
-			
-			// We have to remember what type of request this is for a possible priority check later
-			if (SignalList.get(0).getSignalType().getIsTor())
-			{
-				request.setRequestType(ModbusRequest.REQUEST_READ_COILS);
-			}
-			else
-			{
-				request.setRequestType(ModbusRequest.REQUEST_READ_HOLDING_REGISTERS);
-			}
+			request.Init();
 			
 			requests.add(request);
 		}
@@ -180,31 +166,13 @@ public class ModbusDevice extends Device implements Callable
 					// First we read the values in the Modbus device
 					for(ModbusRequest request:requests)
 					{
-						if (request.getRequestType() == ModbusRequest.REQUEST_READ_HOLDING_REGISTERS)
-						{
-							request.setValues(serialPort.modbusReadRegisters(this.getSlaveNumber(), request.getStartAddress(), request.getRequestlength()));
-						}
-						else if (request.getRequestType() == ModbusRequest.REQUEST_READ_COILS)
-						{
-							request.setValues(serialPort.modbusReadBits(this.getSlaveNumber(), request.getStartAddress(), request.getRequestlength()));
-						}
+						request.Execute(this.serialPort, this.slaveNumber);
 					}
 					
-					// And now we give each signal his value ! 
-					for(Signal signal:signals)
+					// Then we can notify the values
+					for(ModbusRequest request:requests)
 					{
-						// The datas in the values ArrayList returned by the Yoctopuce Modbus card are ordered based on the Modbus request
-						// So we have to determine which data to provide to which signal
-						Integer index = baseAddress - signal.address;
-						
-						// TODO : Put some smart code here to determine the correct size, index and format of the data to provide.
-						// The datas are Float32 so we have to merge two 16-digit integers into one and then transform it to a Float
-						double data = (double) Float.intBitsToFloat(values.get(index) & values.get(index+1));
-						
-						if (! signal.getSignalType().isTotalizer)
-						{
-							signal.fireValueChanged(data, isValid);
-						}
+						request.NotifyValueChanged();;
 					}
 				}
 				

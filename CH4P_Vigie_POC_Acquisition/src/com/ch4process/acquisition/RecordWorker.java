@@ -3,11 +3,17 @@ package com.ch4process.acquisition;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Callable;
+
+import javax.xml.ws.RequestWrapper;
+
 import com.ch4process.database.DatabaseRequest;
 import com.ch4process.database.IDatabaseRequestCallback;
+import com.ch4process.database.RequestList;
 import com.ch4process.events.SignalValueEvent;
+import com.ch4process.utils.CH4P_Exception;
 
-public class RecordWorker extends Thread implements ISignalValueListener
+public class RecordWorker implements Callable<Integer>, ISignalValueListener
 {
 	DatabaseRequest recordValueRequest;
 	IDatabaseRequestCallback recordValueRequestCallback;
@@ -15,9 +21,7 @@ public class RecordWorker extends Thread implements ISignalValueListener
 	
 	List<SignalValueEvent> eventList = new LinkedList<>();
 	
-	Integer DOUBLE_VALUE_EVENT = 1;
-	Integer INTEGER_VALUE_EVENT = 2;
-	Integer BOOLEAN_VUE_EVENT = 3;
+	Boolean init_done = false;
 	
 	@Override
 	public void doubleValueChanged(int idSignal, double value, boolean quality, long datetime)
@@ -52,30 +56,7 @@ public class RecordWorker extends Thread implements ISignalValueListener
 			}
 		};
 	}
-	
-	public void start()
-	{
-		System.out.println("recordWorker start : " + Calendar.getInstance().getTime());
-		this.recordValueRequest.setCallback(recordValueRequestCallback);
-		this.recordValueRequest.start();
-		super.start();
-	}
-	
-	public void run()
-	{
-		try
-		{
-			while (true)
-			{
-				eventHandling();
-				Thread.sleep(1000);
-			}
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-	}
+
 	
 	private void eventHandling()
 	{
@@ -86,29 +67,42 @@ public class RecordWorker extends Thread implements ISignalValueListener
 				
 				SignalValueEvent event = eventList.get(0);
 				int type = event.getType();
-
-				recordValueRequest.setStatementIntParameter(1, event.getIdSignal());
-				recordValueRequest.setStatementDateParameter(3, event.getDatetime());
-
-				if (type == DOUBLE_VALUE_EVENT)
+				
+				// Putting the right values in the statement
+				switch (type)
 				{
-					recordValueRequest.setStatementDoubleParameter(2, event.getDoubleValue());
-				}
-				else if (type == INTEGER_VALUE_EVENT)
-				{
-					recordValueRequest.setStatementIntParameter(2, event.getIntValue());
-				}
-				else if (type == BOOLEAN_VUE_EVENT)
-				{
-					if (event.getBoolValue() == true)
+					case SignalValueEvent.DOUBLE_VALUE_EVENT: 
+						recordValueRequest.setRequest(RequestList.REQUEST_RecordAnalogMeasure);
+						recordValueRequest.setStatementDoubleParameter(1, event.getDoubleValue());
+						break;
+						
+					case SignalValueEvent.INTEGER_VALUE_EVENT:
+						recordValueRequest.setRequest(RequestList.REQUEST_RecordAnalogMeasure);
+						recordValueRequest.setStatementIntParameter(1, event.getIntValue());
+						break;
+						
+					case SignalValueEvent.BOOLEAN_VALUE_EVENT:
+						recordValueRequest.setRequest(RequestList.REQUEST_RecordDigitalMeasure);
+						if (event.getBoolValue() == true)
+						{
+							recordValueRequest.setStatementIntParameter(1, 1);
+						}
+						else
+						{
+							recordValueRequest.setStatementIntParameter(1, 0);
+						}
+						break;
+						
+					case SignalValueEvent.TOTALIZER_EVENT:
 					{
-						recordValueRequest.setStatementIntParameter(2, 1);
-					}
-					else
-					{
-						recordValueRequest.setStatementIntParameter(2, 0);
+						recordValueRequest.setRequest(RequestList.REQUEST_RecordTotalizer);
+						recordValueRequest.setStatementDoubleParameter(1, event.getDoubleValue());
+						break;
 					}
 				}
+				recordValueRequest.setStatementDateParameter(2, event.getDatetime());
+				recordValueRequest.setStatementBoolParameter(3, event.isValid());
+				recordValueRequest.setStatementIntParameter(4, event.getIdSignal());
 				
 				recordValueRequest_done = false;
 				recordValueRequest.doUpdate();
@@ -130,6 +124,31 @@ public class RecordWorker extends Thread implements ISignalValueListener
 		finally
 		{
 			recordValueRequest_done = true;
+		}
+	}
+
+	@Override
+	public Integer call() throws CH4P_Exception
+	{
+		if (! init_done)
+		{
+			System.out.println("recordWorker start : " + Calendar.getInstance().getTime());
+			this.recordValueRequest.setCallback(recordValueRequestCallback);
+			this.recordValueRequest.start();
+			init_done = true;
+		}
+		
+		try
+		{
+			while (true)
+			{
+				eventHandling();
+				Thread.sleep(1000);
+			}
+		}
+		catch (Exception ex)
+		{
+			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
 		}
 	}
 }

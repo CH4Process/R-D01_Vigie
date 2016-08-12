@@ -12,8 +12,12 @@ public class RequestList
 			"SELECT * FROM `device`;";
 	public static final String REQUEST_DeviceTypeList =
 			"SELECT * FROM `devicetype`;";
-	public static final String REQUEST_MeasureRecord = 
-			"INSERT INTO mesure (capteur_id, valeur, datetime) VALUES (?,?,?);";
+	public static final String REQUEST_RecordDigitalMeasure = 
+			"INSERT INTO `DigitalMeasure` (value, datetime, isValid, idSignal) VALUES (?,?,?,?);";
+	public static final String REQUEST_RecordAnalogMeasure = 
+			"INSERT INTO `AnalogMeasure` (value, datetime, isValid, idSignal) VALUES (?,?,?,?);";
+	public static final String REQUEST_RecordTotalizer = 
+			"UPDATE `Totalizer` SET lastValue = value, value = ?, datetime = ?, isValid = ?) WHERE idSignal = ?;";
 	public static final String REQUEST_ScenarioList = 
 			"SELECT s.scenario_id, s.capteur_id, s.test, s.params FROM scenario s ORDER BY s.priorite;";
 	public static final String REQUEST_ActionList = 

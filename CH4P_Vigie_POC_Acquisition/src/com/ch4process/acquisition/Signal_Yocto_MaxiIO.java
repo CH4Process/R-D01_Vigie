@@ -4,6 +4,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.ch4process.events.SignalValueEvent;
 import com.ch4process.utils.CH4P_Exception;
 import com.yoctopuce.YoctoAPI.YAPI_Exception;
 import com.yoctopuce.YoctoAPI.YDigitalIO;
@@ -59,7 +60,7 @@ public class Signal_Yocto_MaxiIO extends Signal
 				this.value = value;
 				this.isValid = !(portState == ioSensor.PORTSTATE_INVALID);
 				
-				fireValueChanged(value, isValid);
+				fireValueChanged(new SignalValueEvent(this.getIdSignal(), null, null, this.value, this.isValid(), Calendar.getInstance().getTime().getTime(), this.getSignalType()));
 				
 				return true;
 

@@ -3,6 +3,7 @@ package com.ch4process.acquisition;
 import java.util.Calendar;
 import java.util.EventListener;
 
+import com.ch4process.events.SignalValueEvent;
 import com.ch4process.utils.CH4P_Exception;
 import com.yoctopuce.YoctoAPI.YGenericSensor;
 
@@ -58,10 +59,13 @@ public class Signal_Yocto_4_20mA extends Signal
 			
 			int range = this.signalType.maxValue - this.signalType.minValue;
 			value = (range / 16) * (value - 4);
-			this.countdown = this.refreshRate;
-			this.value = value;
 			
-			fireValueChanged(value, isValid);
+			if (signalType.coeff != null && signalType.coeff != 0.0)
+			{
+				value = value / signalType.coeff;
+			}
+			
+			fireValueChanged(new SignalValueEvent(this.getIdSignal(), this.value, null, null, this.isValid(), Calendar.getInstance().getTime().getTime(), this.getSignalType()));
 			
 			return true;			
 		}

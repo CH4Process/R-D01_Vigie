@@ -1,7 +1,7 @@
 package com.ch4process.acquisition;
 
 import java.util.Calendar;
-import java.util.EventListener;
+import java.util.Date;
 
 import com.ch4process.utils.CH4P_Exception;
 import com.yoctopuce.YoctoAPI.YGenericSensor;

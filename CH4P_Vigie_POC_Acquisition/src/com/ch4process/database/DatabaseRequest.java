@@ -46,6 +46,11 @@ public class DatabaseRequest extends Thread
 	{
 		this.dbrc = dbrc;
 	}
+	
+	public void setRequest(String request)
+	{
+		this.request = request;
+	}
 
 	public void start()
 	{
@@ -121,6 +126,19 @@ public class DatabaseRequest extends Thread
 			ex.printStackTrace();
 		}
 	}
+	
+	public void setStatementBoolParameter(int id_parameter, boolean value)
+	{
+		try
+		{
+			this.preparedStatement.setBoolean(id_parameter, value);
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+		}
+	}
+	
 	public void setStatementDoubleParameter(int id_parameter, double value)
 	{
 		try

@@ -6,6 +6,7 @@ import java.util.concurrent.Callable;
 
 import javax.swing.event.EventListenerList;
 
+import com.ch4process.events.SignalValueEvent;
 import com.ch4process.utils.CH4P_Exception;
 import com.yoctopuce.YoctoAPI.YAPI;
 import com.yoctopuce.YoctoAPI.YAPI_Exception;
@@ -31,6 +32,7 @@ public class Signal implements ISignal
 	// Other variables
 	int countdown = 0;
 	boolean isValid;
+	Calendar lastUpdate;
 	
 	// Event handling
 	EventListenerList listeners = new EventListenerList();
@@ -262,6 +264,28 @@ public class Signal implements ISignal
 		return false;
 	}
 	
+	private boolean checkDate()
+	{
+		try
+		{
+			if (Calendar.getInstance().get(Calendar.DAY_OF_MONTH) != lastUpdate.get(Calendar.DAY_OF_MONTH))
+			{
+				lastUpdate = Calendar.getInstance();
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+			return false;
+		}
+	}
+	
 	// Event handling code
 	
 	public void addValueListener(ISignalValueListener listener)
@@ -279,28 +303,16 @@ public class Signal implements ISignal
 		return this.listeners.getListeners(ISignalValueListener.class);
 	}
 	
-	protected void fireValueChanged(int value, boolean quality)
+	protected void fireValueChanged(SignalValueEvent event)
 	{
-		for (ISignalValueListener listener : getValueListeners())
+		// A bit of work to advertise totalizers ONCE A DAY
+		if (!(getSignalType().isTotalizer) || (getSignalType().isTotalizer && checkDate()))
 		{
-			listener.intValueChanged(this.idSignal, value, quality, Calendar.getInstance().getTime().getTime());
+			for (ISignalValueListener listener : getValueListeners())
+			{
+				listener.SignalValueChanged(event);
+			}
 		}
+		
 	}
-	
-	protected void fireValueChanged(double value, boolean quality)
-	{
-		for (ISignalValueListener listener : getValueListeners())
-		{
-			listener.doubleValueChanged(this.idSignal, value, quality, Calendar.getInstance().getTime().getTime());
-		}
-	}
-	
-	protected void fireValueChanged(boolean value, boolean quality)
-	{
-		for (ISignalValueListener listener : getValueListeners())
-		{
-			listener.boolValueChanged(this.idSignal, value, quality, Calendar.getInstance().getTime().getTime());
-		}
-	}
-
 }

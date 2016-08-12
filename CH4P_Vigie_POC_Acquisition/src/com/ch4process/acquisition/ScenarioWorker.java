@@ -34,7 +34,7 @@ public class ScenarioWorker extends Thread implements ISignalValueListener
 	
 	public ScenarioWorker(DatabaseRequest scenarioListRequest)
 	{
-			this.scenarioListRequest = scenarioListRequest;
+		this.scenarioListRequest = scenarioListRequest;
 	}
 	
 	private void init()

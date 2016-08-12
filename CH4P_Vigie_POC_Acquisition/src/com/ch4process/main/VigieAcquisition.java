@@ -540,7 +540,7 @@ public class VigieAcquisition extends Thread
 		deviceListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_DeviceList, deviceListRequestCallback);
 		deviceTypeListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_DeviceTypeList, deviceTypeListRequestCallback);
 		scenarioListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_ScenarioList, null);
-		recordValueRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_MeasureRecord, null);
+		recordValueRequest = new DatabaseRequest(connectionHandler, null, null);
 		//commandeListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_ListeCommandes, commandeListRequestCallback);
 		logEventRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_EventLog, null);
 		

@@ -2,6 +2,7 @@ package com.ch4process.acquisition;
 
 import java.util.Calendar;
 
+import com.ch4process.events.SignalValueEvent;
 import com.ch4process.utils.CH4P_Exception;
 import com.yoctopuce.YoctoAPI.YTemperature;
 
@@ -36,7 +37,7 @@ public class Signal_Yocto_Meteo_Temperature extends Signal
 			this.value = value;
 			this.isValid = !(value == sensor.CURRENTVALUE_INVALID);
 			
-			fireValueChanged(value, isValid);
+			fireValueChanged(new SignalValueEvent(this.getIdSignal(), this.value, null, null, this.isValid(), Calendar.getInstance().getTime().getTime(), this.getSignalType()));
 			return true;
 
 		}
