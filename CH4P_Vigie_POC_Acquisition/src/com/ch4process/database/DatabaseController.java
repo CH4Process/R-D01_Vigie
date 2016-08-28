@@ -18,7 +18,7 @@ public class DatabaseController implements AutoCloseable
 	static private String connectionString = null;
 	static private String databaseAddress = null;
 	static private Integer nbConnection = null;
-	static private String configFile = "database.properties";
+	static private String configFile = "resources/database.properties";
 	
 	static private Boolean initialized = false;
 	
@@ -40,7 +40,7 @@ public class DatabaseController implements AutoCloseable
 				databasePassword = prop.getProperty("databasePassword");
 				databaseName = prop.getProperty("databaseName");
 				databaseAddress = prop.getProperty("databaseAddress");
-				nbConnection = Integer.valueOf(prop.getProperty("nbConnection"));
+				nbConnection = Integer.valueOf(prop.getProperty("nbConnections"));
 			}
 			else
 			{

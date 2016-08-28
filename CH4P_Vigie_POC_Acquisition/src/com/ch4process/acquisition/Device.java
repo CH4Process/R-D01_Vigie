@@ -54,6 +54,10 @@ public class Device
 	{
 		this.address = address;
 	}
+	public Integer getErrorCode()
+	{
+		return this.errorCode;
+	}
 	
 	
 }

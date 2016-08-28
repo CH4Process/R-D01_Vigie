@@ -22,6 +22,11 @@ public class Signal_Yocto_MaxiIO extends Signal
 	Map<Integer, Integer> channelsState = new HashMap<Integer, Integer>();
 
 	
+	public Signal_Yocto_MaxiIO(Signal model)
+	{
+		super(model);
+	}
+	
 	// Operational code
 	
 	@Override
@@ -53,16 +58,19 @@ public class Signal_Yocto_MaxiIO extends Signal
 	{
 		try
 		{
+			System.out.println("Signal : " + this.shortName + " :: Refresh.");
+			
 			portState = ioSensor.get_portState();
+			value = ((portState & offset) != 0);
+			this.countdown = this.refreshRate;
+			this.value = value;
+			this.isValid = !(portState == ioSensor.PORTSTATE_INVALID);
+			
+			System.out.println("Signal : " + this.shortName + " :: Refresh - Value = " + value + " - Quality = " + this.isValid);
 
-				value = ((portState & offset) != 0);
-				this.countdown = this.refreshRate;
-				this.value = value;
-				this.isValid = !(portState == ioSensor.PORTSTATE_INVALID);
-				
-				fireValueChanged(new SignalValueEvent(this.getIdSignal(), null, null, this.value, this.isValid(), Calendar.getInstance().getTime().getTime(), this.getSignalType()));
-				
-				return true;
+			fireValueChanged(new SignalValueEvent(this.getIdSignal(), null, null, this.value, this.isValid(), Calendar.getInstance().getTime().getTime(), this.getSignalType()));
+
+			return true;
 
 		}
 		catch (YAPI_Exception ex)
@@ -73,24 +81,27 @@ public class Signal_Yocto_MaxiIO extends Signal
 	}
 	
 	@Override
-	public Integer call() throws CH4P_Exception
+	public Integer call() throws Exception
 	{
 		try
 		{
+			
 			Connect();
 			Init();
 			Refresh();
 			
 			while(true)
 			{
+				System.out.println("Signal : " + this.shortName + " routine called...");
 				Refresh();
 				Thread.sleep(this.refreshRate * 1000);
 			}
 		}
 			
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			throw new CH4P_Exception(e.getMessage(), e.getCause());
+			ex.printStackTrace();
+			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
 		}
 		
 	}

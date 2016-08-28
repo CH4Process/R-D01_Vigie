@@ -4,13 +4,13 @@ import com.ch4process.acquisition.SignalType;
 
 public class SignalValueEvent
 {
-		int idSignal;
-		double doubleValue;
-		int intValue;
-		boolean boolValue;
-		long datetime;
+		Integer idSignal;
+		Double doubleValue;
+		Integer intValue;
+		Boolean boolValue;
+		Long datetime;
 		SignalType type = null;
-		boolean valid = true;
+		Boolean valid = true;
 		
 		
 		public SignalValueEvent(int idSignal, Double doubleValue, Integer intValue, Boolean boolValue, boolean isValid, long datetime, SignalType signalType)
@@ -29,17 +29,17 @@ public class SignalValueEvent
 			return idSignal;
 		}
 
-		public double getDoubleValue()
+		public Double getDoubleValue()
 		{
 			return doubleValue;
 		}
 
-		public int getIntValue()
+		public Integer getIntValue()
 		{
 			return intValue;
 		}
 
-		public boolean getBoolValue()
+		public Boolean getBoolValue()
 		{
 			return boolValue;
 		}

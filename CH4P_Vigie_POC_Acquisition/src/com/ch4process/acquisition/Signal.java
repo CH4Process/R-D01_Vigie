@@ -2,6 +2,7 @@ package com.ch4process.acquisition;
 
 import java.lang.reflect.Field;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.concurrent.Callable;
 
 import javax.swing.event.EventListenerList;
@@ -32,7 +33,7 @@ public class Signal implements ISignal
 	// Other variables
 	int countdown = 0;
 	boolean isValid;
-	Calendar lastUpdate;
+	Calendar lastUpdate = null;
 	
 	// Event handling
 	EventListenerList listeners = new EventListenerList();
@@ -77,6 +78,18 @@ public class Signal implements ISignal
 		this.label = label;
 		this.refreshRate = refreshRate;
 		this.logRate = logRate;
+	}
+	
+	public Signal(Signal model)
+	{
+		this(model.getIdSignal(), model.getIdDevice(), model.getIdSignalType(), model.getIdSignalLevel(), model.getShortName(), model.getAddress(), model.getLabel(),
+				model.getRefreshRate(), model.getLogRate());
+		
+		this.device = model.getDevice();
+		this.signalType = model.getSignalType();
+		this.signalLevel = model.getSignalLevel();
+		
+		this.listeners = model.getListeners();
 	}
 
 	
@@ -222,6 +235,11 @@ public class Signal implements ISignal
 		this.isValid = isValid;
 	}
 	
+	public EventListenerList getListeners()
+	{
+		return this.listeners;
+	}
+	
 	
 	// Operationnal code
 
@@ -240,16 +258,10 @@ public class Signal implements ISignal
 	}
 	
 	// Empty methods for polymorphism purposes
-	public Integer call() throws CH4P_Exception
+	@Override
+	public Integer call() throws Exception
 	{
-		try
-		{
-			return null;
-		}
-		catch (Exception ex)
-		{
-			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
-		}
+		return null;
 	}
 	
 	@Override
@@ -266,15 +278,27 @@ public class Signal implements ISignal
 	
 	private boolean checkDate()
 	{
+		// init
+		if (lastUpdate == null)
+		{
+			lastUpdate = Calendar.getInstance();
+			lastUpdate.set(Calendar.DAY_OF_MONTH, lastUpdate.get(Calendar.DAY_OF_MONTH) - 1);
+			
+			System.out.println("Signal : " + this.shortName + " - Calendar init to : " + lastUpdate.getTime());
+		}
+		
 		try
 		{
+			System.out.println("Signal : " + this.shortName + " - checkDate.");
 			if (Calendar.getInstance().get(Calendar.DAY_OF_MONTH) != lastUpdate.get(Calendar.DAY_OF_MONTH))
 			{
+				System.out.println("Signal : " + this.shortName + " - checkDate = true.");
 				lastUpdate = Calendar.getInstance();
 				return true;
 			}
 			else
 			{
+				System.out.println("Signal : " + this.shortName + " - checkDate = false.");
 				return false;
 			}
 		}
@@ -298,7 +322,7 @@ public class Signal implements ISignal
 		listeners.remove(ISignalValueListener.class, listener);
 	}
 	
-	protected ISignalValueListener[] getValueListeners()
+	public ISignalValueListener[] getValueListeners()
 	{
 		return this.listeners.getListeners(ISignalValueListener.class);
 	}
@@ -308,6 +332,8 @@ public class Signal implements ISignal
 		// A bit of work to advertise totalizers ONCE A DAY
 		if (!(getSignalType().isTotalizer) || (getSignalType().isTotalizer && checkDate()))
 		{
+			System.out.println("Signal : " + this.shortName + " :: fireValueChanged ID - " + event.getIdSignal() + " - DoubleValue : " + event.getDoubleValue() + " - IntValue : " + event.getIntValue() + " - BoolValue : " + event.getBoolValue() + " - Datetime : " + new Date(event.getDatetime()).toString());
+		
 			for (ISignalValueListener listener : getValueListeners())
 			{
 				listener.SignalValueChanged(event);
@@ -315,4 +341,5 @@ public class Signal implements ISignal
 		}
 		
 	}
+
 }

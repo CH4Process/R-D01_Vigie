@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.ch4process.events.SignalValueEvent;
+import com.yoctopuce.YoctoAPI.YAPI_Exception;
 import com.yoctopuce.YoctoAPI.YSerialPort;
 
 public class ModbusRequest
@@ -59,7 +60,7 @@ public class ModbusRequest
 	{
 		for (Signal signal:signals)
 		{
-			elements.put(signal, null);			
+			elements.put(signal, new SignalValueEvent(signal.getIdSignal(), null, null, null, false, 0, signal.getSignalType()));			
 		}
 	}
 
@@ -73,6 +74,7 @@ public class ModbusRequest
 	{
 		for (Signal signal:signals)
 		{
+			System.out.println("ModbusRequest : Signal " + signal.getShortName() + " added.");
 			elements.put(signal, null);			
 		}
 	}
@@ -113,10 +115,14 @@ public class ModbusRequest
 		
 		this.startAddress = lowAddress;
 		this.requestlength = highAddress - lowAddress + size;
+		
+		System.out.println("ModbusRequest : Request - Start = " + startAddress + " - Length = " + requestlength);
 	}
 
 	public void Execute(YSerialPort serialPort, int slaveNumber)
 	{
+		boolean isValid = true;
+		
 		try
 		{
 			switch(this.requestType)
@@ -132,30 +138,52 @@ public class ModbusRequest
 				default:
 					break;
 			}
-			
-			if (this.values != null)
-			{
+		}
+		catch (YAPI_Exception ex)
+		{
+			isValid = false;
+		}
+		
+		try
+		{
 				int index = 0;
 						
 				for(Map.Entry <Signal, SignalValueEvent> entry : elements.entrySet())
 				{
+					Integer myValue;
+					Integer myValue2;
+					
+					
 					Signal signal = entry.getKey();
 					index = signal.getAddress() - startAddress;
+					
+					System.out.println("ModbusRequest : Signal " + signal.getShortName() + " value update.");
+					
+					if (this.values == null)
+					{
+						myValue = 0;
+						myValue2 = 0;
+					}
+					else
+					{
+						myValue = values.get(index);
+						myValue2 = values.get(index+1);
+					}
 					
 					switch(signal.getSignalType().getComFormat())
 					{
 						case "FLOAT32":
-							double data = (double) Float.intBitsToFloat(values.get(index) & values.get(index+1));
-							entry.setValue(new SignalValueEvent(signal.getIdSignal(), data, null, null, serialPort.isOnline(), Calendar.getInstance().getTime().getTime(), signal.getSignalType()));
+							double data = (double) Float.intBitsToFloat(myValue & myValue2);
+							entry.setValue(new SignalValueEvent(signal.getIdSignal(), data, null, null, isValid, Calendar.getInstance().getTime().getTime(), signal.getSignalType()));
 							break;
 						
 						case "INT":
-							entry.setValue(new SignalValueEvent(signal.getIdSignal(), null, values.get(index), null, serialPort.isOnline(), Calendar.getInstance().getTime().getTime(), signal.getSignalType()));
+							entry.setValue(new SignalValueEvent(signal.getIdSignal(), null, myValue, null, isValid, Calendar.getInstance().getTime().getTime(), signal.getSignalType()));
 							break;
 							
 						case "BOOL":
 							boolean value;
-							if (values.get(index) == 1)
+							if (myValue == 1)
 							{
 								value = true;
 							}
@@ -163,11 +191,10 @@ public class ModbusRequest
 							{
 								value = false;
 							}
-							entry.setValue(new SignalValueEvent(signal.getIdSignal(), null, null, value, true, Calendar.getInstance().getTime().getTime(), signal.getSignalType()));
+							entry.setValue(new SignalValueEvent(signal.getIdSignal(), null, null, value, isValid, Calendar.getInstance().getTime().getTime(), signal.getSignalType()));
 							break;
 					}
 				}
-			}
 		}
 		catch(Exception ex)
 		{
@@ -183,7 +210,10 @@ public class ModbusRequest
 			{
 				Signal signal = element.getKey();
 				
-				signal.fireValueChanged(element.getValue());
+				if (signal != null)
+				{
+					signal.fireValueChanged(element.getValue());
+				}				
 			}
 		}
 		catch (Exception ex)

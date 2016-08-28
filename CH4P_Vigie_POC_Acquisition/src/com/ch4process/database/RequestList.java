@@ -2,24 +2,30 @@ package com.ch4process.database;
 
 public class RequestList
 {
+	// REVAMPED
 	public static final String REQUEST_SignalList =
-			"SELECT * FROM `signal`;";
+			"SELECT * FROM `Signal`;";
 	public static final String REQUEST_SignalTypeList =
-			"SELECT * FROM `signalType`;";
+			"SELECT * FROM `SignalType`;";
 	public static final String REQUEST_SignalLevelList =
-			"SELECT * FROM `signallevel`;";
+			"SELECT * FROM `SignalLevel`;";
 	public static final String REQUEST_DeviceList =
-			"SELECT * FROM `device`;";
+			"SELECT * FROM `Device`;";
 	public static final String REQUEST_DeviceTypeList =
-			"SELECT * FROM `devicetype`;";
+			"SELECT * FROM `DeviceType`;";
 	public static final String REQUEST_RecordDigitalMeasure = 
 			"INSERT INTO `DigitalMeasure` (value, datetime, isValid, idSignal) VALUES (?,?,?,?);";
 	public static final String REQUEST_RecordAnalogMeasure = 
 			"INSERT INTO `AnalogMeasure` (value, datetime, isValid, idSignal) VALUES (?,?,?,?);";
 	public static final String REQUEST_RecordTotalizer = 
-			"UPDATE `Totalizer` SET lastValue = value, value = ?, datetime = ?, isValid = ?) WHERE idSignal = ?;";
+			"UPDATE `Totalizer` SET lastValue = value, value = ?, datetime = ?, isValid = ? WHERE idSignal = ?;";
 	public static final String REQUEST_ScenarioList = 
-			"SELECT s.scenario_id, s.capteur_id, s.test, s.params FROM scenario s ORDER BY s.priorite;";
+			"SELECT * FROM `Scenario`;";
+	public static final String REQUEST_ModbusDeviceList = 
+			"SELECT * FROM `ModbusDevice`;";
+	
+	
+	// NOT REVAMPED
 	public static final String REQUEST_ActionList = 
 			"SELECT c.capteur_id, c.numeroserie, c.adresse, c.libelle, c.periode, tc.coeff, tc.marque, tc.modele, tc.plage_min, tc.plage_max FROM capteur c, type_capteur tc WHERE c.type_capteur_id = tc.type_capteur_id AND c.isOutput = true;";
 	

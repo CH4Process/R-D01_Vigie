@@ -18,7 +18,7 @@ public class CH4P_Multithreading
 		}
 	}
 	
-	public static void Submit(Callable callable)
+	public static void Submit(Callable<Integer> callable)
 	{
 		executor.submit(callable);
 	}

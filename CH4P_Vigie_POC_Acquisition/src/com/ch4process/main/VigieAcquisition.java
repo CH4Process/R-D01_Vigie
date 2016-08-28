@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import javax.sql.rowset.CachedRowSet;
 
@@ -19,6 +20,7 @@ import com.ch4process.acquisition.Signal_Yocto_MaxiIO;
 import com.ch4process.acquisition.Signal_Yocto_Meteo_Humidite;
 import com.ch4process.acquisition.Signal_Yocto_Meteo_Pression;
 import com.ch4process.acquisition.Signal_Yocto_Meteo_Temperature;
+import com.ch4process.acquisition.Signal_Yocto_RS485_Modbus;
 import com.ch4process.acquisition.Commande;
 import com.ch4process.acquisition.Device;
 import com.ch4process.acquisition.DeviceType;
@@ -37,9 +39,8 @@ import com.ch4process.utils.CH4P_Multithreading;
 
 import sun.security.jca.GetInstance;
 
-public class VigieAcquisition extends Thread
+public class VigieAcquisition implements Callable<Integer>
 {
-	Thread thisThread;
 	String threadName;
 	
 	Map<Integer, Signal> signals = new HashMap<Integer,Signal>();
@@ -59,7 +60,6 @@ public class VigieAcquisition extends Thread
 	DatabaseRequest signalLevelListRequest;
 	DatabaseRequest signalTypeListRequest;
 	DatabaseRequest scenarioListRequest;
-	DatabaseRequest recordValueRequest;
 	//DatabaseRequest commandeListRequest;
 	DatabaseRequest logEventRequest;
 	IDatabaseRequestCallback signalListRequestCallback;
@@ -123,9 +123,11 @@ public class VigieAcquisition extends Thread
 				signal.setRefreshRate(listSignals.getInt("refreshrate"));
 				signal.setLogRate(listSignals.getInt("logRate"));
 				
-				signals.put(signal.getIdSignal(),signal);
 				signal.addValueListener(recordWorker);
 				signal.addValueListener(scenarioWorker);
+				
+				signals.put(signal.getIdSignal(),signal);
+				
 				signal = null;
 			}
 		}
@@ -277,31 +279,37 @@ public class VigieAcquisition extends Thread
 	 * @param model
 	 * @return
 	 */
-	private Signal SignalInstance(String brand, String model)
+	private Signal SignalInstance(Signal signal)
 	{
+		String brand = signal.getDevice().getDeviceType().getBrandName();
+		String model = signal.getDevice().getDeviceType().getModelName();
 		try
 		{
 			if (brand.equals("YOCTOPUCE"))
 			{
 				if (model.equals("YOCTO-4-20-MA-RX"))
 				{
-					return new Signal_Yocto_4_20mA();
+					return new Signal_Yocto_4_20mA(signal) ;
 				}
 				else if (model.equals("YOCTO-METEO-HUMIDITE"))
 				{
-					return new Signal_Yocto_Meteo_Humidite();
+					return new Signal_Yocto_Meteo_Humidite(signal);
 				}
 				else if (model.equals("YOCTO-METEO-PRESSION"))
 				{
-					return new Signal_Yocto_Meteo_Pression();
+					return new Signal_Yocto_Meteo_Pression(signal);
 				}
 				else if (model.equals("YOCTO-METEO-TEMPERATURE"))
 				{
-					return new Signal_Yocto_Meteo_Temperature();
+					return new Signal_Yocto_Meteo_Temperature(signal);
 				}
 				else if (model.equals("YOCTO-MAXIIO") )
 				{
-					return new Signal_Yocto_MaxiIO();
+					return new Signal_Yocto_MaxiIO(signal);
+				}
+				else if (model.equals("YOCTO-RS485"))
+				{
+					return new Signal_Yocto_RS485_Modbus(signal);
 				}
 			}
 			return null;
@@ -340,10 +348,21 @@ public class VigieAcquisition extends Thread
 				}
 				
 				// We have to cast the Signal object into the correct children
-				signals.replace(signal.getIdSignal(), SignalInstance(signal.getDevice().getDeviceType().getBrandName(), signal.getDevice().getDeviceType().getModelName()));
+				Signal instance = SignalInstance(signal);
+				signals.replace(signal.getIdSignal(), instance);
 				
 				// Now that everything is set, we can start the threads
-				CH4P_Multithreading.Submit(signal);
+				CH4P_Multithreading.Submit(instance);
+			}
+			
+			// We have to start the ModbusDevices also
+			for(ModbusDevice modbusDevice:modbusDevices.values())
+			{
+				if (devices.containsKey(modbusDevice.getIdDevice()))
+				{
+					modbusDevice.setDevice(devices.get(modbusDevice.getIdDevice()));
+				}
+				CH4P_Multithreading.Submit(modbusDevice);
 			}
 			
 			// We have to clean up some memory space
@@ -412,6 +431,7 @@ public class VigieAcquisition extends Thread
 				SignalConfiguration();
 			}
 		};
+		
 		deviceListRequestCallback = new IDatabaseRequestCallback()
 		{
 			
@@ -539,20 +559,22 @@ public class VigieAcquisition extends Thread
 		signalLevelListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_SignalLevelList, signalLevelListRequestCallback);
 		deviceListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_DeviceList, deviceListRequestCallback);
 		deviceTypeListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_DeviceTypeList, deviceTypeListRequestCallback);
+		modbusDeviceListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_ModbusDeviceList, modbusDeviceListRequestCallback);
+	
 		scenarioListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_ScenarioList, null);
-		recordValueRequest = new DatabaseRequest(connectionHandler, null, null);
+		
 		//commandeListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_ListeCommandes, commandeListRequestCallback);
-		logEventRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_EventLog, null);
 		
-		logWorker = new LogWorker(logEventRequest);
-		logWorker.start();
+		//logEventRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_EventLog, null);
+		//logWorker = new LogWorker(logEventRequest);
+		//logWorker.start();
 		
-		recordWorker = new RecordWorker(recordValueRequest);
-		recordWorker.start();
+		recordWorker = new RecordWorker(connectionHandler);
+		CH4P_Multithreading.Submit(recordWorker);
 		
 		scenarioWorker = new ScenarioWorker(scenarioListRequest);
-		scenarioWorker.addActionEventListener(logWorker);
-		scenarioWorker.start();
+		//scenarioWorker.addActionEventListener(logWorker);
+		CH4P_Multithreading.Submit(scenarioWorker);
 		
 		//commandeListRequest.start();
 		//commandeListRequest.doQuery();
@@ -567,8 +589,10 @@ public class VigieAcquisition extends Thread
 		deviceListRequest.doQuery();
 		deviceTypeListRequest.start();
 		deviceTypeListRequest.doQuery();
+		modbusDeviceListRequest.start();
+		modbusDeviceListRequest.doQuery();
 		
-		super.start();
+		//super.start();
 	}
 	
 	public void run()
@@ -586,7 +610,7 @@ public class VigieAcquisition extends Thread
 				}
 				Thread.sleep(1000);
 			}
-			catch( InterruptedException ex)
+			catch(InterruptedException ex)
 			{
 				continue;
 			}
@@ -596,4 +620,23 @@ public class VigieAcquisition extends Thread
 			}
 		}
 	}
+
+	@Override
+	public Integer call() throws CH4P_Exception
+	{
+		try
+		{
+			start();
+			run();
+		}
+		catch(Exception ex)
+		{
+			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
+		}
+		finally
+		{
+			return null;
+		}
+	}
+		
 }

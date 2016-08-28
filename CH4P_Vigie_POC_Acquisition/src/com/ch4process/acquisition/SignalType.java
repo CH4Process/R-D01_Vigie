@@ -13,6 +13,7 @@ public class SignalType
 	Integer maxValue = null;
 	Integer minValue = null;
 	String comFormat = null;
+	
 	public Integer getIdSignalType()
 	{
 		return idSignalType;

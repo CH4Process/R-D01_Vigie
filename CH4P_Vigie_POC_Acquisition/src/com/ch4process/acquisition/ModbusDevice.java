@@ -13,7 +13,7 @@ import com.yoctopuce.YoctoAPI.YAPI;
 import com.yoctopuce.YoctoAPI.YAPI_Exception;
 import com.yoctopuce.YoctoAPI.YSerialPort;
 
-public class ModbusDevice extends Device implements Callable
+public class ModbusDevice implements Callable
 {
 	// Database variables
 	Integer idModbusDevice = null;
@@ -23,10 +23,11 @@ public class ModbusDevice extends Device implements Callable
 	Integer speed = null;
 	
 	// Internal variables
+	Device device = null;
 	List<Signal> HoldingRegisterSignals = new ArrayList<Signal>();
 	List<Signal> CoilSignals = new ArrayList<Signal>();
 	List<ModbusRequest> requests = new ArrayList<ModbusRequest>();
-	Integer baseRefreshRate = 1;
+	Integer baseRefreshRate = 0;
 	YSerialPort serialPort = null;
 	boolean init_done = false;
 	boolean isValid = true;
@@ -77,6 +78,16 @@ public class ModbusDevice extends Device implements Callable
 		this.speed = speed;
 	}
 	
+	public Device getDevice ()
+	{
+		return this.device;
+	}
+	
+	public void setDevice(Device device)
+	{
+		this.device = device;
+	}
+	
 	
 	// Operationnal code
 	
@@ -92,19 +103,27 @@ public class ModbusDevice extends Device implements Callable
 			// It's not a boolean so it's a holding register
 			HoldingRegisterSignals.add(signal);
 		}
+		
+		if (this.baseRefreshRate == 0 || signal.getRefreshRate() < this.baseRefreshRate)
+		{
+			this.baseRefreshRate = signal.getRefreshRate();
+		}
+		
 	}	
 	
 	private void InitRequest(List<Signal> SignalList)
 	{
 		try
 		{
-			
-			// Here we create a new modbus request based on the list of Signals
-			ModbusRequest request = new ModbusRequest(SignalList);
-			
-			request.Init();
-			
-			requests.add(request);
+			if (SignalList.size() > 0)
+			{
+				// Here we create a new modbus request based on the list of Signals
+				ModbusRequest request = new ModbusRequest(SignalList);
+
+				request.Init();
+
+				requests.add(request);
+			}
 		}
 		catch(Exception ex)
 		{
@@ -116,7 +135,7 @@ public class ModbusDevice extends Device implements Callable
 	{
 		try
 		{
-			serialPort = YSerialPort.FindSerialPort(this.serialNumber);
+			serialPort = YSerialPort.FindSerialPort(this.device.getSerialNumber());
 			
 			if (serialPort.isOnline())
 			{
@@ -138,7 +157,7 @@ public class ModbusDevice extends Device implements Callable
 	{
 		try
 		{
-			 YAPI.RegisterHub(this.address);
+			 YAPI.RegisterHub(this.device.getAddress());
 			 return true;
 		} 
 		catch (YAPI_Exception ex)
@@ -163,6 +182,8 @@ public class ModbusDevice extends Device implements Callable
 				
 				if (init_done)
 				{
+					System.out.println("Modbus Device  : " + this.device.getAddress() + " routine called...");
+					
 					// First we read the values in the Modbus device
 					for(ModbusRequest request:requests)
 					{
@@ -172,10 +193,9 @@ public class ModbusDevice extends Device implements Callable
 					// Then we can notify the values
 					for(ModbusRequest request:requests)
 					{
-						request.NotifyValueChanged();;
+						request.NotifyValueChanged();
 					}
 				}
-				
 				Thread.sleep(baseRefreshRate * 1000);
 			}
 		}
@@ -185,7 +205,7 @@ public class ModbusDevice extends Device implements Callable
 		}
 		finally
 		{
-			return errorCode;
+			return this.device.getErrorCode();
 		}
 	}
 	

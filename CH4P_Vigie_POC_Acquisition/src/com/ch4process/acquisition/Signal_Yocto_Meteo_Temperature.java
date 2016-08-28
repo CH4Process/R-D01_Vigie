@@ -10,6 +10,11 @@ public class Signal_Yocto_Meteo_Temperature extends Signal
 {
 	YTemperature sensor;
 	Double value;
+	
+	public Signal_Yocto_Meteo_Temperature(Signal model)
+	{
+		super(model);
+	}
 
 	@Override
 	public boolean Init()
@@ -49,7 +54,7 @@ public class Signal_Yocto_Meteo_Temperature extends Signal
 	}
 
 	@Override
-	public Integer call() throws CH4P_Exception
+	public Integer call() throws Exception
 	{
 		try
 		{
@@ -64,9 +69,10 @@ public class Signal_Yocto_Meteo_Temperature extends Signal
 			}
 			
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			throw new CH4P_Exception(e.getMessage(), e.getCause());
+			ex.printStackTrace();
+			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
 		}
 	}
 }

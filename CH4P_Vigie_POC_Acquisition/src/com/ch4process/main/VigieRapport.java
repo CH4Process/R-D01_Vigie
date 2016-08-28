@@ -4,6 +4,8 @@ import java.io.FileWriter;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
+
 import javax.sql.rowset.CachedRowSet;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
@@ -13,12 +15,11 @@ import com.ch4process.database.DatabaseController;
 import com.ch4process.database.DatabaseRequest;
 import com.ch4process.database.IDatabaseRequestCallback;
 import com.ch4process.database.RequestList;
+import com.ch4process.utils.CH4P_Exception;
 import com.opencsv.CSVWriter;
 
 
-
-
-public class VigieRapport extends Thread
+public class VigieRapport implements Callable<Integer>
 {
 	String reportTimeParam = "23:30";
 	Calendar reportTime;
@@ -47,6 +48,24 @@ public class VigieRapport extends Thread
 		this.threadName = name;
 	}
 	
+	@Override
+	public Integer call() throws CH4P_Exception
+	{
+		try
+		{
+			start();
+			run();
+		}
+		catch(Exception ex)
+		{
+			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
+		}
+		finally
+		{
+			return null;
+		}
+	}
+	
 	public void start()
 	{
 		System.out.println(threadName + " start : " + Calendar.getInstance().getTime());
@@ -63,13 +82,6 @@ public class VigieRapport extends Thread
 		Calendar now = Calendar.getInstance();
 		reportTime.setTime(now.getTime());
 		reportTime.add(Calendar.MINUTE, -1);
-		
-		if (thisThread == null)
-		{
-			thisThread = new Thread (this, threadName);
-			System.out.println("Thread " + threadName + " lancé !");
-			thisThread.start();
-		}
 	}
 	
 	public void run()

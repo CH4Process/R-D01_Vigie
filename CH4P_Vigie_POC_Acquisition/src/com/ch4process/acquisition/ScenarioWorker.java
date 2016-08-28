@@ -6,15 +6,17 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import javax.sql.rowset.CachedRowSet;
 import javax.swing.event.EventListenerList;
 
 import com.ch4process.database.DatabaseRequest;
 import com.ch4process.database.IDatabaseRequestCallback;
+import com.ch4process.email.Mail;
 import com.ch4process.events.SignalValueEvent;
 
-public class ScenarioWorker extends Thread implements ISignalValueListener
+public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 {
 	DatabaseRequest scenarioListRequest;
 	IDatabaseRequestCallback scenarioListRequestCallback;
@@ -23,10 +25,6 @@ public class ScenarioWorker extends Thread implements ISignalValueListener
 	List<SignalValueEvent> eventList = new LinkedList<>();
 	List<Scenario> scenarios = new LinkedList<>();
 	EventListenerList listeners = new EventListenerList();
-	
-	Integer DOUBLE_VALUE_EVENT = 1;
-	Integer INTEGER_VALUE_EVENT = 2;
-	Integer BOOLEAN_VALUE_EVENT = 3;
 	
 	boolean busy = false;
 	boolean init_done = false;
@@ -40,6 +38,8 @@ public class ScenarioWorker extends Thread implements ISignalValueListener
 	private void init()
 	{
 		init_done = true;
+		
+		System.out.println("scenarioWorker start : " + Calendar.getInstance().getTime());
 		
 		scenarioListRequestCallback = new IDatabaseRequestCallback()
 		{
@@ -58,14 +58,8 @@ public class ScenarioWorker extends Thread implements ISignalValueListener
 		scenarioListRequest.doQuery();
 		
 	}
-	
-	public void start()
-	{
-		System.out.println("scenarioWorker start : " + Calendar.getInstance().getTime());
-		super.start();
-	}
-	
-	public void run()
+	@Override
+	public Integer call() throws Exception
 	{
 		if (! init_done)
 		{
@@ -83,9 +77,10 @@ public class ScenarioWorker extends Thread implements ISignalValueListener
 				Thread.sleep(1000);
 			}
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			e.printStackTrace();
+			ex.printStackTrace();
+			return null;
 		}
 	}
 	
@@ -99,28 +94,15 @@ public class ScenarioWorker extends Thread implements ISignalValueListener
 				
 				for(Scenario scenario : scenarios)
 				{
-					if (scenario.capteur_id.equals(event.getIdSignal()))
+					if (scenario.getIdSignal().equals(event.getIdSignal()))
 					{
-						Boolean isTriggered = false;
+						Boolean isTriggered = scenario.testValue(event);
 						
-						if (event.getType() == DOUBLE_VALUE_EVENT)
-						{
-							isTriggered = scenario.testValue(event.getDoubleValue());
-						}
-						else if (event.getType() == INTEGER_VALUE_EVENT)
-						{
-							isTriggered = scenario.testValue(event.getIntValue());
-						}
-						else if (event.getType() == BOOLEAN_VALUE_EVENT)
-						{
-							isTriggered = scenario.testValue(event.getBoolValue());
-						}
-						
-						if(checkScenario(scenario, isTriggered))
+						if(checkIsPresent(scenario, isTriggered))
 						{
 							busy = true;
-							doScenario(scenario.getParams());
-							fireActionEvent(scenario.getScenario_id(), Calendar.getInstance().getTime().getTime());
+							doScenario(scenario.getAction(), scenario.getActionParams(), scenario.getActionMessage());
+							fireActionEvent(scenario.getIdScenario(), Calendar.getInstance().getTime().getTime());
 						}
 					}
 				}
@@ -129,7 +111,7 @@ public class ScenarioWorker extends Thread implements ISignalValueListener
 		}
 	}
 	
-	private boolean checkScenario(Scenario scenario, boolean triggered)
+	private boolean checkIsPresent(Scenario scenario, boolean triggered)
 	{
 		try
 		{
@@ -146,9 +128,9 @@ public class ScenarioWorker extends Thread implements ISignalValueListener
 			
 			return false;
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			e.printStackTrace();
+			ex.printStackTrace();
 			return false;
 		}
 	}
@@ -170,25 +152,26 @@ public class ScenarioWorker extends Thread implements ISignalValueListener
 		}
 	}
 
-	private void doScenario(String parameters)
+	private void doScenario(String action, String actionParams, String actionMessage)
 	{
 		try
-		{
-			String[] params = parameters.split("\\=");
-			String action = params[0];
-			
+		{	
 			if (action.equals("CMD"))
 			{
-				doCMD(params[1]);
+				doCMD(actionParams);
 			}
 			else if (action.equals("MAIL"))
 			{
-				doMAIL(params[1]);
+				doMAIL(actionParams);
+			}
+			else if (action.equals("MAILSMS"))
+			{
+				doMAILSMS(actionParams, actionMessage);
 			}
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			e.printStackTrace();
+			ex.printStackTrace();
 		}
 	}
 	
@@ -196,30 +179,37 @@ public class ScenarioWorker extends Thread implements ISignalValueListener
 	{
 		try
 		{
-			String params[] = parameters.split("\\|");
-			Integer capteur_id = Integer.valueOf(params[0]);
-			boolean value;
-			
-			if (Integer.valueOf(params[1]) == 1)
-			{
-				value = true;
-			}
-			else
-			{
-				value = false;
-			}
-			
-			fireCommandEvent(capteur_id, value);
-			
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			e.printStackTrace();
+			ex.printStackTrace();
 		}
 	}
 	
 	private void doMAIL(String parameters)
 	{
+	}
+	
+	private void doMAILSMS(String recipients, String message)
+	{
+		Mail mail = new Mail();
+		
+		String subject = mail.getMailsmsaccount() + mail.getMailsmslogin() + mail.getMailsmspassword() + mail.getMailsmsfrom() + recipients + mail.getMailsmsparameters();
+		
+		mail.setAuthenticationType(Mail.AUTH_SSL);
+		mail.setFrom(mail.getUsername());
+		mail.setSubject(subject);
+		mail.setTo(mail.getMailsmsaddress());
+		mail.setText(message);
+		
+		if (mail.sendMail())
+		{
+			System.out.println("ScenarioWorker : MAIL_SMS sent !");
+		}
+		else
+		{
+			System.out.println("ScenarioWorker : Failed to send a MAIL_SMS !");
+		}
 		
 	}
 	
@@ -240,49 +230,31 @@ public class ScenarioWorker extends Thread implements ISignalValueListener
 	}
 	
 	@Override
-	public void doubleValueChanged(int capteur_id, double value, boolean quality, long datetime)
+	public void SignalValueChanged(SignalValueEvent event)
 	{
-		if (quality == true)
+		if (event.isValid())
 		{
-			eventList.add(new SignalValueEvent(capteur_id, value, quality, datetime));
+			eventList.add(event);
 		}
 	}
-
-	@Override
-	public void intValueChanged(int capteur_id, int value, boolean quality, long datetime)
-	{
-		if (quality == true)
-		{
-			eventList.add(new SignalValueEvent(capteur_id, value, quality, datetime));
-		}
-	}
-
-	@Override
-	public void boolValueChanged(int capteur_id, boolean value, boolean quality, long datetime)
-	{
-		if (quality == true)
-		{
-			eventList.add(new SignalValueEvent(capteur_id, value, quality, datetime));
-		}
-	}
+	
 	
 	private void ScenarioList(CachedRowSet listeScenarios)
 	{
 		try
 		{
-			ResultSetMetaData methadata = listeScenarios.getMetaData();
-			Integer columnCount = methadata.getColumnCount();
-
 			while(listeScenarios.next())
 			{
 				Scenario scenario = new Scenario();
-				for(int i = 1; i <= columnCount; i++)
-				{
-					String arg0 = methadata.getColumnName(i);
-					Object arg1 = listeScenarios.getObject(i);
-					scenario.setField(arg0, arg1);
-				}
-				scenario.init();
+				scenario.setIdScenario(listeScenarios.getInt("idScenario"));
+				scenario.setIdSignal(listeScenarios.getInt("idSignal"));
+				scenario.setTest(listeScenarios.getString("test"));
+				scenario.setTestValue(listeScenarios.getString("testValue"));
+				scenario.setAction(listeScenarios.getString("action"));
+				scenario.setActionParams(listeScenarios.getString("actionParams"));
+				scenario.setPriority(listeScenarios.getInt("priority"));
+				scenario.setActionMessage(listeScenarios.getString("actionMessage"));
+
 				scenarios.add(scenario);
 			}
 		}
@@ -322,6 +294,4 @@ public class ScenarioWorker extends Thread implements ISignalValueListener
 	{
 		return this.listeners.getListeners(IActionEventListener.class);
 	}
-	
-	
 }

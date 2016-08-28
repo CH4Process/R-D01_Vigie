@@ -7,6 +7,7 @@ import java.util.concurrent.Callable;
 
 import javax.xml.ws.RequestWrapper;
 
+import com.ch4process.database.ConnectionHandler;
 import com.ch4process.database.DatabaseRequest;
 import com.ch4process.database.IDatabaseRequestCallback;
 import com.ch4process.database.RequestList;
@@ -15,7 +16,10 @@ import com.ch4process.utils.CH4P_Exception;
 
 public class RecordWorker implements Callable<Integer>, ISignalValueListener
 {
-	DatabaseRequest recordValueRequest;
+	DatabaseRequest recordDigitalValueRequest;
+	DatabaseRequest recordAnalogValueRequest;
+	DatabaseRequest recordTotalizerValueRequest;
+	
 	IDatabaseRequestCallback recordValueRequestCallback;
 	boolean recordValueRequest_done = true;
 	
@@ -24,28 +28,14 @@ public class RecordWorker implements Callable<Integer>, ISignalValueListener
 	Boolean init_done = false;
 	
 	@Override
-	public void doubleValueChanged(int idSignal, double value, boolean quality, long datetime)
+	public void SignalValueChanged(SignalValueEvent event)
 	{
-		eventList.add(new SignalValueEvent(idSignal, value, quality, datetime));
-	}
-
-	@Override
-	public void intValueChanged(int idSignal, int value, boolean quality, long datetime)
-	{
-		eventList.add(new SignalValueEvent(idSignal, value, quality, datetime));
-	}
-
-	@Override
-	public void boolValueChanged(int idSignal, boolean value, boolean quality, long datetime)
-	{
-		eventList.add(new SignalValueEvent(idSignal, value, quality, datetime));
+		eventList.add(event);
+		System.out.println("RecordWorker - Event received ID : " + event.getIdSignal());
 	}
 	
-	public RecordWorker(DatabaseRequest recordValueRequest)
+	public RecordWorker(ConnectionHandler connectionHandler)
 	{
-		
-		this.recordValueRequest = recordValueRequest;
-		
 		recordValueRequestCallback = new IDatabaseRequestCallback()
 		{
 			
@@ -55,57 +45,87 @@ public class RecordWorker implements Callable<Integer>, ISignalValueListener
 				deleteEvent();
 			}
 		};
+		
+		recordDigitalValueRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_RecordDigitalMeasure, recordValueRequestCallback);
+		recordAnalogValueRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_RecordAnalogMeasure, recordValueRequestCallback);
+		recordTotalizerValueRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_RecordTotalizer, recordValueRequestCallback);
 	}
 
 	
 	private void eventHandling()
 	{
+		System.out.println("RecordWorker - EventHandling.");
+		
 		if (recordValueRequest_done == true)
 		{
 			if (eventList.size() > 0)
 			{
+				System.out.println("RecordWorker - EventHandling - Event .");
 				
 				SignalValueEvent event = eventList.get(0);
-				int type = event.getType();
+				SignalType type = event.getType();
+				DatabaseRequest request;
+				
+				System.out.println("RecordWorker - EventHandling - Event idSignal = " + event.getIdSignal());
 				
 				// Putting the right values in the statement
-				switch (type)
+				if (type.isTor)
 				{
-					case SignalValueEvent.DOUBLE_VALUE_EVENT: 
-						recordValueRequest.setRequest(RequestList.REQUEST_RecordAnalogMeasure);
-						recordValueRequest.setStatementDoubleParameter(1, event.getDoubleValue());
-						break;
-						
-					case SignalValueEvent.INTEGER_VALUE_EVENT:
-						recordValueRequest.setRequest(RequestList.REQUEST_RecordAnalogMeasure);
-						recordValueRequest.setStatementIntParameter(1, event.getIntValue());
-						break;
-						
-					case SignalValueEvent.BOOLEAN_VALUE_EVENT:
-						recordValueRequest.setRequest(RequestList.REQUEST_RecordDigitalMeasure);
-						if (event.getBoolValue() == true)
-						{
-							recordValueRequest.setStatementIntParameter(1, 1);
-						}
-						else
-						{
-							recordValueRequest.setStatementIntParameter(1, 0);
-						}
-						break;
-						
-					case SignalValueEvent.TOTALIZER_EVENT:
+					System.out.println("RecordWorker - EventHandling - Tor Event.");
+					
+					request = recordDigitalValueRequest;
+					
+					if (event.getBoolValue() == true)
 					{
-						recordValueRequest.setRequest(RequestList.REQUEST_RecordTotalizer);
-						recordValueRequest.setStatementDoubleParameter(1, event.getDoubleValue());
-						break;
+						request.setStatementIntParameter(1, 1);
+					}
+					else
+					{
+						request.setStatementIntParameter(1, 0);
 					}
 				}
-				recordValueRequest.setStatementDateParameter(2, event.getDatetime());
-				recordValueRequest.setStatementBoolParameter(3, event.isValid());
-				recordValueRequest.setStatementIntParameter(4, event.getIdSignal());
+				else
+				{
+					if (type.isTotalizer)
+					{
+						System.out.println("RecordWorker - EventHandling - Totalizer Event.");
+						request = recordTotalizerValueRequest;
+					}
+					else
+					{
+						System.out.println("RecordWorker - EventHandling - Analog Event.");
+						request = recordAnalogValueRequest;
+					}
+
+					if (event.getDoubleValue() != null)
+					{
+						long value = Math.round(event.getDoubleValue());
+						request.setStatementDoubleParameter(1, value);
+					}
+					else if (event.getIntValue() != null)
+					{
+						long value = (long) event.getIntValue();
+						request.setStatementDoubleParameter(1, value);
+					}
+					else
+					{
+						// No value at all so we put zero
+						request.setStatementDoubleParameter(1, 0);
+					}
+				}
+				
+				
+				
+				request.setStatementDateParameter(2, event.getDatetime());
+				request.setStatementBoolParameter(3, event.isValid());
+				request.setStatementIntParameter(4, event.getIdSignal());
+				
+				System.out.println("RecordWorker - EventHandling - Statements : idSignal : " + event.getIdSignal() );
 				
 				recordValueRequest_done = false;
-				recordValueRequest.doUpdate();
+				request.doUpdate();
+				
+				System.out.println("RecordWorker - EventHandling - Update done.");
 			}
 
 		}
@@ -130,12 +150,16 @@ public class RecordWorker implements Callable<Integer>, ISignalValueListener
 	@Override
 	public Integer call() throws CH4P_Exception
 	{
-		if (! init_done)
+		if (! this.init_done)
 		{
 			System.out.println("recordWorker start : " + Calendar.getInstance().getTime());
-			this.recordValueRequest.setCallback(recordValueRequestCallback);
-			this.recordValueRequest.start();
-			init_done = true;
+			
+			recordDigitalValueRequest.start();
+			recordAnalogValueRequest.start();
+			recordTotalizerValueRequest.start();
+			
+			this.init_done = true;
+			this.recordValueRequest_done = true;
 		}
 		
 		try
@@ -148,7 +172,10 @@ public class RecordWorker implements Callable<Integer>, ISignalValueListener
 		}
 		catch (Exception ex)
 		{
+			ex.printStackTrace();
 			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
 		}
 	}
+
+	
 }

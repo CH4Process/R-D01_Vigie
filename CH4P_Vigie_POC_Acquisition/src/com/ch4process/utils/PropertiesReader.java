@@ -3,6 +3,8 @@ package com.ch4process.utils;
 import java.io.InputStream;
 import java.util.Properties;
 
+import com.ch4process.email.Mail;
+
 
 public class PropertiesReader
 {

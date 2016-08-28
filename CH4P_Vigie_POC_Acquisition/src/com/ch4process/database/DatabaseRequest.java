@@ -51,8 +51,8 @@ public class DatabaseRequest extends Thread
 	{
 		this.request = request;
 	}
-
-	public void start()
+	
+	public void init()
 	{
 		try
 		{
@@ -62,6 +62,11 @@ public class DatabaseRequest extends Thread
 		{
 			e.printStackTrace();
 		}
+	}
+
+	public void start()
+	{
+		init();
 	}
 	
 	public void run()

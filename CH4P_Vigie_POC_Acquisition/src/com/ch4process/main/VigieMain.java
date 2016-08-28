@@ -1,11 +1,13 @@
 package com.ch4process.main;
 
+import java.util.concurrent.Callable;
+
 import com.ch4process.utils.CH4P_Multithreading;
 
 public class VigieMain extends Thread
 {
-	static Thread T_Acquisition;
-	static Thread T_Report;
+	static Callable T_Acquisition;
+	static Callable T_Report;
 	
 	public static void main(String[] args)
 	{
@@ -15,12 +17,10 @@ public class VigieMain extends Thread
 
 			//EVO DONE : 
 				// Utiliser Executor pour les Threads et basculer les modules en Callable plutôt qu'en Threads.
-				// Les workers doivent être ThreadSafes !! --> FAIT via l'utilisation de LinkedLists
-			
-			//EVO 5 : 
+				// Les workers doivent être ThreadSafes !! --> FAIT via l'utilisation de LinkedLists	
 				// Mieux gérer le modbus !
 				// Travailler la mise à jour des valeurs de type Totalizer pour éviter une mise à jour trop fréquente. Peut être en utilisant le countdown ? !!
-
+			
 			//EVO 10 : 
 				// Logs en BDD
 				// Vraie gestion des exceptions
@@ -33,7 +33,7 @@ public class VigieMain extends Thread
 				// Il peut être sympa de suivre le nombre de défauts acquis et le nombre de sms envoyés dans les rapports
 				// Signal emmet un fireValueChanged pour signaler un changement de valeur. Les alertes et alarmes fonctionnent différemment : on notifie dés que la valeur change ou au bout du refreshrate si la valeur n'a pas changé
 				// principe de lograte et refreshrate
-				// Gérer de potentielles valeurs de retour des callable via des Futures dans la classe CH4P_Multithreading -> Executor
+				// Gérer de potentielles valeurs de retour des callable via des Futures dans la classe CH4P_Multithreading -> Executor // Ou gérer ça dans l'exception custom...
 			
 			//EVO 50 : 
 				// Logs des erreurs (LOG4J ?)
@@ -45,7 +45,7 @@ public class VigieMain extends Thread
 						
 			Init_Utils();
 			Init_VigieAcquisition();
-			Init_VigieReport();
+			//Init_VigieReport();
 		}
 		catch (Exception ex)
 		{
@@ -56,13 +56,13 @@ public class VigieMain extends Thread
 	private static void Init_VigieAcquisition()
 	{
 		T_Acquisition = new VigieAcquisition("VigieAcquisition");
-		T_Acquisition.start();
+		CH4P_Multithreading.Submit(T_Acquisition);
 	}
 	
 	private static void Init_VigieReport()
 	{
 		T_Report = new VigieRapport("VigieRapport");
-		T_Report.start();
+		CH4P_Multithreading.Submit(T_Report);
 	}
 	
 	private static void Init_Utils()

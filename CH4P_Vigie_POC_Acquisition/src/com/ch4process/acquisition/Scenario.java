@@ -2,181 +2,65 @@ package com.ch4process.acquisition;
 
 import java.lang.reflect.Field;
 
+import com.ch4process.events.SignalValueEvent;
+
 public class Scenario
 {
-	Integer scenario_id;
-	Integer capteur_id;
+	Integer idScenario;
+	Integer idSignal;
 	String test;
-	String params;
-	Double doubleValueTested;
-	Integer intValueTested;
-	Boolean boolValueTested;
+	String testValue;
+	String action;
+	String actionParams;
+	String actionMessage;
+	Integer priority;
 	
 	Boolean isPresent = false;
 	
-	public void setField(String fieldName, Object fieldValue)
-	{
-		try
-		{
-			Class thisClass = this.getClass();
-			Field field = thisClass.getDeclaredField(fieldName);
-			boolean access = field.isAccessible();
-			field.setAccessible(true);
-			field.set(this, fieldValue);
-			field.setAccessible(access);
-		}
-		catch(NoSuchFieldException | IllegalArgumentException | IllegalAccessException ex)
-		{
-			ex.printStackTrace();
-		}
-	}
+	// Constructors
 	
-	public void init()
+	/**
+	 * @param idScenario
+	 * @param idSignal
+	 * @param test
+	 * @param testValue
+	 * @param action
+	 * @param actionParams
+	 * @param priority
+	 */
+	public Scenario(Integer idScenario, Integer idSignal, String test, String testValue, String action,
+			String actionParams, String actionMessage, Integer priority)
 	{
-		String[] testing = this.test.split("\\|");
-		if (testing.length > 1)
-		{
-			this.test = testing[0];
-			this.doubleValueTested = Double.valueOf(testing[1]);
-			this.intValueTested = Integer.valueOf(testing[1]);
-			if(Integer.valueOf(testing[1]) == 1)
-			{
-				this.boolValueTested = true;
-			}
-			else
-			{
-				this.boolValueTested = false;
-			}
-		}
+		this.idScenario = idScenario;
+		this.idSignal = idSignal;
+		this.test = test;
+		this.testValue = testValue;
+		this.action = action;
+		this.actionParams = actionParams;
+		this.actionMessage = actionMessage;
+		this.priority = priority;
 	}
 
-	public boolean testValue(Double value)
+	/**
+	 * 
+	 */
+	public Scenario()
 	{
-		try
-		{
-			boolean result = false;
-			
-			if (test.equals(">"))
-			{
-				if(value > doubleValueTested) result = true;
-			}
-			else if (test.equals("<"))
-			{
-				if(value < doubleValueTested) result = true;
-			}
-			else if (test.equals("="))
-			{
-				if(value == doubleValueTested) result = true;
-			}
-			else if (test.equals("!="))
-			{
-				if(value != doubleValueTested) result = true;
-			}
-			
-			return result;
-		}
-		catch (Exception ex)
-		{
-			ex.printStackTrace();
-			return false;
-		}
-	}
-	
-	public boolean testValue(Integer value)
-	{
-		try
-		{
-			boolean result = false;
-			
-			if (test.equals(">"))
-			{
-				if(value > intValueTested) result = true;
-			}
-			else if (test.equals("<"))
-			{
-				if(value < intValueTested) result = true;
-			}
-			else if (test.equals("="))
-			{
-				if(value == intValueTested) result = true;
-			}
-			else if (test.equals("!="))
-			{
-				if(value != intValueTested) result = true;
-			}
-			
-			return result;
-		}
-		catch (Exception ex)
-		{
-			ex.printStackTrace();
-			return false;
-		}
-	}
-	
-	public boolean testValue(Boolean value)
-	{
-		try
-		{
-			boolean result = false;
-			
-
-			if (test.equals("="))
-			{
-				if(value == boolValueTested) result = true;
-			}
-			else if (test.equals("!="))
-			{
-				if(value != boolValueTested) result = true;
-			}
-			
-			return result;
-		}
-		catch (Exception ex)
-		{
-			ex.printStackTrace();
-			return false;
-		}
-	}
-	
-	public Integer getScenario_id()
-	{
-		return scenario_id;
-	}
-
-	public Integer getCapteur_id()
-	{
-		return capteur_id;
+		this(null, null, null, null, null, null, null, null);
 	}
 
 	
-	public String getTest()
+	// Getters and Setters
+	
+	public String getActionMessage()
 	{
-		return test;
+		return this.actionMessage;
+	}
+	public void setActionMessage(String actionMessage)
+	{
+		this.actionMessage = actionMessage;
 	}
 	
-
-	public String getParams()
-	{
-		return params;
-	}
-	
-
-	public Double getDoubleValueTested()
-	{
-		return doubleValueTested;
-	}
-	
-	public Integer getIntValueTested()
-	{
-		return intValueTested;
-	}
-	
-	public Boolean getBoolValueTested()
-	{
-		return boolValueTested;
-	}
-
 	public Boolean getIsPresent()
 	{
 		return isPresent;
@@ -187,6 +71,172 @@ public class Scenario
 		this.isPresent = isPresent;
 	}
 	
-	
+	public Integer getIdScenario()
+	{
+		return idScenario;
+	}
 
+	public void setIdScenario(Integer idScenario)
+	{
+		this.idScenario = idScenario;
+	}
+
+	public Integer getIdSignal()
+	{
+		return idSignal;
+	}
+
+	public void setIdSignal(Integer idSignal)
+	{
+		this.idSignal = idSignal;
+	}
+
+	public String getTest()
+	{
+		return test;
+	}
+
+	public void setTest(String test)
+	{
+		this.test = test;
+	}
+
+	public String getTestValue()
+	{
+		return testValue;
+	}
+
+	public void setTestValue(String testValue)
+	{
+		this.testValue = testValue;
+	}
+
+	public String getAction()
+	{
+		return action;
+	}
+
+	public void setAction(String action)
+	{
+		this.action = action;
+	}
+
+	public String getActionParams()
+	{
+		return actionParams;
+	}
+
+	public void setActionParams(String actionParams)
+	{
+		this.actionParams = actionParams;
+	}
+
+	public Integer getPriority()
+	{
+		return priority;
+	}
+
+	public void setPriority(Integer priority)
+	{
+		this.priority = priority;
+	}
+
+	
+	
+	// Operational code
+	
+	public boolean testValue(SignalValueEvent event)
+	{
+		// We test the value only if the event comes from our Signal
+		if (event.getIdSignal() == this.idSignal)
+		{
+			try
+			{
+				boolean result = false;
+				
+				if (event.getBoolValue() != null)
+				{
+					if (event.getBoolValue().compareTo(Boolean.valueOf(testValue)) == 0)
+					{
+						result = true;
+					}
+				}
+				
+				if (event.getIntValue() != null)
+				{
+					if (test.equals(">"))
+					{
+						if (event.getIntValue() > Integer.valueOf(testValue))
+						{
+							result = true;
+						}
+					}
+					else if (test.equals("<"))
+					{
+						if (event.getIntValue() < Integer.valueOf(testValue))
+						{
+							result = true;
+						}
+					}
+					else if (test.equals("!="))
+					{
+						if (event.getIntValue() != Integer.valueOf(testValue))
+						{
+							result = true;
+						}
+					}
+					else if (test.equals("="))
+					{
+						if (event.getIntValue().equals(Integer.valueOf(testValue)))
+						{
+							result = true;
+						}
+					}
+				}
+				
+				if (event.getDoubleValue() != null)
+				{
+					if (test.equals(">"))
+					{
+						if (event.getDoubleValue() > Double.valueOf(testValue))
+						{
+							result = true;
+						}
+					}
+					else if (test.equals("<"))
+					{
+						if (event.getDoubleValue() < Double.valueOf(testValue))
+						{
+							result = true;
+						}
+					}
+					else if (test.equals("!="))
+					{
+						if (event.getDoubleValue() != Double.valueOf(testValue))
+						{
+							result = true;
+						}
+					}
+					else if (test.equals("="))
+					{
+						if (event.getDoubleValue().equals(Double.valueOf(testValue)))
+						{
+							result = true;
+						}
+					}
+				}
+				
+				return result;
+			}
+			catch (Exception ex)
+			{
+				ex.printStackTrace();
+				return false;
+			}
+		}
+		else
+		{
+			return false;
+		}
+	}
 }

@@ -11,21 +11,28 @@ public class Signal_Yocto_RS485_Modbus extends Signal
 	Integer offset;
 	YGenericSensor sensor;
 	
+	public Signal_Yocto_RS485_Modbus(Signal model)
+	{
+		super(model);
+	}
+	
 	// Operational code
 	
 	@Override
-	public Integer call() throws CH4P_Exception
+	public Integer call() throws Exception
 	{
 		try
 		{
 			while(true)
 			{
+				System.out.println("Signal : " + this.shortName + " routine called...");
 				Thread.sleep(this.refreshRate * 1000);
 			}
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			throw new CH4P_Exception(e.getMessage(), e.getCause());
+			ex.printStackTrace();
+			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
 		}
 	}
 }
