@@ -54,7 +54,6 @@ public class RecordWorker implements Callable<Integer>, ISignalValueListener
 	
 	private void eventHandling()
 	{
-		System.out.println("RecordWorker - EventHandling.");
 		
 		if (recordValueRequest_done == true)
 		{

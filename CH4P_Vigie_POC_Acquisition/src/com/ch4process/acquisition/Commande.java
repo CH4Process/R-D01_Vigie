@@ -57,19 +57,19 @@ public class Commande extends Signal implements IScenarioCommandListener
 		}
 	}
 	
-	public void addActionEventListener(IActionEventListener listener)
+	public void addActionEventListener(IScenarioEventListener listener)
 	{
-		listeners.add(IActionEventListener.class, listener);
+		listeners.add(IScenarioEventListener.class, listener);
 	}
 	
-	public void removeActionEventListener(IActionEventListener listener)
+	public void removeActionEventListener(IScenarioEventListener listener)
 	{
-		listeners.remove(IActionEventListener.class, listener);
+		listeners.remove(IScenarioEventListener.class, listener);
 	}
 	
-	protected IActionEventListener[] getActionEventListeners()
+	protected IScenarioEventListener[] getActionEventListeners()
 	{
-		return this.listeners.getListeners(IActionEventListener.class);
+		return this.listeners.getListeners(IScenarioEventListener.class);
 	}
 
 	@Override

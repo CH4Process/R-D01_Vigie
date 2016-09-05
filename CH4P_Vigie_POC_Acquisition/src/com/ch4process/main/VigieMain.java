@@ -2,6 +2,7 @@ package com.ch4process.main;
 
 import java.util.concurrent.Callable;
 
+import com.ch4process.database.DatabaseController;
 import com.ch4process.utils.CH4P_Multithreading;
 
 public class VigieMain extends Thread
@@ -45,7 +46,7 @@ public class VigieMain extends Thread
 						
 			Init_Utils();
 			Init_VigieAcquisition();
-			//Init_VigieReport();
+			Init_VigieReport();
 		}
 		catch (Exception ex)
 		{
@@ -61,12 +62,13 @@ public class VigieMain extends Thread
 	
 	private static void Init_VigieReport()
 	{
-		T_Report = new VigieRapport("VigieRapport");
+		T_Report = new VigieReport("VigieReport");
 		CH4P_Multithreading.Submit(T_Report);
 	}
 	
 	private static void Init_Utils()
 	{
+		DatabaseController.Init();
 		CH4P_Multithreading.Init();
 	}
 }

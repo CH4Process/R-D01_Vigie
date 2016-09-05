@@ -3,6 +3,7 @@ package com.ch4process.database;
 public class RequestList
 {
 	// REVAMPED
+	// ACQUISITION
 	public static final String REQUEST_SignalList =
 			"SELECT * FROM `Signal`;";
 	public static final String REQUEST_SignalTypeList =
@@ -23,21 +24,16 @@ public class RequestList
 			"SELECT * FROM `Scenario`;";
 	public static final String REQUEST_ModbusDeviceList = 
 			"SELECT * FROM `ModbusDevice`;";
-	
-	
-	// NOT REVAMPED
-	public static final String REQUEST_ActionList = 
-			"SELECT c.capteur_id, c.numeroserie, c.adresse, c.libelle, c.periode, tc.coeff, tc.marque, tc.modele, tc.plage_min, tc.plage_max FROM capteur c, type_capteur tc WHERE c.type_capteur_id = tc.type_capteur_id AND c.isOutput = true;";
-	
-	public static final String REQUEST_EventLog = 
-			"INSERT INTO evenement (scenario_id, date) VALUES (?,?);";
-	
-	public static final String REQUEST_WeekMeasures = 
-			"SELECT m.capteur_id, m.valeur, m.datetime, c.libelle, tc.unite, tc.coeff FROM mesure m, capteur c, type_capteur tc WHERE tc.type_capteur_id = c.type_capteur_id AND m.capteur_id = c.capteur_id AND m.datetime >= ?;";
-	public static final String REQUEST_Indexes = 
-			"SELECT t.capteur_id, c.libelle, t.valeur, t.lastupdate FROM totalizer t, capteur c WHERE c.capteur_id = t.capteur_id;";
-	public static final String REQUEST_UpdateIndexes = 
-			"UPDATE index i SET i.valeur = ?, i.lastupdate = NOW() WHERE i.capteur_id = ?;";
+	// EVENTS
+	public static final String REQUEST_RecordEventLog = 
+			"INSERT INTO `EventLog` (eventName, eventMessage, errorLevel, datetime) VALUES (?,?,?,?);";
+	// REPORT
+	public static final String REQUEST_TotalizerValue = 
+			"SELECT t.idSignal, t.value, t.datetime, t.isValid, t.lastValue, s.label FROM `Totalizer` t, `Signal` s WHERE t.idSignal = s.idSignal;";
+	public static final String REQUEST_DigitalMeasure = 
+			"SELECT dm.idSignal, dm.value, dm.datetime, s.label, st.isNormallyOpen FROM `DigitalMeasure` dm,`Signal` s,`SignalType` st WHERE dm.datetime >= ? AND dm.isValid = 1 AND s.idSignal = dm.idSignal AND st.idSignalType = s.idSignalType;";
+	public static final String REQUEST_AnalogMeasure = 
+			"SELECT am.idSignal, am.value, am.datetime, s.label, st.coeff, st.unit FROM `AnalogMeasure` am,`Signal` s,`SignalType` st WHERE am.datetime >= ? AND am.isValid = 1 AND s.idSignal = am.idSignal AND st.idSignalType = s.idSignalType;";
 	public static final String REQUEST_Scenarios = 
-			"SELECT s.libelle, s.test, s.params, e.date FROM scenario s, evenement e WHERE e.scenario_id = s.scenario_id;";
+			"SELECT * FROM `EventLog` WHERE errorLevel BETWEEN 100 AND 199;";
 }

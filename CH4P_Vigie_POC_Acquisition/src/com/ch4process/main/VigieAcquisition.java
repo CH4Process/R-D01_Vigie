@@ -50,7 +50,6 @@ public class VigieAcquisition implements Callable<Integer>
 	Map<Integer,SignalLevel> signalLevels = new HashMap<Integer,SignalLevel>();
 	Map<Integer,SignalType> signalTypes = new HashMap<Integer,SignalType>();
 	Map<Integer,Scenario> scenarios = new HashMap<Integer,Scenario>();
-	//List<Commande> commandes = new ArrayList<Commande>();
 	
 	ConnectionHandler connectionHandler;
 	DatabaseRequest signalListRequest;
@@ -60,8 +59,8 @@ public class VigieAcquisition implements Callable<Integer>
 	DatabaseRequest signalLevelListRequest;
 	DatabaseRequest signalTypeListRequest;
 	DatabaseRequest scenarioListRequest;
-	//DatabaseRequest commandeListRequest;
 	DatabaseRequest logEventRequest;
+	
 	IDatabaseRequestCallback signalListRequestCallback;
 	IDatabaseRequestCallback deviceListRequestCallback;
 	IDatabaseRequestCallback modbusDeviceListRequestCallback;
@@ -69,7 +68,7 @@ public class VigieAcquisition implements Callable<Integer>
 	IDatabaseRequestCallback signalLevelListRequestCallback;
 	IDatabaseRequestCallback signalTypeListRequestCallback;
 	IDatabaseRequestCallback scenarioListRequestCallback;
-	//IDatabaseRequestCallback commandeListRequestCallback;
+	
 	boolean signalListRequest_done = false;
 	boolean deviceListRequest_done = false;
 	boolean modbusDeviceListRequest_done = false;
@@ -77,7 +76,6 @@ public class VigieAcquisition implements Callable<Integer>
 	boolean signalLevelListRequest_done = false;
 	boolean signalTypeListRequest_done = false;
 	boolean scenarioListRequest_done = false;
-	boolean commandeListRequest_done = false;
 	
 	RecordWorker recordWorker;
 	ScenarioWorker scenarioWorker;
@@ -373,33 +371,6 @@ public class VigieAcquisition implements Callable<Integer>
 		}
 	}
 
-//	private void CommandeList(CachedRowSet listeCommandes)
-//	{
-//		try
-//		{
-//			ResultSetMetaData metadata = listeCommandes.getMetaData();
-//			Integer columnCount = metadata.getColumnCount();
-//
-//			while(listeCommandes.next())
-//			{
-//				Commande commande = new Commande();
-//				for(int i = 1; i <= columnCount; i++)
-//				{
-//					String arg0 = metadata.getColumnName(i);
-//					Object arg1 = listeCommandes.getObject(i);
-//					commande.SetField(arg0, arg1);
-//				}
-//				commandes.add(commande);
-//				scenarioWorker.addScenarioCommandListener(commande);
-//				commande.start();
-//			}
-//		}
-//		catch(SQLException ex)
-//		{
-//			ex.printStackTrace();
-//		}
-//	}
-	
 	
 	// Thread code
 	
@@ -540,20 +511,6 @@ public class VigieAcquisition implements Callable<Integer>
 			}
 		};
 		
-//		commandeListRequestCallback = new IDatabaseRequestCallback()
-//		{
-//			
-//			@Override
-//			public void databaseRequestCallback()
-//			{
-//				CommandeList(commandeListRequest.getCachedRowSet());
-//				commandeListRequest_done = true;
-//				commandeListRequest.close();
-//				commandeListRequest = null;
-//			}
-//		};
-		
-		
 		signalListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_SignalList, signalListRequestCallback);
 		signalTypeListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_SignalTypeList, signalTypeListRequestCallback);
 		signalLevelListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_SignalLevelList, signalLevelListRequestCallback);
@@ -563,21 +520,18 @@ public class VigieAcquisition implements Callable<Integer>
 	
 		scenarioListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_ScenarioList, null);
 		
-		//commandeListRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_ListeCommandes, commandeListRequestCallback);
 		
-		//logEventRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_EventLog, null);
-		//logWorker = new LogWorker(logEventRequest);
-		//logWorker.start();
+		logEventRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_RecordEventLog, null);
+		logWorker = new LogWorker(logEventRequest);
+		CH4P_Multithreading.Submit(logWorker);
 		
 		recordWorker = new RecordWorker(connectionHandler);
 		CH4P_Multithreading.Submit(recordWorker);
 		
 		scenarioWorker = new ScenarioWorker(scenarioListRequest);
-		//scenarioWorker.addActionEventListener(logWorker);
+		scenarioWorker.addScenarioEventListener(logWorker);
 		CH4P_Multithreading.Submit(scenarioWorker);
 		
-		//commandeListRequest.start();
-		//commandeListRequest.doQuery();
 		
 		signalListRequest.start();
 		signalListRequest.doQuery();
@@ -591,8 +545,6 @@ public class VigieAcquisition implements Callable<Integer>
 		deviceTypeListRequest.doQuery();
 		modbusDeviceListRequest.start();
 		modbusDeviceListRequest.doQuery();
-		
-		//super.start();
 	}
 	
 	public void run()

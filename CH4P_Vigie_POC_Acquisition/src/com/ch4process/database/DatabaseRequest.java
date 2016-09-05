@@ -132,6 +132,18 @@ public class DatabaseRequest extends Thread
 		}
 	}
 	
+	public void setStatementStringParameter(int id_parameter, String value)
+	{
+		try
+		{
+			this.preparedStatement.setString(id_parameter, value);
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+		}
+	}
+	
 	public void setStatementBoolParameter(int id_parameter, boolean value)
 	{
 		try

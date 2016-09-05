@@ -102,7 +102,6 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 						{
 							busy = true;
 							doScenario(scenario.getAction(), scenario.getActionParams(), scenario.getActionMessage());
-							fireActionEvent(scenario.getIdScenario(), Calendar.getInstance().getTime().getTime());
 						}
 					}
 				}
@@ -205,6 +204,7 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 		if (mail.sendMail())
 		{
 			System.out.println("ScenarioWorker : MAIL_SMS sent !");
+			fireScenarioEvent("MAILSMS", "TO : " + recipients + " -- " + message , Calendar.getInstance().getTime().getTime(), 110);
 		}
 		else
 		{
@@ -221,11 +221,11 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 		}
 	}
 	
-	private void fireActionEvent(int scenario_id, long datetime)
+	private void fireScenarioEvent(String _name, String _message, Long _datetime, Integer _code)
 	{
-		for (IActionEventListener listener : getActionEventListeners())
+		for (IScenarioEventListener listener : getScenarioEventListeners())
 		{
-			listener.onActionEvent(scenario_id, datetime);
+			listener.onScenarioEvent(_name, _message, _datetime, _code);
 		}
 	}
 	
@@ -280,18 +280,18 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 		return this.listeners.getListeners(IScenarioCommandListener.class);
 	}
 	
-	public void addActionEventListener(IActionEventListener listener)
+	public void addScenarioEventListener(IScenarioEventListener listener)
 	{
-		listeners.add(IActionEventListener.class, listener);
+		listeners.add(IScenarioEventListener.class, listener);
 	}
 	
-	public void removeActionEventListener(IActionEventListener listener)
+	public void removeScenarioEventListener(IScenarioEventListener listener)
 	{
-		listeners.remove(IActionEventListener.class, listener);
+		listeners.remove(IScenarioEventListener.class, listener);
 	}
 	
-	protected IActionEventListener[] getActionEventListeners()
+	protected IScenarioEventListener[] getScenarioEventListeners()
 	{
-		return this.listeners.getListeners(IActionEventListener.class);
+		return this.listeners.getListeners(IScenarioEventListener.class);
 	}
 }

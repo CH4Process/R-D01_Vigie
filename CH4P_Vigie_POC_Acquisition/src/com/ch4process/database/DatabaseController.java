@@ -113,6 +113,7 @@ public class DatabaseController implements AutoCloseable
 			{
 				connectionPool.get(i).setConnection(null);
 				connectionPool.remove(i);
+				connectionPool = null;
 			}
 			
 			initialized = false;

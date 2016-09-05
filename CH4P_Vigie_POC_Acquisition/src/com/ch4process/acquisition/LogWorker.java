@@ -4,11 +4,13 @@ import java.awt.event.ActionEvent;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Callable;
+
 import com.ch4process.database.DatabaseRequest;
 import com.ch4process.database.IDatabaseRequestCallback;
 import com.ch4process.events.SignalValueEvent;
 
-public class LogWorker extends Thread implements IActionEventListener
+public class LogWorker implements Callable<Integer>, IScenarioEventListener
 {
 	DatabaseRequest eventRecordRequest;
 	IDatabaseRequestCallback eventRecordRequestCallback;
@@ -18,30 +20,24 @@ public class LogWorker extends Thread implements IActionEventListener
 
 	private class scenarioEvent
 	{
-		Integer scenario_id;
+		String name;
+		String message;
 		Long date;
+		Integer errorLevel;
 		
-		public scenarioEvent(Integer id, Long date)
+		public scenarioEvent(String _name, String _message, Long _date, Integer _errorLevel)
 		{
-			this.scenario_id = id;
-			this.date = date;
-		}
-
-		public Integer getScenario_id()
-		{
-			return scenario_id;
-		}
-
-		public Long getDate()
-		{
-			return date;
+			this.name = _name;
+			this.message = _message;
+			this.date = _date;
+			this.errorLevel = _errorLevel;
 		}
 	}
 	
 	@Override
-	public void onActionEvent(Integer scenario_id, Long datetime)
+	public void onScenarioEvent(String _name, String _message, Long _datetime, Integer _code)
 	{
-		this.eventList.add(new scenarioEvent(scenario_id,datetime));
+		this.eventList.add(new scenarioEvent(_name, _message, _datetime, _code));
 	}
 	
 	public LogWorker(DatabaseRequest databaseRequest)
@@ -64,7 +60,6 @@ public class LogWorker extends Thread implements IActionEventListener
 		System.out.println("LogWorker start : " + Calendar.getInstance().getTime());
 		this.eventRecordRequest.setCallback(eventRecordRequestCallback);
 		this.eventRecordRequest.start();
-		super.start();
 	}
 	
 	public void run()
@@ -74,7 +69,7 @@ public class LogWorker extends Thread implements IActionEventListener
 			while (true)
 			{
 				eventHandling();
-				Thread.sleep(5 * 1000);
+				Thread.sleep(10 * 1000);
 			}
 		}
 		catch (Exception e)
@@ -92,8 +87,10 @@ public class LogWorker extends Thread implements IActionEventListener
 				
 				scenarioEvent event = eventList.get(0);
 		
-				eventRecordRequest.setStatementIntParameter(1, event.getScenario_id());
-				eventRecordRequest.setStatementDateParameter(2, event.getDate());
+				eventRecordRequest.setStatementStringParameter(1, event.name);
+				eventRecordRequest.setStatementStringParameter(2, event.message);
+				eventRecordRequest.setStatementIntParameter(3, event.errorLevel);
+				eventRecordRequest.setStatementDateParameter(4, event.date);
 				
 				eventRecordRequest_done = false;
 				eventRecordRequest.doUpdate();
@@ -116,6 +113,22 @@ public class LogWorker extends Thread implements IActionEventListener
 		{
 			eventRecordRequest_done = true;
 		}
+	}
+
+	@Override
+	public Integer call() throws Exception
+	{
+		try
+		{
+			start();
+			run();
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+			return null;
+		}
+		return null;
 	}
 	
 	

@@ -173,7 +173,8 @@ public class ModbusRequest
 					switch(signal.getSignalType().getComFormat())
 					{
 						case "FLOAT32":
-							double data = (double) Float.intBitsToFloat(myValue & myValue2);
+							Float f = Float.intBitsToFloat(myValue << 16 | myValue2);
+							double data = Double.parseDouble(f.toString());
 							entry.setValue(new SignalValueEvent(signal.getIdSignal(), data, null, null, isValid, Calendar.getInstance().getTime().getTime(), signal.getSignalType()));
 							break;
 						
