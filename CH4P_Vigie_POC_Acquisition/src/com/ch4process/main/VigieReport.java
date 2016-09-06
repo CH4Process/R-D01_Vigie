@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -358,7 +359,7 @@ public class VigieReport implements Callable<Integer>
 			SimpleDateFormat format = new SimpleDateFormat("yyyy_MM_dd_HH'h'mm");
 			String date = format.format(now.getTime());
 			String reportName = "CH4Process_Rapport_Defauts_" + date + ".txt";
-			CSVWriter writer = new CSVWriter( new OutputStreamWriter(new FileOutputStream(reportName), "UTF-8"));
+			CSVWriter writer = new CSVWriter( new OutputStreamWriter(new FileOutputStream(reportName), StandardCharsets.UTF_8));
 			
 			writer.writeNext(new String[] {"CH4Process"});
 			writer.writeNext(new String[] {"Rapport des défauts du : ", date});
@@ -437,7 +438,7 @@ public class VigieReport implements Callable<Integer>
 			while (digitalmeasures.next())
 			{
 				measureList.add(new measure(digitalmeasures.getInt("idSignal"), (double) CH4P_Functions.boolToInt(digitalmeasures.getBoolean("value")),
-						digitalmeasures.getLong("datetime"), digitalmeasures.getString("label"), null));
+						digitalmeasures.getTimestamp("datetime").getTime(), digitalmeasures.getString("label"), null));
 			}
 			
 			digitalmeasures = null;
@@ -451,7 +452,7 @@ public class VigieReport implements Callable<Integer>
 				Double dblVal = Double.parseDouble(val.toString());
 				
 				measureList.add(new measure(analogmesures.getInt("idSignal"), dblVal,
-						analogmesures.getLong("datetime"), analogmesures.getString("label"), analogmesures.getString("unit")));
+						analogmesures.getTimestamp("datetime").getTime(), analogmesures.getString("label"), analogmesures.getString("unit")));
 			}
 			
 			measureList.sort((d1, d2) -> d1.datetime.compareTo(d2.datetime));
@@ -460,7 +461,7 @@ public class VigieReport implements Callable<Integer>
 			SimpleDateFormat format = new SimpleDateFormat("yyyy_MM_dd_HH'h'mm");
 			String date = format.format(now.getTime());
 			String reportName = "CH4Process_Rapport_Mesures_" + date + ".txt";
-			CSVWriter writer = new CSVWriter( new OutputStreamWriter(new FileOutputStream(reportName), "UTF-8"));
+			CSVWriter writer = new CSVWriter( new OutputStreamWriter(new FileOutputStream(reportName), StandardCharsets.UTF_8));
 			
 			writer.writeNext(new String[] {"CH4Process"});
 			writer.writeNext(new String[] {"Rapport des mesures du : ", date});
@@ -470,7 +471,9 @@ public class VigieReport implements Callable<Integer>
 			
 			for(measure m : measureList)
 			{
-				writer.writeNext(new String[] {m.label, m.datetime.toString(), m.value.toString(), m.unit });
+				format.applyPattern("HH:mm:ss dd/MM/yyyy");
+				String datetime = format.format(new Date(m.datetime));
+				writer.writeNext(new String[] {m.label, datetime, m.value.toString(), m.unit });
 			}
 			
 			writer.close();
@@ -497,7 +500,7 @@ public class VigieReport implements Callable<Integer>
 			SimpleDateFormat format = new SimpleDateFormat("yyyy_MM_dd_HH'h'mm");
 			String date = format.format(now.getTime());
 			String reportName = "CH4Process_Rapport_Scenarios_" + date + ".txt";
-			CSVWriter writer = new CSVWriter( new OutputStreamWriter(new FileOutputStream(reportName), "UTF-8"));
+			CSVWriter writer = new CSVWriter( new OutputStreamWriter(new FileOutputStream(reportName), StandardCharsets.UTF_8));
 			
 			writer.writeNext(new String[] {"CH4Process"});
 			writer.writeNext(new String[] {"Rapport des scenarios du : ", date});
@@ -507,8 +510,9 @@ public class VigieReport implements Callable<Integer>
 			
 			while (scenarios.next())
 			{
-				Long datetime = scenarios.getLong("datetime");
-				writer.writeNext(new String[] {scenarios.getString("eventMessage"), datetime.toString()});
+				format.applyPattern("HH:mm:ss dd/MM/yyyy");
+				String datetime = format.format(new Date(scenarios.getTimestamp("datetime").getTime()));
+				writer.writeNext(new String[] {scenarios.getString("eventMessage"), datetime});
 			}
 			
 			writer.close();

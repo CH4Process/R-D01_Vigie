@@ -45,7 +45,7 @@ public class VigieMain extends Thread
 			
 						
 			Init_Utils();
-			Init_VigieAcquisition();
+			//Init_VigieAcquisition();
 			Init_VigieReport();
 		}
 		catch (Exception ex)

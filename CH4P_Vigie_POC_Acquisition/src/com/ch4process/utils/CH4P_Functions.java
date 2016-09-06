@@ -6,5 +6,10 @@ public class CH4P_Functions
 	{
 		return value ? 1:0;
 	}
+	
+	public static Boolean StringToBool(String s)
+	{
+		return s.equals("1") ? true : false;
+	}
 
 }

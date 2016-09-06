@@ -3,6 +3,8 @@ package com.ch4process.acquisition;
 import java.lang.reflect.Field;
 
 import com.ch4process.events.SignalValueEvent;
+import com.ch4process.utils.CH4P_Exception;
+import com.ch4process.utils.CH4P_Functions;
 
 public class Scenario
 {
@@ -156,7 +158,7 @@ public class Scenario
 				
 				if (event.getBoolValue() != null)
 				{
-					if (event.getBoolValue().compareTo(Boolean.valueOf(testValue)) == 0)
+					if (event.getBoolValue().compareTo(CH4P_Functions.StringToBool(testValue)) == 0)
 					{
 						result = true;
 					}
