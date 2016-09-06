@@ -448,8 +448,21 @@ public class VigieReport implements Callable<Integer>
 			
 			while (analogmesures.next())
 			{
-				Float val = analogmesures.getFloat("coeff") * analogmesures.getInt("value");
-				Double dblVal = Double.parseDouble(val.toString());
+				Integer value = analogmesures.getInt("value");
+				Float coeff = analogmesures.getFloat("coeff");
+				String val;
+				
+				if (coeff != null & coeff != 0.0f)
+				{
+					Float f = coeff * value;
+					val = f.toString();
+				}
+				else
+				{
+					val = value.toString();
+				}
+				
+				Double dblVal = Double.parseDouble(val);
 				
 				measureList.add(new measure(analogmesures.getInt("idSignal"), dblVal,
 						analogmesures.getTimestamp("datetime").getTime(), analogmesures.getString("label"), analogmesures.getString("unit")));

@@ -19,12 +19,23 @@ public class ModbusRequest
 	Integer requestlength;
 	Map<Signal, SignalValueEvent> elements = new HashMap<Signal, SignalValueEvent>();
 	ArrayList<Integer> values = null;
+	String byteOrder = null;
 	
 	public static final int REQUEST_NONE = 0;
 	public static final int REQUEST_READ_HOLDING_REGISTERS = 1;
 	public static final int REQUEST_READ_COILS = 0;
 	
 	// Getters and Setters
+	
+	public String getByteOrder()
+	{
+		return this.byteOrder;
+	}
+	
+	public void setByteOrder(String _byteOrder)
+	{
+		this.byteOrder = _byteOrder;
+	}
 	
 	public Integer getRequestType()
 	{
@@ -119,6 +130,28 @@ public class ModbusRequest
 		System.out.println("ModbusRequest : Request - Start = " + startAddress + " - Length = " + requestlength);
 	}
 
+	private void HandleByteOrder(Integer _A, Integer _B)
+	{
+		Integer _C;
+		try
+		{
+			switch (this.byteOrder)
+			{
+				case "1234": break;
+				
+				case "2143": _A = Integer.reverseBytes(_A) >> 16; _B = Integer.reverseBytes(_B) >> 16; break;
+				
+				case "3421" : _C = _A; _A = _B; _B = _C; break;
+				
+				case "4321" : _C = _A; _A = _B; _B = _C; _A = Integer.reverseBytes(_A) >> 16; _B = Integer.reverseBytes(_B) >> 16; break;
+			}
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+		}
+	}
+	
 	public void Execute(YSerialPort serialPort, int slaveNumber)
 	{
 		boolean isValid = true;
@@ -168,6 +201,8 @@ public class ModbusRequest
 					{
 						myValue = values.get(index);
 						myValue2 = values.get(index+1);
+						
+						HandleByteOrder(myValue, myValue2);
 					}
 					
 					switch(signal.getSignalType().getComFormat())
@@ -175,6 +210,10 @@ public class ModbusRequest
 						case "FLOAT32":
 							Float f = Float.intBitsToFloat(myValue << 16 | myValue2);
 							double data = Double.parseDouble(f.toString());
+							if (signal.getSignalType().getCoeff() != null && signal.getSignalType().getCoeff() != 0.0)
+							{
+								data = data / signal.getSignalType().getCoeff();
+							}
 							entry.setValue(new SignalValueEvent(signal.getIdSignal(), data, null, null, isValid, Calendar.getInstance().getTime().getTime(), signal.getSignalType()));
 							break;
 						

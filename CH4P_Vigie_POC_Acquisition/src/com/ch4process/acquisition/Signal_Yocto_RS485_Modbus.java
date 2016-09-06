@@ -8,8 +8,6 @@ import com.yoctopuce.YoctoAPI.YGenericSensor;
 
 public class Signal_Yocto_RS485_Modbus extends Signal
 {
-	Integer offset;
-	YGenericSensor sensor;
 	
 	public Signal_Yocto_RS485_Modbus(Signal model)
 	{

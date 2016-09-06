@@ -23,6 +23,10 @@ public class ModbusDevice implements Callable
 	Integer speed = null;
 	
 	// Internal variables
+	Integer nbBitsStop = 1;
+	String parity = "N";
+	Integer nbDataBits = 8;
+	
 	Device device = null;
 	List<Signal> HoldingRegisterSignals = new ArrayList<Signal>();
 	List<Signal> CoilSignals = new ArrayList<Signal>();
@@ -119,7 +123,7 @@ public class ModbusDevice implements Callable
 			{
 				// Here we create a new modbus request based on the list of Signals
 				ModbusRequest request = new ModbusRequest(SignalList);
-
+				request.setByteOrder(this.byteOrder);
 				request.Init();
 
 				requests.add(request);
@@ -136,6 +140,7 @@ public class ModbusDevice implements Callable
 		try
 		{
 			serialPort = YSerialPort.FindSerialPort(this.device.getSerialNumber());
+			Config();
 			
 			if (serialPort.isOnline())
 			{
@@ -164,6 +169,22 @@ public class ModbusDevice implements Callable
 		{
 			ex.printStackTrace();
 			return false;
+		}
+	}
+	
+	private void Config()
+	{
+		try
+		{
+			if (this.serialPort != null)
+			{
+				serialPort.set_protocol("Modbus-RTU");
+				serialPort.set_serialMode(this.speed.toString() + "," + this.nbDataBits.toString() + this.parity + this.nbBitsStop.toString());
+			}
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
 		}
 	}
 
