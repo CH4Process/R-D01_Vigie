@@ -2,6 +2,7 @@ package com.ch4process.acquisition;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
@@ -96,12 +97,15 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 				{
 					if (scenario.getIdSignal().equals(event.getIdSignal()))
 					{
-						Boolean isTriggered = scenario.testValue(event);
-						
-						if(checkIsPresent(scenario, isTriggered))
+						if (scenario.getIsActive())
 						{
-							busy = true;
-							doScenario(scenario.getAction(), scenario.getActionParams(), scenario.getActionMessage());
+							Boolean isTriggered = scenario.testValue(event);
+
+							if(checkIsPresent(scenario, isTriggered))
+							{
+								busy = true;
+								doScenario(scenario.getAction(), scenario.getActionParams(), scenario.getActionMessage());
+							}
 						}
 					}
 				}
@@ -195,6 +199,12 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 		
 		String subject = mail.getMailsmsaccount() + mail.getMailsmslogin() + mail.getMailsmspassword() + mail.getMailsmsfrom() + recipients + mail.getMailsmsparameters();
 		
+		Calendar now = Calendar.getInstance();
+		SimpleDateFormat format = new SimpleDateFormat("HH'h'mm dd/MM/yyyy");
+		String date = format.format(now.getTime());
+		
+		message = date + " - " + message;
+		
 		mail.setAuthenticationType(Mail.AUTH_SSL);
 		mail.setFrom(mail.getUsername());
 		mail.setSubject(subject);
@@ -254,6 +264,7 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 				scenario.setActionParams(listeScenarios.getString("actionParams"));
 				scenario.setPriority(listeScenarios.getInt("priority"));
 				scenario.setActionMessage(listeScenarios.getString("actionMessage"));
+				scenario.setIsActive(listeScenarios.getBoolean("isActive"));
 
 				scenarios.add(scenario);
 			}

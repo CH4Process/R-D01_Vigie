@@ -16,6 +16,7 @@ public class Scenario
 	String actionParams;
 	String actionMessage;
 	Integer priority;
+	Boolean isActive;
 	
 	Boolean isPresent = false;
 	
@@ -30,17 +31,18 @@ public class Scenario
 	 * @param actionParams
 	 * @param priority
 	 */
-	public Scenario(Integer idScenario, Integer idSignal, String test, String testValue, String action,
-			String actionParams, String actionMessage, Integer priority)
+	public Scenario(Integer _idScenario, Integer _idSignal, String _test, String _testValue, String _action,
+			String _actionParams, String _actionMessage, Integer _priority, Boolean _isActive)
 	{
-		this.idScenario = idScenario;
-		this.idSignal = idSignal;
-		this.test = test;
-		this.testValue = testValue;
-		this.action = action;
-		this.actionParams = actionParams;
-		this.actionMessage = actionMessage;
-		this.priority = priority;
+		this.idScenario = _idScenario;
+		this.idSignal = _idSignal;
+		this.test = _test;
+		this.testValue = _testValue;
+		this.action = _action;
+		this.actionParams = _actionParams;
+		this.actionMessage = _actionMessage;
+		this.priority = _priority;
+		this.isActive = _isActive;
 	}
 
 	/**
@@ -48,7 +50,7 @@ public class Scenario
 	 */
 	public Scenario()
 	{
-		this(null, null, null, null, null, null, null, null);
+		this(null, null, null, null, null, null, null, null, null);
 	}
 
 	
@@ -141,6 +143,16 @@ public class Scenario
 	public void setPriority(Integer priority)
 	{
 		this.priority = priority;
+	}
+	
+	public Boolean getIsActive()
+	{
+		return this.isActive;
+	}
+	
+	public void setIsActive(Boolean _isActive)
+	{
+		this.isActive = _isActive;
 	}
 
 	

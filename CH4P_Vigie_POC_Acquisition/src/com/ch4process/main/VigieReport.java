@@ -1,5 +1,6 @@
 package com.ch4process.main;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.OutputStreamWriter;
@@ -58,6 +59,7 @@ public class VigieReport implements Callable<Integer>
 	boolean getScenariosRequest_done = false;
 	
 	int currentReport = 0;
+	boolean yield = true;
 	
 	public VigieReport(String name)
 	{
@@ -112,16 +114,18 @@ public class VigieReport implements Callable<Integer>
 				}
 				
 				// Report based on totalizers
-				if (getDigitalMeasuresRequest_done && getTotalizersRequest_done && currentReport == 0)
+				if (getDigitalMeasuresRequest_done && getTotalizersRequest_done && currentReport == 0 && yield)
 				{
+					yield = false;
 					FaultsReport();
 					getTotalizersRequest_done = false;
 					currentReport = 1;
 				}
 				
 				// Report based on measures
-				if (getAnalogMeasuresRequest_done && getDigitalMeasuresRequest_done && currentReport == 1)
+				if (getAnalogMeasuresRequest_done && getDigitalMeasuresRequest_done && currentReport == 1 && yield)
 				{
+					yield = false;
 					MeasuresReport();
 					getDigitalMeasuresRequest_done = false;
 					getAnalogMeasuresRequest_done = false;
@@ -129,14 +133,25 @@ public class VigieReport implements Callable<Integer>
 				}
 				
 				// Report based on the scenarios
-				if (getScenariosRequest_done && currentReport == 2)
+				if (getScenariosRequest_done && currentReport == 2 && yield)
 				{
+					yield = false;
 					ScenariosReport();
 					getScenariosRequest_done = false;
-					currentReport = 0;
+					currentReport = 3;
 				}
 				
+				if (currentReport == 3 && yield)
+				{
+					yield = false;
+					
+					currentReport = 0;
+					
+				}
+				
+				
 				Thread.sleep(60 * 1000);
+				yield = true;
 			}
 			catch (Exception e)
 			{
@@ -538,6 +553,12 @@ public class VigieReport implements Callable<Integer>
 		{
 			ex.printStackTrace();
 		}
+	}
+	
+	private void SendReport()
+	{
+		File homedir = new File(System.getProperty("user.home"));
+		File fileToRead = new File(homedir, "java/ex.txt");
 	}
 	
 }

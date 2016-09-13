@@ -11,5 +11,9 @@ public class CH4P_Functions
 	{
 		return s.equals("1") ? true : false;
 	}
-
+	
+	public static final String getHomePath()
+	{
+		return System.getProperty("user.home");
+	}
 }
