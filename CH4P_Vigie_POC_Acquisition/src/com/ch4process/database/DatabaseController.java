@@ -4,7 +4,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import com.ch4process.utils.PropertiesReader;
+import com.ch4process.utils.CH4P_PropertiesReader;
 
 
 public class DatabaseController implements AutoCloseable
@@ -28,7 +28,7 @@ public class DatabaseController implements AutoCloseable
 	{
 		try
 		{
-			PropertiesReader propReader = new PropertiesReader();
+			CH4P_PropertiesReader propReader = new CH4P_PropertiesReader();
 			Properties prop = propReader.getPropValues(configFile);
 			
 			if (prop != null)

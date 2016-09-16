@@ -7,6 +7,11 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -24,9 +29,11 @@ import com.ch4process.database.DatabaseController;
 import com.ch4process.database.DatabaseRequest;
 import com.ch4process.database.IDatabaseRequestCallback;
 import com.ch4process.database.RequestList;
+import com.ch4process.email.Mail;
 import com.ch4process.utils.CH4P_Exception;
 import com.ch4process.utils.CH4P_Functions;
 import com.ch4process.utils.CH4P_Multithreading;
+import com.ch4process.utils.CH4P_System;
 import com.opencsv.CSVWriter;
 
 
@@ -60,6 +67,7 @@ public class VigieReport implements Callable<Integer>
 	
 	int currentReport = 0;
 	boolean yield = true;
+	int reportSendLimit = 12;
 	
 	public VigieReport(String name)
 	{
@@ -144,7 +152,7 @@ public class VigieReport implements Callable<Integer>
 				if (currentReport == 3 && yield)
 				{
 					yield = false;
-					
+					SendReports();
 					currentReport = 0;
 					
 				}
@@ -555,10 +563,55 @@ public class VigieReport implements Callable<Integer>
 		}
 	}
 	
-	private void SendReport()
+	private void SendReports()
 	{
-		File homedir = new File(System.getProperty("user.home"));
-		File fileToRead = new File(homedir, "java/ex.txt");
+		// Mail setup
+		Mail mail = new Mail();
+		
+		Calendar now = Calendar.getInstance();
+		SimpleDateFormat format = new SimpleDateFormat("HH'h'mm dd/MM/yyyy");
+		String date = format.format(now.getTime());
+		
+		String subject = "Rapports d'exploitation du " + date;
+		
+		mail.setAuthenticationType(Mail.AUTH_SSL);
+		mail.setFrom(mail.getUsername());
+		mail.setSubject(subject);
+		mail.setTo(mail.getReportRecipients());
+		mail.setText("");
+		
+		// Attachments setup
+		mail.addAttachmentsFolder(CH4P_System.PATH_Vigie_Reports);
+		
+		if (mail.sendMail())
+		{
+			System.out.println("VigieReport : REPORTS sent !");
+			SaveReports();
+		}
+		else
+		{
+			System.out.println("VigieReport : Failed to send REPORTS !");
+		}
+	}
+	
+	private void SaveReports()
+	{
+		try
+		{
+			String source = CH4P_System.PATH_Vigie_Reports;
+			
+			File[] files = new File(source).listFiles();
+			
+			for (File file : files)
+			{
+				Path destination = FileSystems.getDefault().getPath(CH4P_System.PATH_Vigie_Reports_Sent + FileSystems.getDefault().getSeparator() + file.getName());
+				Files.move(file.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
+			}
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+		}
 	}
 	
 }

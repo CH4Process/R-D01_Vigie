@@ -15,7 +15,7 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
-import com.ch4process.utils.PropertiesReader;
+import com.ch4process.utils.CH4P_PropertiesReader;
 
 import javax.mail.internet.InternetAddress;
 import javax.activation.DataHandler;
@@ -40,6 +40,7 @@ public class Mail implements Callable<Integer>
 	private Session session;
 	private Properties properties;
 	private Message message;
+	private Multipart multipart = null;
 	
 	private String smtp_host;
 	private Integer authenticationType;
@@ -59,6 +60,9 @@ public class Mail implements Callable<Integer>
 	private String mailsmsfrom;
 	private String mailsmsparameters;
 	
+	// Reports
+	private String reportRecipients;
+	
 	private boolean busy = false;
 
 	
@@ -66,7 +70,7 @@ public class Mail implements Callable<Integer>
 	{
 		try
 		{
-			PropertiesReader propReader = new PropertiesReader();
+			CH4P_PropertiesReader propReader = new CH4P_PropertiesReader();
 			Properties prop = propReader.getPropValues(config);
 			
 			this.smtp_host = prop.getProperty("host");
@@ -81,6 +85,8 @@ public class Mail implements Callable<Integer>
 			this.mailsmspassword = prop.getProperty("mailsmspassword");
 			this.mailsmsfrom = prop.getProperty("mailsmsfrom");
 			this.mailsmsparameters = prop.getProperty("mailsmsparameters");
+			
+			this.reportRecipients = prop.getProperty("reportrecipients");
 			
 			prop = null;
 			propReader = null;
@@ -120,6 +126,11 @@ public class Mail implements Callable<Integer>
 	public String getMailsmsparameters()
 	{
 		return mailsmsparameters;
+	}
+	
+	public String getReportRecipients()
+	{
+		return reportRecipients;
 	}
 
 	public String getSmtp_host()
@@ -248,6 +259,11 @@ public class Mail implements Callable<Integer>
 			message.setSubject(subject);
 			message.setText(text);
 			
+			if (multipart != null)
+			{
+				message.setContent(multipart);
+			}
+			
 			return true;		
 		} 
 		catch (Exception e) 
@@ -321,7 +337,7 @@ public class Mail implements Callable<Integer>
 	{
 		try
 		{
-			Multipart multipart = new MimeMultipart();
+			Multipart mp = new MimeMultipart();
 			
 			for (String element : paths) 
 			{
@@ -330,10 +346,10 @@ public class Mail implements Callable<Integer>
 				DataSource source = new FileDataSource(element);
 				messageBodyPart.setDataHandler(new DataHandler(source));
 				messageBodyPart.setFileName(element.substring(element.lastIndexOf("/")));
-				multipart.addBodyPart(messageBodyPart);		
+				mp.addBodyPart(messageBodyPart);		
 			}
 			
-			message.setContent(multipart);
+			this.multipart = mp;
 			return true;
 		}
 		catch (Exception e)
@@ -354,20 +370,21 @@ public class Mail implements Callable<Integer>
 			File folder = new File(folderPath);
 			File[] files = folder.listFiles();
 			
-			Multipart multipart = new MimeMultipart();
+			Multipart mp = new MimeMultipart();
 			
 			for (int i = 0; i < files.length; i++)
 			{
-				if (files[i].toString().endsWith(".csv"))
+				if (files[i].toString().endsWith(".txt"))
 				{
 					MimeBodyPart messageBodyPart = new MimeBodyPart();
 					DataSource source = new FileDataSource(files[i]);
 					messageBodyPart.setDataHandler(new DataHandler(source));
 					messageBodyPart.setFileName(files[i].getName());
-					multipart.addBodyPart(messageBodyPart);
+					mp.addBodyPart(messageBodyPart);
 				}
 			}
-			message.setContent(multipart);
+			
+			this.multipart = mp;
 			return true;
 		}
 		catch (Exception e)

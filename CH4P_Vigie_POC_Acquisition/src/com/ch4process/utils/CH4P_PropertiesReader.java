@@ -6,7 +6,7 @@ import java.util.Properties;
 import com.ch4process.email.Mail;
 
 
-public class PropertiesReader
+public class CH4P_PropertiesReader
 {
 	
 	public Properties getPropValues(String fileName) 
