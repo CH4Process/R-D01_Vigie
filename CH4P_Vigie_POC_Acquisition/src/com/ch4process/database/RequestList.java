@@ -19,7 +19,7 @@ public class RequestList
 	public static final String REQUEST_RecordAnalogMeasure = 
 			"INSERT INTO `AnalogMeasure` (value, datetime, isValid, idSignal) VALUES (?,?,?,?);";
 	public static final String REQUEST_RecordTotalizer = 
-			"UPDATE `Totalizer` SET lastValue = value, value = ?, datetime = ?, isValid = ? WHERE idSignal = ?;";
+			"UPDATE `Totalizer` SET value = ?, datetime = ?, isValid = ? WHERE idSignal = ?;";
 	public static final String REQUEST_ScenarioList = 
 			"SELECT * FROM `Scenario`;";
 	public static final String REQUEST_ModbusDeviceList = 
@@ -28,12 +28,14 @@ public class RequestList
 	public static final String REQUEST_RecordEventLog = 
 			"INSERT INTO `EventLog` (eventName, eventMessage, errorLevel, datetime) VALUES (?,?,?,?);";
 	// REPORT
+	public static final String REQUEST_UpdateTotalizer = 
+			"UPDATE `Totalizer` SET lastvalue = value, value = ?, datetime = ?, isValid = ? WHERE idSignal = ?;";
 	public static final String REQUEST_TotalizerValue = 
 			"SELECT t.idSignal, t.value, t.datetime, t.isValid, t.lastValue, s.label FROM `Totalizer` t, `Signal` s WHERE t.idSignal = s.idSignal;";
 	public static final String REQUEST_DigitalMeasure = 
-			"SELECT dm.idSignal, dm.value, dm.datetime, s.label, st.isNormallyOpen FROM `DigitalMeasure` dm,`Signal` s,`SignalType` st WHERE dm.datetime >= ? AND dm.isValid = 1 AND s.idSignal = dm.idSignal AND st.idSignalType = s.idSignalType;";
+			"SELECT dm.idSignal, dm.value, dm.datetime, s.label, st.isNormallyOpen FROM `DigitalMeasure` dm,`Signal` s,`SignalType` st WHERE dm.datetime >= ? AND dm.isValid = 1 AND s.idSignal = dm.idSignal AND st.idSignalType = s.idSignalType ORDER BY dm.datetime;";
 	public static final String REQUEST_AnalogMeasure = 
-			"SELECT am.idSignal, am.value, am.datetime, s.label, st.coeff, st.unit FROM `AnalogMeasure` am,`Signal` s,`SignalType` st WHERE am.datetime >= ? AND am.isValid = 1 AND s.idSignal = am.idSignal AND st.idSignalType = s.idSignalType;";
+			"SELECT am.idSignal, am.value, am.datetime, s.label, st.coeff, st.unit FROM `AnalogMeasure` am,`Signal` s,`SignalType` st WHERE am.datetime >= ? AND am.isValid = 1 AND s.idSignal = am.idSignal AND st.idSignalType = s.idSignalType ORDER BY am.datetime;";
 	public static final String REQUEST_Scenarios = 
-			"SELECT * FROM `EventLog` WHERE errorLevel BETWEEN 100 AND 199;";
+			"SELECT * FROM `EventLog` WHERE errorLevel BETWEEN 100 AND 199 AND datetime >= ?;";
 }

@@ -92,7 +92,6 @@ public class Signal_Yocto_MaxiIO extends Signal
 			
 			while(true)
 			{
-				System.out.println("Signal : " + this.shortName + " routine called...");
 				Refresh();
 				Thread.sleep(this.refreshRate * 1000);
 			}

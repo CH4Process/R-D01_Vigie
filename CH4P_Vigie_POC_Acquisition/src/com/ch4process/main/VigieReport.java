@@ -69,6 +69,7 @@ public class VigieReport implements Callable<Integer>
 	boolean yield = true;
 	int reportSendLimit = 12;
 	
+	
 	public VigieReport(String name)
 	{
 		this.threadName = name;
@@ -100,11 +101,12 @@ public class VigieReport implements Callable<Integer>
 		
 		String[] time = reportTimeParam.split(":");
 		reportTime = Calendar.getInstance();
+		reportTime.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
 		reportTime.set(Calendar.HOUR_OF_DAY, Integer.valueOf(time[0]));
 		reportTime.set(Calendar.MINUTE, Integer.valueOf(time[1]));
 		reportTime.set(Calendar.SECOND, 0);
 		
-		// TODO : Remove this code (here for debug purpose)
+		// TODO : VigieReport - start - Remove this code (here for debug purpose)
 		Calendar now = Calendar.getInstance();
 		reportTime.setTime(now.getTime());
 		reportTime.add(Calendar.MINUTE, -1);
@@ -155,6 +157,8 @@ public class VigieReport implements Callable<Integer>
 					SendReports();
 					currentReport = 0;
 					
+					// Update reportTime to set it to next week
+					reportTime.add(Calendar.DAY_OF_MONTH, reportSpan);
 				}
 				
 				
@@ -226,7 +230,7 @@ public class VigieReport implements Callable<Integer>
 		getDigitalMeasures = new DatabaseRequest(connectionHandler, RequestList.REQUEST_DigitalMeasure, getDigitalMeasuresRequestCallback);
 		getAnalogMeasures = new DatabaseRequest(connectionHandler, RequestList.REQUEST_AnalogMeasure, getAnalogMeasuresRequestCallback);
 		getTotalizers = new DatabaseRequest(connectionHandler, RequestList.REQUEST_TotalizerValue, getTotalizersRequestCallback);
-		updateTotalizers = new DatabaseRequest(connectionHandler, RequestList.REQUEST_RecordTotalizer, updateTotalizersRequestCallback);
+		updateTotalizers = new DatabaseRequest(connectionHandler, RequestList.REQUEST_UpdateTotalizer, updateTotalizersRequestCallback);
 		getScenariosRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_Scenarios, getScenariosRequestCallback);
 		
 		getDigitalMeasures.start();
@@ -256,6 +260,26 @@ public class VigieReport implements Callable<Integer>
 		}
 	}
 	
+	private String GetFormatedDate(Calendar date, String pattern)
+	{
+		SimpleDateFormat format = new SimpleDateFormat(pattern);
+		return format.format(date.getTime());
+	}
+	
+	private CSVWriter GetWriter(String reportName)
+	{
+		try
+		{
+			reportName = CH4P_System.PATH_Vigie_Reports + CH4P_System.GetSeparator() + reportName;
+			return new CSVWriter( new OutputStreamWriter(new FileOutputStream(reportName), StandardCharsets.UTF_8));
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+		}
+		return null;
+	}
+
 	private void getDatas()
 	{
 		try
@@ -267,6 +291,7 @@ public class VigieReport implements Callable<Integer>
 			getAnalogMeasures.setStatementDateParameter(1, startDay.getTimeInMillis());
 			getAnalogMeasures.doQuery();
 			getTotalizers.doQuery();
+			getScenariosRequest.setStatementDateParameter(1, startDay.getTimeInMillis());
 			getScenariosRequest.doQuery();
 		}
 		catch (Exception e)
@@ -313,7 +338,7 @@ public class VigieReport implements Callable<Integer>
 		
 		CH4P_Multithreading.Submit(task);
 	}
-
+	
 	private void FaultsReport()
 	{
 		try
@@ -378,17 +403,15 @@ public class VigieReport implements Callable<Integer>
 				}
 			}
 			
-			Calendar now = Calendar.getInstance();
-			SimpleDateFormat format = new SimpleDateFormat("yyyy_MM_dd_HH'h'mm");
-			String date = format.format(now.getTime());
+			String date = GetFormatedDate(Calendar.getInstance(), "yyyy_MM_dd_HH'h'mm");
 			String reportName = "CH4Process_Rapport_Defauts_" + date + ".txt";
-			CSVWriter writer = new CSVWriter( new OutputStreamWriter(new FileOutputStream(reportName), StandardCharsets.UTF_8));
+			CSVWriter writer = GetWriter(reportName);
 			
 			writer.writeNext(new String[] {"CH4Process"});
 			writer.writeNext(new String[] {"Rapport des défauts du : ", date});
 			writer.writeNext(new String[] {""});
 			
-			writer.writeNext(new String[] {"CAPTEUR", "TOTALISATEUR", "SEMAINE"});
+			writer.writeNext(new String[] {"CAPTEUR", "TOTALISATEUR", "PERIODE"});
 			
 			indexes.beforeFirst();
 			
@@ -413,7 +436,6 @@ public class VigieReport implements Callable<Integer>
 			writer.close();
 			System.out.println("VigieReport : Report generated : " + reportName);	
 			
-			// Warning ! This function is slow as it has to update every row in the Totalizer table ! Maybe it would be better to put that in the end...
 			UpdateTotalizers(indexes);
 			
 			indexes = null;
@@ -493,12 +515,10 @@ public class VigieReport implements Callable<Integer>
 			
 			measureList.sort((d1, d2) -> d1.datetime.compareTo(d2.datetime));
 			
-			Calendar now = Calendar.getInstance();
-			SimpleDateFormat format = new SimpleDateFormat("yyyy_MM_dd_HH'h'mm");
-			String date = format.format(now.getTime());
+			String date = GetFormatedDate(Calendar.getInstance(), "yyyy_MM_dd_HH'h'mm");
 			String reportName = "CH4Process_Rapport_Mesures_" + date + ".txt";
-			CSVWriter writer = new CSVWriter( new OutputStreamWriter(new FileOutputStream(reportName), StandardCharsets.UTF_8));
-			
+			CSVWriter writer = GetWriter(reportName);
+					
 			writer.writeNext(new String[] {"CH4Process"});
 			writer.writeNext(new String[] {"Rapport des mesures du : ", date});
 			writer.writeNext(new String[] {""});
@@ -507,7 +527,7 @@ public class VigieReport implements Callable<Integer>
 			
 			for(measure m : measureList)
 			{
-				format.applyPattern("HH:mm:ss dd/MM/yyyy");
+				SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss dd/MM/yyyy");
 				String datetime = format.format(new Date(m.datetime));
 				writer.writeNext(new String[] {m.label, datetime, m.value.toString(), m.unit });
 			}
@@ -532,11 +552,9 @@ public class VigieReport implements Callable<Integer>
 		{
 			CachedRowSet scenarios = getScenariosRequest.getCachedRowSet();
 			
-			Calendar now = Calendar.getInstance();
-			SimpleDateFormat format = new SimpleDateFormat("yyyy_MM_dd_HH'h'mm");
-			String date = format.format(now.getTime());
+			String date = GetFormatedDate(Calendar.getInstance(), "yyyy_MM_dd_HH'h'mm");
 			String reportName = "CH4Process_Rapport_Scenarios_" + date + ".txt";
-			CSVWriter writer = new CSVWriter( new OutputStreamWriter(new FileOutputStream(reportName), StandardCharsets.UTF_8));
+			CSVWriter writer = GetWriter(reportName);
 			
 			writer.writeNext(new String[] {"CH4Process"});
 			writer.writeNext(new String[] {"Rapport des scenarios du : ", date});
@@ -546,7 +564,7 @@ public class VigieReport implements Callable<Integer>
 			
 			while (scenarios.next())
 			{
-				format.applyPattern("HH:mm:ss dd/MM/yyyy");
+				SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss dd/MM/yyyy");
 				String datetime = format.format(new Date(scenarios.getTimestamp("datetime").getTime()));
 				writer.writeNext(new String[] {scenarios.getString("eventMessage"), datetime});
 			}
@@ -568,9 +586,7 @@ public class VigieReport implements Callable<Integer>
 		// Mail setup
 		Mail mail = new Mail();
 		
-		Calendar now = Calendar.getInstance();
-		SimpleDateFormat format = new SimpleDateFormat("HH'h'mm dd/MM/yyyy");
-		String date = format.format(now.getTime());
+		String date = GetFormatedDate(Calendar.getInstance(), "HH'h'mm dd/MM/yyyy");
 		
 		String subject = "Rapports d'exploitation du " + date;
 		
@@ -604,7 +620,7 @@ public class VigieReport implements Callable<Integer>
 			
 			for (File file : files)
 			{
-				Path destination = FileSystems.getDefault().getPath(CH4P_System.PATH_Vigie_Reports_Sent + FileSystems.getDefault().getSeparator() + file.getName());
+				Path destination = CH4P_System.GetPath(CH4P_System.PATH_Vigie_Reports_Sent + CH4P_System.GetSeparator() + file.getName());
 				Files.move(file.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
 			}
 		}

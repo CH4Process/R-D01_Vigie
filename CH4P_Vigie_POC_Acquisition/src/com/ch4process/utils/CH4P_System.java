@@ -1,5 +1,8 @@
 package com.ch4process.utils;
 
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+
 public class CH4P_System
 {	
 	public static final String USER = "pi";
@@ -53,5 +56,15 @@ public class CH4P_System
 
 		return (os.indexOf("nux") >= 0);
 
+	}
+	
+	public static String GetSeparator()
+	{
+		return FileSystems.getDefault().getSeparator();
+	}
+	
+	public static Path GetPath(String destination)
+	{
+		return FileSystems.getDefault().getPath(destination);
 	}
 }
