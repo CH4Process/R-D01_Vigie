@@ -586,7 +586,7 @@ public class VigieReport implements Callable<Integer>
 		// Mail setup
 		Mail mail = new Mail();
 		
-		String date = GetFormatedDate(Calendar.getInstance(), "HH'h'mm dd/MM/yyyy");
+		String date = GetFormatedDate(Calendar.getInstance(), "dd/MM/yyyy HH'h'mm");
 		
 		String subject = "Rapports d'exploitation du " + date;
 		
