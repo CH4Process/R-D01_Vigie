@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.ch4process.events.SignalValueEvent;
+import com.ch4process.utils.CH4P_Functions;
 import com.yoctopuce.YoctoAPI.YAPI_Exception;
 import com.yoctopuce.YoctoAPI.YSerialPort;
 
@@ -85,7 +86,7 @@ public class ModbusRequest
 	{
 		for (Signal signal:signals)
 		{
-			System.out.println("ModbusRequest : Signal " + signal.getShortName() + " added.");
+			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "ModbusRequest : Signal " + signal.getShortName() + " added.");
 			elements.put(signal, null);			
 		}
 	}
@@ -127,7 +128,7 @@ public class ModbusRequest
 		this.startAddress = lowAddress;
 		this.requestlength = highAddress - lowAddress + size;
 		
-		System.out.println("ModbusRequest : Request - Start = " + startAddress + " - Length = " + requestlength);
+		CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "ModbusRequest : Request - Start = " + startAddress + " - Length = " + requestlength);
 	}
 
 	private void HandleByteOrder(Integer _A, Integer _B)
@@ -190,7 +191,7 @@ public class ModbusRequest
 					Signal signal = entry.getKey();
 					index = signal.getAddress() - startAddress;
 					
-					System.out.println("ModbusRequest : Signal " + signal.getShortName() + " value update.");
+					CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "ModbusRequest : Signal " + signal.getShortName() + " value update.");
 					
 					if (this.values == null)
 					{

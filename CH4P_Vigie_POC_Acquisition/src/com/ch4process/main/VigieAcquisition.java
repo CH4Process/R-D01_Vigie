@@ -35,6 +35,7 @@ import com.ch4process.database.DatabaseRequest;
 import com.ch4process.database.IDatabaseRequestCallback;
 import com.ch4process.database.RequestList;
 import com.ch4process.utils.CH4P_Exception;
+import com.ch4process.utils.CH4P_Functions;
 import com.ch4process.utils.CH4P_Multithreading;
 
 import sun.security.jca.GetInstance;
@@ -376,7 +377,7 @@ public class VigieAcquisition implements Callable<Integer>
 	
 	public void start()
 	{
-		System.out.println("VigieAcq start : " + Calendar.getInstance().getTime());
+		CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "VigieAcq start : " + Calendar.getInstance().getTime());
 		
 		DatabaseController.Init();
 		connectionHandler = DatabaseController.getConnection();
@@ -557,7 +558,7 @@ public class VigieAcquisition implements Callable<Integer>
 				
 				if (signalListRequest_done && signalTypeListRequest_done && signalLevelListRequest_done && deviceListRequest_done && deviceTypeListRequest_done &&  firstRun)
 				{
-					System.out.println("VigieAcq prête :) : " + Calendar.getInstance().getTime());
+					CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "VigieAcq prête :) : " + Calendar.getInstance().getTime());
 					firstRun = false;
 				}
 				Thread.sleep(1000);

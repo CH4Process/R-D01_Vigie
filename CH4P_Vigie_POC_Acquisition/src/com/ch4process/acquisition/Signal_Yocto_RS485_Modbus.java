@@ -4,6 +4,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import com.ch4process.utils.CH4P_Exception;
+import com.ch4process.utils.CH4P_Functions;
 import com.yoctopuce.YoctoAPI.YGenericSensor;
 
 public class Signal_Yocto_RS485_Modbus extends Signal
@@ -23,7 +24,7 @@ public class Signal_Yocto_RS485_Modbus extends Signal
 		{
 			while(true)
 			{
-				System.out.println("Signal : " + this.shortName + " routine called...");
+				CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " routine called...");
 				Thread.sleep(this.refreshRate * 1000);
 			}
 		}

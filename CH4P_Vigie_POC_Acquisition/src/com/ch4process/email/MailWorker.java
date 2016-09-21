@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import com.ch4process.utils.CH4P_Exception;
+import com.ch4process.utils.CH4P_Functions;
 
 public class MailWorker implements Callable<Integer>
 {
@@ -35,12 +36,12 @@ public class MailWorker implements Callable<Integer>
 				
 				if (mail.sendMail())
 				{
-					System.out.println("Email successfully sent.");
+					CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "Email successfully sent.");
 					removeFirst();
 				}
 				else
 				{
-					System.out.println("Error during email sending operation.");
+					CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "Error during email sending operation.");
 					removeFirst();
 				}
 				

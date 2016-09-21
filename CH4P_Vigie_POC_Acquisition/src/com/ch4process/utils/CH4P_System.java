@@ -9,6 +9,10 @@ public class CH4P_System
 	public static final String PATH_Root = GetRootPath();
 	public static final String PATH_Base = PATH_Root + "/CH4PROCESS";
 	public static final String PATH_Vigie = PATH_Base + "/VIGIE";
+	public static final String PATH_Config = PATH_Vigie + "/CONFIG";
+	public static final String PATH_Config_Database = PATH_Config + "/database.properties";
+	public static final String PATH_Config_Mail = PATH_Config + "/mail.properties";
+	public static final String PATH_Config_Report = PATH_Config + "/report.properties";
 	public static final String PATH_Vigie_Apps = PATH_Vigie + "/APPS";
 	public static final String PATH_Vigie_Reports = PATH_Vigie + "/REPORTS";
 	public static final String PATH_Vigie_Reports_Sent = PATH_Vigie + "/REPORTS_SENT";

@@ -3,6 +3,7 @@ package com.ch4process.main;
 import java.util.concurrent.Callable;
 
 import com.ch4process.database.DatabaseController;
+import com.ch4process.utils.CH4P_ConfigManager;
 import com.ch4process.utils.CH4P_Multithreading;
 
 public class VigieMain extends Thread
@@ -21,6 +22,7 @@ public class VigieMain extends Thread
 				// Les workers doivent être ThreadSafes !! --> FAIT via l'utilisation de LinkedLists	
 				// Mieux gérer le modbus !
 				// Travailler la mise à jour des valeurs de type Totalizer pour éviter une mise à jour trop fréquente. Peut être en utilisant le countdown ? !!
+				// Fonction de log custom (console, fichier, BDD)
 			
 			//EVO 10 : 
 				// Logs en BDD
@@ -70,5 +72,6 @@ public class VigieMain extends Thread
 	{
 		DatabaseController.Init();
 		CH4P_Multithreading.Init();
+		CH4P_ConfigManager.Init();
 	}
 }

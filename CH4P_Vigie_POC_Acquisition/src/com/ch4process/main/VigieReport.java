@@ -17,6 +17,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 
 import javax.sql.rowset.CachedRowSet;
@@ -30,6 +31,7 @@ import com.ch4process.database.DatabaseRequest;
 import com.ch4process.database.IDatabaseRequestCallback;
 import com.ch4process.database.RequestList;
 import com.ch4process.email.Mail;
+import com.ch4process.utils.CH4P_ConfigManager;
 import com.ch4process.utils.CH4P_Exception;
 import com.ch4process.utils.CH4P_Functions;
 import com.ch4process.utils.CH4P_Multithreading;
@@ -39,8 +41,8 @@ import com.opencsv.CSVWriter;
 
 public class VigieReport implements Callable<Integer>
 {
-	final String reportTimeParam = "23:30";
-	final Integer reportSpan = 7;
+	private String reportSchedule = "23:30";
+	private Integer reportSpan = 7;
 	Calendar reportTime;
 	
 	Thread thisThread;
@@ -95,21 +97,38 @@ public class VigieReport implements Callable<Integer>
 	
 	public void start()
 	{
-		System.out.println(threadName + " start : " + Calendar.getInstance().getTime());
+		CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, threadName + " start : " + Calendar.getInstance().getTime());
 		
 		initDatabaseRelations();
 		
-		String[] time = reportTimeParam.split(":");
 		reportTime = Calendar.getInstance();
-		reportTime.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+		String[] time;
+		Properties prop = CH4P_ConfigManager.getReportConfig().GetProperties();
+		if (prop != null)
+		{
+			time = prop.getProperty("reporttime").split(":");
+			
+			switch (prop.getProperty("reportday"))
+			{
+				case "lundi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY); break;
+				case "mardi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.TUESDAY); break;
+				case "mercredi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.WEDNESDAY); break;
+				case "jeudi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.THURSDAY); break;
+				case "vendredi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.FRIDAY); break;
+				case "samedi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY); break;
+				case "dimanche": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY); break;
+			}
+				reportSpan = Integer.valueOf(prop.getProperty("reportspan"));
+		}
+		else
+		{
+			time = reportSchedule.split(":");
+			reportTime.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+		}
+		
 		reportTime.set(Calendar.HOUR_OF_DAY, Integer.valueOf(time[0]));
 		reportTime.set(Calendar.MINUTE, Integer.valueOf(time[1]));
 		reportTime.set(Calendar.SECOND, 0);
-		
-		// TODO : VigieReport - start - Remove this code (here for debug purpose)
-		Calendar now = Calendar.getInstance();
-		reportTime.setTime(now.getTime());
-		reportTime.add(Calendar.MINUTE, -1);
 	}
 	
 	public void run()
@@ -248,7 +267,7 @@ public class VigieReport implements Callable<Integer>
 			
 			if (now.after(reportTime))
 			{
-				System.out.println("VigieReport : isReportTime = true.");
+				CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "VigieReport : isReportTime = true.");
 				return true;
 			}
 			return false;
@@ -319,7 +338,7 @@ public class VigieReport implements Callable<Integer>
 						updateTotalizers.setStatementBoolParameter(3, true); // isValid
 						updateTotalizers.setStatementIntParameter(4, _indexes.getInt("idSignal")); // id
 						updateTotalizersRequest_done = false;
-						System.out.println("VigieReport : UpdateTotalizers : A row has been updated :).");
+						CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "VigieReport : UpdateTotalizers : A row has been updated :).");
 						updateTotalizers.doUpdate();
 						
 						while (updateTotalizersRequest_done == false)
@@ -434,7 +453,7 @@ public class VigieReport implements Callable<Integer>
 			}
 			
 			writer.close();
-			System.out.println("VigieReport : Report generated : " + reportName);	
+			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "VigieReport : Report generated : " + reportName);	
 			
 			UpdateTotalizers(indexes);
 			
@@ -533,7 +552,7 @@ public class VigieReport implements Callable<Integer>
 			}
 			
 			writer.close();
-			System.out.println("VigieReport : Report generated : " + reportName);	
+			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "VigieReport : Report generated : " + reportName);	
 			
 			measureList = null;
 			digitalmeasures = null;
@@ -570,7 +589,7 @@ public class VigieReport implements Callable<Integer>
 			}
 			
 			writer.close();
-			System.out.println("VigieReport : Report generated : " + reportName);	
+			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "VigieReport : Report generated : " + reportName);	
 			
 			scenarios = null;
 			
@@ -593,7 +612,7 @@ public class VigieReport implements Callable<Integer>
 		mail.setAuthenticationType(Mail.AUTH_SSL);
 		mail.setFrom(mail.getUsername());
 		mail.setSubject(subject);
-		mail.setTo(mail.getReportRecipients());
+		mail.setTo(CH4P_ConfigManager.getReportConfig().GetProperties().getProperty("reportrecipients"));
 		mail.setText("");
 		
 		// Attachments setup
@@ -601,12 +620,12 @@ public class VigieReport implements Callable<Integer>
 		
 		if (mail.sendMail())
 		{
-			System.out.println("VigieReport : REPORTS sent !");
+			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "VigieReport : REPORTS sent !");
 			SaveReports();
 		}
 		else
 		{
-			System.out.println("VigieReport : Failed to send REPORTS !");
+			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "VigieReport : Failed to send REPORTS !");
 		}
 	}
 	

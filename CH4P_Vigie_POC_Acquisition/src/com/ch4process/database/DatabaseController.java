@@ -4,6 +4,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import com.ch4process.utils.CH4P_ConfigManager;
 import com.ch4process.utils.CH4P_PropertiesReader;
 
 
@@ -18,7 +20,6 @@ public class DatabaseController implements AutoCloseable
 	static private String connectionString = null;
 	static private String databaseAddress = null;
 	static private Integer nbConnection = null;
-	static private String configFile = "resources/database.properties";
 	
 	static private Boolean initialized = false;
 	
@@ -28,9 +29,7 @@ public class DatabaseController implements AutoCloseable
 	{
 		try
 		{
-			CH4P_PropertiesReader propReader = new CH4P_PropertiesReader();
-			Properties prop = propReader.getPropValues(configFile);
-			
+			Properties prop = CH4P_ConfigManager.getDatabaseConfig().GetProperties();
 			if (prop != null)
 			{
 				JDBC_DRIVER = prop.getProperty("JDBC_DRIVER");

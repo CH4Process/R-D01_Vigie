@@ -1,9 +1,8 @@
 package com.ch4process.utils;
 
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
-
-import com.ch4process.email.Mail;
 
 
 public class CH4P_PropertiesReader
@@ -13,7 +12,7 @@ public class CH4P_PropertiesReader
 	{
 		Properties prop = new Properties();
 		
-		try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(fileName))
+		try (InputStream inputStream = new FileInputStream(fileName))
 		{
 
 			if (inputStream != null) 

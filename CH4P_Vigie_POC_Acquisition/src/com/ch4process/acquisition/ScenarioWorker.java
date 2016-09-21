@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 
 import javax.sql.rowset.CachedRowSet;
@@ -16,6 +17,8 @@ import com.ch4process.database.DatabaseRequest;
 import com.ch4process.database.IDatabaseRequestCallback;
 import com.ch4process.email.Mail;
 import com.ch4process.events.SignalValueEvent;
+import com.ch4process.utils.CH4P_ConfigManager;
+import com.ch4process.utils.CH4P_Functions;
 
 public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 {
@@ -40,7 +43,7 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 	{
 		init_done = true;
 		
-		System.out.println("scenarioWorker start : " + Calendar.getInstance().getTime());
+		CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "scenarioWorker start : " + Calendar.getInstance().getTime());
 		
 		scenarioListRequestCallback = new IDatabaseRequestCallback()
 		{
@@ -147,7 +150,7 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 		catch (Exception e)
 		{
 			e.printStackTrace();
-			System.out.println("scenarioWorker erreur de suppression d'evenement");
+			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "scenarioWorker erreur de suppression d'evenement");
 		}
 		finally
 		{
@@ -197,7 +200,11 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 	{
 		Mail mail = new Mail();
 		
-		String subject = mail.getMailsmsaccount() + mail.getMailsmslogin() + mail.getMailsmspassword() + mail.getMailsmsfrom() + recipients + mail.getMailsmsparameters();
+		Properties prop = CH4P_ConfigManager.getMailConfig().GetProperties();
+		
+		String subject = prop.getProperty("mailsmsaccount") + prop.getProperty("mailsmslogin") + prop.getProperty("mailsmspassword") + prop.getProperty("mailsmsfrom") + 
+				recipients + prop.getProperty("mailsmsparameters");
+		
 		
 		Calendar now = Calendar.getInstance();
 		SimpleDateFormat format = new SimpleDateFormat("HH'h'mm dd/MM/yyyy");
@@ -208,17 +215,17 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 		mail.setAuthenticationType(Mail.AUTH_SSL);
 		mail.setFrom(mail.getUsername());
 		mail.setSubject(subject);
-		mail.setTo(mail.getMailsmsaddress());
+		mail.setTo(prop.getProperty("mailsmsaddress"));
 		mail.setText(message);
 		
 		if (mail.sendMail())
 		{
-			System.out.println("ScenarioWorker : MAIL_SMS sent !");
+			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "ScenarioWorker : MAIL_SMS sent !");
 			fireScenarioEvent("MAILSMS", "TO : " + recipients + " -- " + message , Calendar.getInstance().getTime().getTime(), 110);
 		}
 		else
 		{
-			System.out.println("ScenarioWorker : Failed to send a MAIL_SMS !");
+			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "ScenarioWorker : Failed to send a MAIL_SMS !");
 		}
 		
 	}

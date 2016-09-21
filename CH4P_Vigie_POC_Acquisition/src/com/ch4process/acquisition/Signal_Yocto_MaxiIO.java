@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.ch4process.events.SignalValueEvent;
 import com.ch4process.utils.CH4P_Exception;
+import com.ch4process.utils.CH4P_Functions;
 import com.yoctopuce.YoctoAPI.YAPI_Exception;
 import com.yoctopuce.YoctoAPI.YDigitalIO;
 
@@ -58,7 +59,7 @@ public class Signal_Yocto_MaxiIO extends Signal
 	{
 		try
 		{
-			System.out.println("Signal : " + this.shortName + " :: Refresh.");
+			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " :: Refresh.");
 			
 			portState = ioSensor.get_portState();
 			value = ((portState & offset) != 0);
@@ -66,7 +67,7 @@ public class Signal_Yocto_MaxiIO extends Signal
 			this.value = value;
 			this.isValid = !(portState == ioSensor.PORTSTATE_INVALID);
 			
-			System.out.println("Signal : " + this.shortName + " :: Refresh - Value = " + value + " - Quality = " + this.isValid);
+			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " :: Refresh - Value = " + value + " - Quality = " + this.isValid);
 
 			fireValueChanged(new SignalValueEvent(this.getIdSignal(), null, null, this.value, this.isValid(), Calendar.getInstance().getTime().getTime(), this.getSignalType()));
 

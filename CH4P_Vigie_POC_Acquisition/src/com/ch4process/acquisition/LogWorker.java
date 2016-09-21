@@ -9,6 +9,7 @@ import java.util.concurrent.Callable;
 import com.ch4process.database.DatabaseRequest;
 import com.ch4process.database.IDatabaseRequestCallback;
 import com.ch4process.events.SignalValueEvent;
+import com.ch4process.utils.CH4P_Functions;
 
 public class LogWorker implements Callable<Integer>, IScenarioEventListener
 {
@@ -57,7 +58,7 @@ public class LogWorker implements Callable<Integer>, IScenarioEventListener
 	
 	public void start()
 	{
-		System.out.println("LogWorker start : " + Calendar.getInstance().getTime());
+		CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "LogWorker start : " + Calendar.getInstance().getTime());
 		this.eventRecordRequest.setCallback(eventRecordRequestCallback);
 		this.eventRecordRequest.start();
 	}

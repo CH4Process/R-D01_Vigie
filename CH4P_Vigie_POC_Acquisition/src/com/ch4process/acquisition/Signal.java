@@ -11,6 +11,7 @@ import com.ch4process.events.SignalValueEvent;
 import com.ch4process.utils.CH4P_Exception;
 import com.yoctopuce.YoctoAPI.YAPI;
 import com.yoctopuce.YoctoAPI.YAPI_Exception;
+import com.ch4process.utils.CH4P_Functions;
 
 public class Signal implements ISignal
 {
@@ -284,21 +285,21 @@ public class Signal implements ISignal
 			lastUpdate = Calendar.getInstance();
 			lastUpdate.set(Calendar.DAY_OF_MONTH, lastUpdate.get(Calendar.DAY_OF_MONTH) - 1);
 			
-			System.out.println("Signal : " + this.shortName + " - Calendar init to : " + lastUpdate.getTime());
+			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " - Calendar init to : " + lastUpdate.getTime());
 		}
 		
 		try
 		{
-			System.out.println("Signal : " + this.shortName + " - checkDate.");
+			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " - checkDate.");
 			if (Calendar.getInstance().get(Calendar.DAY_OF_MONTH) != lastUpdate.get(Calendar.DAY_OF_MONTH))
 			{
-				System.out.println("Signal : " + this.shortName + " - checkDate = true.");
+				CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " - checkDate = true.");
 				lastUpdate = Calendar.getInstance();
 				return true;
 			}
 			else
 			{
-				System.out.println("Signal : " + this.shortName + " - checkDate = false.");
+				CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " - checkDate = false.");
 				return false;
 			}
 		}
@@ -341,7 +342,7 @@ public class Signal implements ISignal
 		// A bit of work to advertise totalizers ONCE A DAY
 		if (!(getSignalType().isTotalizer) || (getSignalType().isTotalizer && checkDate()))
 		{
-			System.out.println("Signal : " + this.shortName + " :: fireValueChanged ID - " + event.getIdSignal() + " - DoubleValue : " + event.getDoubleValue() + " - IntValue : " + event.getIntValue() + " - BoolValue : " + event.getBoolValue() + " - Datetime : " + new Date(event.getDatetime()).toString());
+			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " :: fireValueChanged ID - " + event.getIdSignal() + " - DoubleValue : " + event.getDoubleValue() + " - IntValue : " + event.getIntValue() + " - BoolValue : " + event.getBoolValue() + " - Datetime : " + new Date(event.getDatetime()).toString());
 		
 			for (ISignalValueListener listener : getValueListeners())
 			{

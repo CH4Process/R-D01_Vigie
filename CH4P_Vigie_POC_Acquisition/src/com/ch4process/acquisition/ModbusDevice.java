@@ -9,6 +9,7 @@ import javax.swing.event.EventListenerList;
 
 import com.ch4process.events.SignalValueEvent;
 import com.ch4process.utils.CH4P_Exception;
+import com.ch4process.utils.CH4P_Functions;
 import com.yoctopuce.YoctoAPI.YAPI;
 import com.yoctopuce.YoctoAPI.YAPI_Exception;
 import com.yoctopuce.YoctoAPI.YSerialPort;
@@ -203,7 +204,7 @@ public class ModbusDevice implements Callable
 				
 				if (init_done)
 				{
-					System.out.println("Modbus Device  : " + this.device.getAddress() + " routine called...");
+					CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "Modbus Device  : " + this.device.getAddress() + " routine called...");
 					
 					// First we read the values in the Modbus device
 					for(ModbusRequest request:requests)

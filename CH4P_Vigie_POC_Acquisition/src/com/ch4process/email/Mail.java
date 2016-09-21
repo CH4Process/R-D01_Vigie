@@ -52,17 +52,6 @@ public class Mail implements Callable<Integer>
 	private String subject;
 	private String text;
 	
-	// Specifics to OVH EMAIL2SMS
-	private String mailsmsaddress;
-	private String mailsmsaccount;
-	private String mailsmslogin;
-	private String mailsmspassword;
-	private String mailsmsfrom;
-	private String mailsmsparameters;
-	
-	// Reports
-	private String reportRecipients;
-	
 	private boolean busy = false;
 
 	
@@ -79,15 +68,6 @@ public class Mail implements Callable<Integer>
 			this.password = prop.getProperty("password");
 			this.port = prop.getProperty("port");
 			
-			this.mailsmsaddress = prop.getProperty("mailsmsaddress");
-			this.mailsmsaccount = prop.getProperty("mailsmsaccount");
-			this.mailsmslogin = prop.getProperty("mailsmslogin");
-			this.mailsmspassword = prop.getProperty("mailsmspassword");
-			this.mailsmsfrom = prop.getProperty("mailsmsfrom");
-			this.mailsmsparameters = prop.getProperty("mailsmsparameters");
-			
-			this.reportRecipients = prop.getProperty("reportrecipients");
-			
 			prop = null;
 			propReader = null;
 			
@@ -98,40 +78,7 @@ public class Mail implements Callable<Integer>
 		}
 	}
 
-	public String getMailsmsaddress()
-	{
-		return mailsmsaddress;
-	}
-
-	public String getMailsmsaccount()
-	{
-		return mailsmsaccount;
-	}
-
-	public String getMailsmslogin()
-	{
-		return mailsmslogin;
-	}
-
-	public String getMailsmspassword()
-	{
-		return mailsmspassword;
-	}
-
-	public String getMailsmsfrom()
-	{
-		return mailsmsfrom;
-	}
-
-	public String getMailsmsparameters()
-	{
-		return mailsmsparameters;
-	}
 	
-	public String getReportRecipients()
-	{
-		return reportRecipients;
-	}
 
 	public String getSmtp_host()
 	{
