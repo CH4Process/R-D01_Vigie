@@ -58,7 +58,7 @@ public class LogWorker implements Callable<Integer>, IScenarioEventListener
 	
 	public void start()
 	{
-		CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "LogWorker start : " + Calendar.getInstance().getTime());
+		CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "LogWorker start : " + Calendar.getInstance().getTime());
 		this.eventRecordRequest.setCallback(eventRecordRequestCallback);
 		this.eventRecordRequest.start();
 	}

@@ -36,12 +36,12 @@ public class MailWorker implements Callable<Integer>
 				
 				if (mail.sendMail())
 				{
-					CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "Email successfully sent.");
+					CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "Email successfully sent.");
 					removeFirst();
 				}
 				else
 				{
-					CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "Error during email sending operation.");
+					CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "Error during email sending operation.");
 					removeFirst();
 				}
 				

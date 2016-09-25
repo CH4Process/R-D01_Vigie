@@ -204,7 +204,7 @@ public class ModbusDevice implements Callable
 				
 				if (init_done)
 				{
-					CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "Modbus Device  : " + this.device.getAddress() + " routine called...");
+					CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "Modbus Device  : " + this.device.getAddress() + " routine called...");
 					
 					// First we read the values in the Modbus device
 					for(ModbusRequest request:requests)

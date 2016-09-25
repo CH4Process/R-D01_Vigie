@@ -2,6 +2,8 @@ package com.ch4process.database;
 
 import java.sql.*;
 import javax.sql.rowset.CachedRowSet;
+
+import com.ch4process.utils.CH4P_Exception;
 import com.sun.rowset.CachedRowSetImpl;
 
 /**
@@ -115,9 +117,16 @@ public class DatabaseRequest extends Thread
 		}
 	}
 	
-	private void doCallback()
+	private void doCallback() throws CH4P_Exception
 	{
-		this.dbrc.databaseRequestCallback();
+		try
+		{
+			this.dbrc.databaseRequestCallback();
+		}
+		catch (Exception ex)
+		{
+			throw new CH4P_Exception("-DatabaseRequest doCallback error-" + ex.getMessage(), ex.getCause());
+		}
 	}
 	
 	public void setStatementIntParameter(int id_parameter, int value)

@@ -32,7 +32,7 @@ public class RecordWorker implements Callable<Integer>, ISignalValueListener
 	public void SignalValueChanged(SignalValueEvent event)
 	{
 		eventList.add(event);
-		CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "RecordWorker - Event received ID : " + event.getIdSignal());
+		CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "RecordWorker - Event received ID : " + event.getIdSignal());
 	}
 	
 	public RecordWorker(ConnectionHandler connectionHandler)
@@ -60,18 +60,18 @@ public class RecordWorker implements Callable<Integer>, ISignalValueListener
 		{
 			if (eventList.size() > 0)
 			{
-				CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "RecordWorker - EventHandling - Event .");
+				CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "RecordWorker - EventHandling - Event .");
 				
 				SignalValueEvent event = eventList.get(0);
 				SignalType type = event.getType();
 				DatabaseRequest request;
 				
-				CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "RecordWorker - EventHandling - Event idSignal = " + event.getIdSignal());
+				CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "RecordWorker - EventHandling - Event idSignal = " + event.getIdSignal());
 				
 				// Putting the right values in the statement
 				if (type.isTor)
 				{
-					CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "RecordWorker - EventHandling - Tor Event.");
+					CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "RecordWorker - EventHandling - Tor Event.");
 					
 					request = recordDigitalValueRequest;
 					
@@ -88,12 +88,12 @@ public class RecordWorker implements Callable<Integer>, ISignalValueListener
 				{
 					if (type.isTotalizer)
 					{
-						CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "RecordWorker - EventHandling - Totalizer Event.");
+						CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "RecordWorker - EventHandling - Totalizer Event.");
 						request = recordTotalizerValueRequest;
 					}
 					else
 					{
-						CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "RecordWorker - EventHandling - Analog Event.");
+						CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "RecordWorker - EventHandling - Analog Event.");
 						request = recordAnalogValueRequest;
 					}
 
@@ -120,12 +120,12 @@ public class RecordWorker implements Callable<Integer>, ISignalValueListener
 				request.setStatementBoolParameter(3, event.isValid());
 				request.setStatementIntParameter(4, event.getIdSignal());
 				
-				CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "RecordWorker - EventHandling - Statements : idSignal : " + event.getIdSignal() );
+				CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "RecordWorker - EventHandling - Statements : idSignal : " + event.getIdSignal() );
 				
 				recordValueRequest_done = false;
 				request.doUpdate();
 				
-				CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "RecordWorker - EventHandling - Update done.");
+				CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "RecordWorker - EventHandling - Update done.");
 			}
 
 		}
@@ -152,7 +152,7 @@ public class RecordWorker implements Callable<Integer>, ISignalValueListener
 	{
 		if (! this.init_done)
 		{
-			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "recordWorker start : " + Calendar.getInstance().getTime());
+			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "recordWorker start : " + Calendar.getInstance().getTime());
 			
 			recordDigitalValueRequest.start();
 			recordAnalogValueRequest.start();

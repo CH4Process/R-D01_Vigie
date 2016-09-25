@@ -38,7 +38,7 @@ public class SMS extends Thread
 		if (thisThread == null)
 		{
 			thisThread = new Thread (this, "SMS");
-			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "Thread SMS " + " lancé !");
+			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "Thread SMS " + " lancé !");
 			thisThread.start();
 		}
 	}
@@ -49,7 +49,7 @@ public class SMS extends Thread
 		
 		if (! result)
 		{
-			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "Erreur lors de l'envoi du SMS !");
+			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "Erreur lors de l'envoi du SMS !");
 		}
 	}
 	

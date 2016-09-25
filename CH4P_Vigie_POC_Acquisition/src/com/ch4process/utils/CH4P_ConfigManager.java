@@ -12,21 +12,35 @@ public class CH4P_ConfigManager
 		private Properties properties;
 		
 		
-		public CH4P_ConfigHolder(String _fileName)
+		public CH4P_ConfigHolder(String _fileName) throws CH4P_Exception
 		{
-			this.fileName = _fileName;
-			propReader = new CH4P_PropertiesReader();
-			RefreshConfig();
+			try
+			{
+				this.fileName = _fileName;
+				propReader = new CH4P_PropertiesReader();
+				RefreshConfig();
+			}
+			catch (Exception ex)
+			{
+				throw new CH4P_Exception("-ConfigManager ConfigHolder constructor error-" + ex.getMessage(), ex.getCause());
+			}
 		}
 		
-		public Boolean RefreshConfig()
+		public Boolean RefreshConfig() throws CH4P_Exception
 		{
-			if ((this.properties = propReader.getPropValues(this.fileName)) != null)
+			try
 			{
-				return true;
+				if ((this.properties = propReader.getPropValues(this.fileName)) != null)
+				{
+					return true;
+				}
+
+				return null;
 			}
-			
-			return null;
+			catch (Exception ex)
+			{
+				throw new CH4P_Exception("-ConfigManager RefreshConfig error-" + ex.getMessage(), ex.getCause());
+			}
 		}
 		
 		public Properties GetProperties()
@@ -43,18 +57,25 @@ public class CH4P_ConfigManager
 	private static CH4P_ConfigManager instance = null;
 
 
-	public static void Init()
+	public static void Init() throws CH4P_Exception
 	{
-		if (!init_done)
+		try
 		{
-			if (instance == null)
+			if (!init_done)
 			{
-				instance = new CH4P_ConfigManager();
+				if (instance == null)
+				{
+					instance = new CH4P_ConfigManager();
+				}
+
+				instance.ConfigInit();
+
+				init_done = true;
 			}
-			
-			instance.ConfigInit();
-			
-			init_done = true;
+		}
+		catch (Exception ex)
+		{
+			throw new CH4P_Exception("-ConfigManager Init error-" + ex.getMessage(), ex.getCause());
 		}
 	}
 	
@@ -73,11 +94,18 @@ public class CH4P_ConfigManager
 		return reportConfig;
 	}
 	
-	private void ConfigInit()
+	private void ConfigInit() throws CH4P_Exception
 	{
-		mailConfig = new CH4P_ConfigHolder(CH4P_System.PATH_Config_Mail);
-		databaseConfig = new CH4P_ConfigHolder(CH4P_System.PATH_Config_Database);
-		reportConfig = new CH4P_ConfigHolder(CH4P_System.PATH_Config_Report);
+		try
+		{
+			mailConfig = new CH4P_ConfigHolder(CH4P_System.PATH_Config_Mail);
+			databaseConfig = new CH4P_ConfigHolder(CH4P_System.PATH_Config_Database);
+			reportConfig = new CH4P_ConfigHolder(CH4P_System.PATH_Config_Report);
+		}
+		catch (Exception ex)
+		{
+			throw new CH4P_Exception("-ConfigManager ConfigInit error-" + ex.getMessage(), ex.getCause());
+		}
 	}
 	
 	

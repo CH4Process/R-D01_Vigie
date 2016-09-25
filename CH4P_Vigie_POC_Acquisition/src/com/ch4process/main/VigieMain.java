@@ -4,6 +4,8 @@ import java.util.concurrent.Callable;
 
 import com.ch4process.database.DatabaseController;
 import com.ch4process.utils.CH4P_ConfigManager;
+import com.ch4process.utils.CH4P_Exception;
+import com.ch4process.utils.CH4P_Functions;
 import com.ch4process.utils.CH4P_Multithreading;
 
 public class VigieMain extends Thread
@@ -25,6 +27,8 @@ public class VigieMain extends Thread
 				// Fonction de log custom (console, fichier, BDD)
 			
 			//EVO 10 : 
+				// Mecanique d'injection / diffusion d'info pour rafraichir les Properties lues (pour permettre l'annulation des SMS ou le changement de la date des rapports
+				// Remplacer tous les PRINTSTACKTRACE par des Log ! 
 				// Logs en BDD
 				// Vraie gestion des exceptions
 				// Contrôleur qui relance les modules crashés
@@ -45,10 +49,27 @@ public class VigieMain extends Thread
 				// Mots de passe cryptés via le JDK et pas par une bibliothèque externe : https://www.javacodegeeks.com/2012/05/secure-password-storage-donts-dos-and.html
 			
 			
-						
-			Init_Utils();
-			//Init_VigieAcquisition();
-			Init_VigieReport();
+			try
+			{
+				Init_Utils();
+			}
+			catch(Exception ex)
+			{
+				CH4P_Functions.Log(VigieMain.class.getName(), CH4P_Functions.LOG_inMsgBox, CH4P_Functions.LEVEL_ERROR, "Erreur pendant l'initialisation de l'application : " + ex.getMessage());
+				System.exit(0);
+			}
+			
+			try
+			{
+				Init_VigieAcquisition();
+				Init_VigieReport();
+			}
+			catch(Exception ex)
+			{
+				CH4P_Functions.Log(VigieMain.class.getName(), CH4P_Functions.LOG_inMsgBox, CH4P_Functions.LEVEL_ERROR, "Erreur pendant l'execution de l'application : " + ex.getMessage());
+			}
+			
+			
 		}
 		catch (Exception ex)
 		{
@@ -56,22 +77,43 @@ public class VigieMain extends Thread
 		}
 	}
 	
-	private static void Init_VigieAcquisition()
+	private static void Init_VigieAcquisition() throws CH4P_Exception
 	{
-		T_Acquisition = new VigieAcquisition("VigieAcquisition");
-		CH4P_Multithreading.Submit(T_Acquisition);
+		try
+		{
+			T_Acquisition = new VigieAcquisition("VigieAcquisition");
+			CH4P_Multithreading.Submit(T_Acquisition);
+		}
+		catch (CH4P_Exception ex)
+		{
+			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
+		}
 	}
 	
-	private static void Init_VigieReport()
+	private static void Init_VigieReport() throws CH4P_Exception
 	{
-		T_Report = new VigieReport("VigieReport");
-		CH4P_Multithreading.Submit(T_Report);
+		try
+		{
+			T_Report = new VigieReport("VigieReport");
+			CH4P_Multithreading.Submit(T_Report);
+		}
+		catch (CH4P_Exception ex)
+		{
+			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
+		}
 	}
 	
-	private static void Init_Utils()
+	private static void Init_Utils() throws CH4P_Exception
 	{
-		DatabaseController.Init();
-		CH4P_Multithreading.Init();
-		CH4P_ConfigManager.Init();
+		try
+		{
+			DatabaseController.Init();
+			CH4P_Multithreading.Init();
+			CH4P_ConfigManager.Init();
+		}
+		catch (CH4P_Exception ex)
+		{
+			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
+		}
 	}
 }

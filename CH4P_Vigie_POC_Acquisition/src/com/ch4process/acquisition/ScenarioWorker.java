@@ -43,7 +43,7 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 	{
 		init_done = true;
 		
-		CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "scenarioWorker start : " + Calendar.getInstance().getTime());
+		CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "scenarioWorker start : " + Calendar.getInstance().getTime());
 		
 		scenarioListRequestCallback = new IDatabaseRequestCallback()
 		{
@@ -150,7 +150,7 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 		catch (Exception e)
 		{
 			e.printStackTrace();
-			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "scenarioWorker erreur de suppression d'evenement");
+			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "scenarioWorker erreur de suppression d'evenement");
 		}
 		finally
 		{
@@ -220,12 +220,12 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 		
 		if (mail.sendMail())
 		{
-			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "ScenarioWorker : MAIL_SMS sent !");
+			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "ScenarioWorker : MAIL_SMS sent !");
 			fireScenarioEvent("MAILSMS", "TO : " + recipients + " -- " + message , Calendar.getInstance().getTime().getTime(), 110);
 		}
 		else
 		{
-			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "ScenarioWorker : Failed to send a MAIL_SMS !");
+			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "ScenarioWorker : Failed to send a MAIL_SMS !");
 		}
 		
 	}

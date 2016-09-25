@@ -24,7 +24,7 @@ public class Signal_Yocto_RS485_Modbus extends Signal
 		{
 			while(true)
 			{
-				CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " routine called...");
+				CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " routine called...");
 				Thread.sleep(this.refreshRate * 1000);
 			}
 		}

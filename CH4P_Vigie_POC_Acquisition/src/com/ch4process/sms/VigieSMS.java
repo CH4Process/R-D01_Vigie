@@ -34,7 +34,7 @@ public class VigieSMS extends Thread
 		if (thisThread == null)
 		{
 			thisThread = new Thread (this, threadName);
-			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "Thread " + threadName + " lancé !");
+			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "Thread " + threadName + " lancé !");
 			thisThread.start();
 		}
 	}

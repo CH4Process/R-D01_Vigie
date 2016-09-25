@@ -41,6 +41,9 @@ public class Signal implements ISignal
 	
 	// Error handling
 	Integer errorCode = 0;
+	int retry = 0;
+	int retryMax = 3;
+	int waitOnError = 5;
 	
 	
 	// Constructors
@@ -244,17 +247,35 @@ public class Signal implements ISignal
 	
 	// Operationnal code
 
-	protected boolean Connect()
+	protected boolean Connect() throws CH4P_Exception
 	{
-		try
+		while (true)
 		{
-			 YAPI.RegisterHub(this.device.getAddress());
-			 return true;
-		} 
-		catch (YAPI_Exception ex)
-		{
-			ex.printStackTrace();
-			return false;
+			try
+			{
+				YAPI.RegisterHub(this.device.getAddress());
+				retry = 0;
+				return true;
+			} 
+			catch (YAPI_Exception ex)
+			{
+				retry++;
+				
+				if (this.retry >= this.retryMax)
+				{
+					throw new CH4P_Exception("-Signal : " + this.shortName + " Connect error-" + ex.getMessage(), ex.getCause());
+				}
+				
+				try
+				{
+					Thread.sleep(waitOnError * 1000);
+				}
+				catch (InterruptedException iex)
+				{
+					iex.printStackTrace();
+				}
+				
+			}
 		}
 	}
 	
@@ -285,21 +306,21 @@ public class Signal implements ISignal
 			lastUpdate = Calendar.getInstance();
 			lastUpdate.set(Calendar.DAY_OF_MONTH, lastUpdate.get(Calendar.DAY_OF_MONTH) - 1);
 			
-			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " - Calendar init to : " + lastUpdate.getTime());
+			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " - Calendar init to : " + lastUpdate.getTime());
 		}
 		
 		try
 		{
-			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " - checkDate.");
+			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " - checkDate.");
 			if (Calendar.getInstance().get(Calendar.DAY_OF_MONTH) != lastUpdate.get(Calendar.DAY_OF_MONTH))
 			{
-				CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " - checkDate = true.");
+				CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " - checkDate = true.");
 				lastUpdate = Calendar.getInstance();
 				return true;
 			}
 			else
 			{
-				CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " - checkDate = false.");
+				CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " - checkDate = false.");
 				return false;
 			}
 		}
@@ -342,7 +363,7 @@ public class Signal implements ISignal
 		// A bit of work to advertise totalizers ONCE A DAY
 		if (!(getSignalType().isTotalizer) || (getSignalType().isTotalizer && checkDate()))
 		{
-			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " :: fireValueChanged ID - " + event.getIdSignal() + " - DoubleValue : " + event.getDoubleValue() + " - IntValue : " + event.getIntValue() + " - BoolValue : " + event.getBoolValue() + " - Datetime : " + new Date(event.getDatetime()).toString());
+			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " :: fireValueChanged ID - " + event.getIdSignal() + " - DoubleValue : " + event.getDoubleValue() + " - IntValue : " + event.getIntValue() + " - BoolValue : " + event.getBoolValue() + " - Datetime : " + new Date(event.getDatetime()).toString());
 		
 			for (ISignalValueListener listener : getValueListeners())
 			{

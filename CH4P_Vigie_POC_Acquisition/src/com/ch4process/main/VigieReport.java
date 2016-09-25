@@ -85,9 +85,9 @@ public class VigieReport implements Callable<Integer>
 			start();
 			run();
 		}
-		catch(Exception ex)
+		catch (Exception ex)
 		{
-			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
+			throw new CH4P_Exception("-VigieReport call error-" + ex.getMessage(), ex.getCause());
 		}
 		finally
 		{
@@ -95,43 +95,50 @@ public class VigieReport implements Callable<Integer>
 		}
 	}
 	
-	public void start()
+	public void start() throws CH4P_Exception
 	{
-		CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, threadName + " start : " + Calendar.getInstance().getTime());
-		
-		initDatabaseRelations();
-		
-		reportTime = Calendar.getInstance();
-		String[] time;
-		Properties prop = CH4P_ConfigManager.getReportConfig().GetProperties();
-		if (prop != null)
+		try
 		{
-			time = prop.getProperty("reporttime").split(":");
-			
-			switch (prop.getProperty("reportday"))
+			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, threadName + " start : " + Calendar.getInstance().getTime());
+
+			initDatabaseRelations();
+
+			reportTime = Calendar.getInstance();
+			String[] time;
+			Properties prop = CH4P_ConfigManager.getReportConfig().GetProperties();
+			if (prop != null)
 			{
-				case "lundi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY); break;
-				case "mardi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.TUESDAY); break;
-				case "mercredi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.WEDNESDAY); break;
-				case "jeudi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.THURSDAY); break;
-				case "vendredi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.FRIDAY); break;
-				case "samedi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY); break;
-				case "dimanche": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY); break;
-			}
+				time = prop.getProperty("reporttime").split(":");
+
+				switch (prop.getProperty("reportday"))
+				{
+					case "lundi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY); break;
+					case "mardi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.TUESDAY); break;
+					case "mercredi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.WEDNESDAY); break;
+					case "jeudi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.THURSDAY); break;
+					case "vendredi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.FRIDAY); break;
+					case "samedi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY); break;
+					case "dimanche": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY); break;
+				}
 				reportSpan = Integer.valueOf(prop.getProperty("reportspan"));
+			}
+			else
+			{
+				time = reportSchedule.split(":");
+				reportTime.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+			}
+
+			reportTime.set(Calendar.HOUR_OF_DAY, Integer.valueOf(time[0]));
+			reportTime.set(Calendar.MINUTE, Integer.valueOf(time[1]));
+			reportTime.set(Calendar.SECOND, 0);
 		}
-		else
+		catch (Exception ex)
 		{
-			time = reportSchedule.split(":");
-			reportTime.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+			throw new CH4P_Exception("-VigieReport start error-" + ex.getMessage(), ex.getCause());
 		}
-		
-		reportTime.set(Calendar.HOUR_OF_DAY, Integer.valueOf(time[0]));
-		reportTime.set(Calendar.MINUTE, Integer.valueOf(time[1]));
-		reportTime.set(Calendar.SECOND, 0);
 	}
 	
-	public void run()
+	public void run() throws CH4P_Exception
 	{
 		while (true)
 		{
@@ -184,82 +191,93 @@ public class VigieReport implements Callable<Integer>
 				Thread.sleep(60 * 1000);
 				yield = true;
 			}
-			catch (Exception e)
+			catch (InterruptedException ex)
 			{
-				e.printStackTrace();
+				continue;
+			}
+			catch (Exception ex)
+			{
+				throw new CH4P_Exception("-VigieReport run error-" + ex.getMessage(), ex.getCause());
 			}
 		}
 	}
 	
-	private void initDatabaseRelations()
+	private void initDatabaseRelations() throws CH4P_Exception
 	{
-		DatabaseController.Init();
-		connectionHandler = DatabaseController.getConnection();
-		
-		getDigitalMeasuresRequestCallback = new IDatabaseRequestCallback()
+		try
 		{
-			
-			@Override
-			public void databaseRequestCallback()
+			DatabaseController.Init();
+			connectionHandler = DatabaseController.getConnection();
+
+			getDigitalMeasuresRequestCallback = new IDatabaseRequestCallback()
 			{
-				getDigitalMeasuresRequest_done = true;
-			}
-		};
-		
-		getAnalogMeasuresRequestCallback = new IDatabaseRequestCallback()
+
+				@Override
+				public void databaseRequestCallback()
+				{
+					getDigitalMeasuresRequest_done = true;
+				}
+			};
+
+			getAnalogMeasuresRequestCallback = new IDatabaseRequestCallback()
+			{
+
+				@Override
+				public void databaseRequestCallback()
+				{
+					getAnalogMeasuresRequest_done = true;
+				}
+			};
+
+			getTotalizersRequestCallback = new IDatabaseRequestCallback()
+			{
+
+				@Override
+				public void databaseRequestCallback()
+				{
+					getTotalizersRequest_done = true;
+				}
+			};
+
+			updateTotalizersRequestCallback = new IDatabaseRequestCallback()
+			{
+
+				@Override
+				public void databaseRequestCallback()
+				{
+					updateTotalizersRequest_done = true;
+				}
+			};
+
+			getScenariosRequestCallback = new IDatabaseRequestCallback()
+			{
+
+				@Override
+				public void databaseRequestCallback()
+				{
+					getScenariosRequest_done = true;
+				}
+			};
+
+			getDigitalMeasures = new DatabaseRequest(connectionHandler, RequestList.REQUEST_DigitalMeasure, getDigitalMeasuresRequestCallback);
+			getAnalogMeasures = new DatabaseRequest(connectionHandler, RequestList.REQUEST_AnalogMeasure, getAnalogMeasuresRequestCallback);
+			getTotalizers = new DatabaseRequest(connectionHandler, RequestList.REQUEST_TotalizerValue, getTotalizersRequestCallback);
+			updateTotalizers = new DatabaseRequest(connectionHandler, RequestList.REQUEST_UpdateTotalizer, updateTotalizersRequestCallback);
+			getScenariosRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_Scenarios, getScenariosRequestCallback);
+
+			getDigitalMeasures.start();
+			getAnalogMeasures.start();
+			getTotalizers.start();
+			updateTotalizers.start();
+			getScenariosRequest.start();
+		}
+		catch (Exception ex)
 		{
-			
-			@Override
-			public void databaseRequestCallback()
-			{
-				getAnalogMeasuresRequest_done = true;
-			}
-		};
-		
-		getTotalizersRequestCallback = new IDatabaseRequestCallback()
-		{
-			
-			@Override
-			public void databaseRequestCallback()
-			{
-				getTotalizersRequest_done = true;
-			}
-		};
-		
-		updateTotalizersRequestCallback = new IDatabaseRequestCallback()
-		{
-			
-			@Override
-			public void databaseRequestCallback()
-			{
-				updateTotalizersRequest_done = true;
-			}
-		};
-		
-		getScenariosRequestCallback = new IDatabaseRequestCallback()
-		{
-			
-			@Override
-			public void databaseRequestCallback()
-			{
-				getScenariosRequest_done = true;
-			}
-		};
-		
-		getDigitalMeasures = new DatabaseRequest(connectionHandler, RequestList.REQUEST_DigitalMeasure, getDigitalMeasuresRequestCallback);
-		getAnalogMeasures = new DatabaseRequest(connectionHandler, RequestList.REQUEST_AnalogMeasure, getAnalogMeasuresRequestCallback);
-		getTotalizers = new DatabaseRequest(connectionHandler, RequestList.REQUEST_TotalizerValue, getTotalizersRequestCallback);
-		updateTotalizers = new DatabaseRequest(connectionHandler, RequestList.REQUEST_UpdateTotalizer, updateTotalizersRequestCallback);
-		getScenariosRequest = new DatabaseRequest(connectionHandler, RequestList.REQUEST_Scenarios, getScenariosRequestCallback);
-		
-		getDigitalMeasures.start();
-		getAnalogMeasures.start();
-		getTotalizers.start();
-		updateTotalizers.start();
-		getScenariosRequest.start();
+			throw new CH4P_Exception("-VigieReport InitDatabaseRelations error-" + ex.getMessage(), ex.getCause());
+		}
 	}
 
-	private boolean isReportTime()
+	private boolean isReportTime() throws CH4P_Exception
 	{
 		try
 		{
@@ -267,25 +285,31 @@ public class VigieReport implements Callable<Integer>
 			
 			if (now.after(reportTime))
 			{
-				CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "VigieReport : isReportTime = true.");
+				CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "VigieReport : isReportTime = true.");
 				return true;
 			}
 			return false;
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			e.printStackTrace();
-			return false;
+			throw new CH4P_Exception("-VigieReport isReportTime error-" + ex.getMessage(), ex.getCause());
 		}
 	}
 	
-	private String GetFormatedDate(Calendar date, String pattern)
+	private String GetFormatedDate(Calendar date, String pattern) throws CH4P_Exception
 	{
-		SimpleDateFormat format = new SimpleDateFormat(pattern);
-		return format.format(date.getTime());
+		try
+		{
+			SimpleDateFormat format = new SimpleDateFormat(pattern);
+			return format.format(date.getTime());
+		}
+		catch (Exception ex)
+		{
+			throw new CH4P_Exception("-VigieReport GetFormatedDate error-" + ex.getMessage(), ex.getCause());
+		}
 	}
 	
-	private CSVWriter GetWriter(String reportName)
+	private CSVWriter GetWriter(String reportName) throws CH4P_Exception
 	{
 		try
 		{
@@ -294,12 +318,11 @@ public class VigieReport implements Callable<Integer>
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			throw new CH4P_Exception("-VigieReport GetWriter error-" + ex.getMessage(), ex.getCause());
 		}
-		return null;
 	}
 
-	private void getDatas()
+	private void getDatas() throws CH4P_Exception
 	{
 		try
 		{
@@ -313,19 +336,19 @@ public class VigieReport implements Callable<Integer>
 			getScenariosRequest.setStatementDateParameter(1, startDay.getTimeInMillis());
 			getScenariosRequest.doQuery();
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			e.printStackTrace();
+			throw new CH4P_Exception("-VigieReport GetDatas error-" + ex.getMessage(), ex.getCause());
 		}
 	}
 	
-	private void UpdateTotalizers(CachedRowSet _indexes)
+	private void UpdateTotalizers(CachedRowSet _indexes) throws CH4P_Exception
 	{
 		Callable<Integer> task = new Callable<Integer>()
 		{
 
 			@Override
-			public Integer call() throws Exception
+			public Integer call() throws CH4P_Exception
 			{
 				try
 				{
@@ -338,7 +361,7 @@ public class VigieReport implements Callable<Integer>
 						updateTotalizers.setStatementBoolParameter(3, true); // isValid
 						updateTotalizers.setStatementIntParameter(4, _indexes.getInt("idSignal")); // id
 						updateTotalizersRequest_done = false;
-						CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "VigieReport : UpdateTotalizers : A row has been updated :).");
+						CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "VigieReport : UpdateTotalizers : A row has been updated :).");
 						updateTotalizers.doUpdate();
 						
 						while (updateTotalizersRequest_done == false)
@@ -349,16 +372,23 @@ public class VigieReport implements Callable<Integer>
 				}
 				catch (Exception ex)
 				{
-					ex.printStackTrace();
+					throw new CH4P_Exception("-VigieReport UpdateTotalizer internal class error-" + ex.getMessage(), ex.getCause());
 				}
 				return null;
 			}
 		};
 		
-		CH4P_Multithreading.Submit(task);
+		try
+		{
+			CH4P_Multithreading.Submit(task);
+		}
+		catch (Exception ex)
+		{
+			throw new CH4P_Exception("-VigieReport UpdateTotalizer error-" + ex.getMessage(), ex.getCause());
+		}
 	}
 	
-	private void FaultsReport()
+	private void FaultsReport() throws CH4P_Exception
 	{
 		try
 		{
@@ -453,19 +483,19 @@ public class VigieReport implements Callable<Integer>
 			}
 			
 			writer.close();
-			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "VigieReport : Report generated : " + reportName);	
+			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "VigieReport : Report generated : " + reportName);	
 			
 			UpdateTotalizers(indexes);
 			
 			indexes = null;
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			e.printStackTrace();
+			throw new CH4P_Exception("-VigieReport FaultsReport error-" + ex.getMessage(), ex.getCause());
 		}
 	}
 	
-	private void MeasuresReport()
+	private void MeasuresReport() throws CH4P_Exception
 	{
 		try
 		{
@@ -552,7 +582,7 @@ public class VigieReport implements Callable<Integer>
 			}
 			
 			writer.close();
-			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "VigieReport : Report generated : " + reportName);	
+			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "VigieReport : Report generated : " + reportName);	
 			
 			measureList = null;
 			digitalmeasures = null;
@@ -560,12 +590,12 @@ public class VigieReport implements Callable<Integer>
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			throw new CH4P_Exception("-VigieReport MeasureReport error-" + ex.getMessage(), ex.getCause());
 		}
 
 	}
 	
-	private void ScenariosReport()
+	private void ScenariosReport() throws CH4P_Exception
 	{
 		try
 		{
@@ -589,47 +619,54 @@ public class VigieReport implements Callable<Integer>
 			}
 			
 			writer.close();
-			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "VigieReport : Report generated : " + reportName);	
+			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "VigieReport : Report generated : " + reportName);	
 			
 			scenarios = null;
 			
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			throw new CH4P_Exception("-VigieReport ScenariosReport error-" + ex.getMessage(), ex.getCause());
 		}
 	}
 	
-	private void SendReports()
+	private void SendReports() throws CH4P_Exception
 	{
-		// Mail setup
-		Mail mail = new Mail();
-		
-		String date = GetFormatedDate(Calendar.getInstance(), "dd/MM/yyyy HH'h'mm");
-		
-		String subject = "Rapports d'exploitation du " + date;
-		
-		mail.setAuthenticationType(Mail.AUTH_SSL);
-		mail.setFrom(mail.getUsername());
-		mail.setSubject(subject);
-		mail.setTo(CH4P_ConfigManager.getReportConfig().GetProperties().getProperty("reportrecipients"));
-		mail.setText("");
-		
-		// Attachments setup
-		mail.addAttachmentsFolder(CH4P_System.PATH_Vigie_Reports);
-		
-		if (mail.sendMail())
+		try
 		{
-			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "VigieReport : REPORTS sent !");
-			SaveReports();
+			// Mail setup
+			Mail mail = new Mail();
+
+			String date = GetFormatedDate(Calendar.getInstance(), "dd/MM/yyyy HH'h'mm");
+
+			String subject = "Rapports d'exploitation du " + date;
+
+			mail.setAuthenticationType(Mail.AUTH_SSL);
+			mail.setFrom(mail.getUsername());
+			mail.setSubject(subject);
+			mail.setTo(CH4P_ConfigManager.getReportConfig().GetProperties().getProperty("reportrecipients"));
+			mail.setText("");
+
+			// Attachments setup
+			mail.addAttachmentsFolder(CH4P_System.PATH_Vigie_Reports);
+
+			if (mail.sendMail())
+			{
+				CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "VigieReport : REPORTS sent !");
+				SaveReports();
+			}
+			else
+			{
+				CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "VigieReport : Failed to send REPORTS !");
+			}
 		}
-		else
+		catch (Exception ex)
 		{
-			CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "VigieReport : Failed to send REPORTS !");
+			throw new CH4P_Exception("-VigieReport SendReports error-" + ex.getMessage(), ex.getCause());
 		}
 	}
 	
-	private void SaveReports()
+	private void SaveReports() throws CH4P_Exception
 	{
 		try
 		{
@@ -645,7 +682,7 @@ public class VigieReport implements Callable<Integer>
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			throw new CH4P_Exception("-VigieReport SaveReports error-" + ex.getMessage(), ex.getCause());
 		}
 	}
 	

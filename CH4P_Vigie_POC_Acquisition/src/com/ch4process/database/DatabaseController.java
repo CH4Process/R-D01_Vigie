@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Properties;
 
 import com.ch4process.utils.CH4P_ConfigManager;
+import com.ch4process.utils.CH4P_Exception;
 import com.ch4process.utils.CH4P_PropertiesReader;
 
 
@@ -25,7 +26,7 @@ public class DatabaseController implements AutoCloseable
 	
 	static private List<ConnectionHandler> connectionPool = new ArrayList<ConnectionHandler>();
 
-	private static boolean ReadConfigFile()
+	private static boolean ReadConfigFile() throws CH4P_Exception
 	{
 		try
 		{
@@ -60,11 +61,10 @@ public class DatabaseController implements AutoCloseable
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
-			return false;
+			throw new CH4P_Exception(" -Database config file reading- " + ex.getMessage(), ex.getCause());
 		}
 	}
-	public static boolean Init()
+	public static boolean Init() throws CH4P_Exception
 	{	
 		if (! initialized)
 		{
@@ -85,8 +85,7 @@ public class DatabaseController implements AutoCloseable
 			}
 			catch(Exception ex)
 			{
-				ex.printStackTrace();
-				return false;
+				throw new CH4P_Exception("-DatabaseController init error-" + ex.getMessage(), ex.getCause());
 			}
 		}
 		
@@ -119,7 +118,7 @@ public class DatabaseController implements AutoCloseable
 		}
 	}
 	
-	public static ConnectionHandler getConnection()
+	public static ConnectionHandler getConnection() throws CH4P_Exception
 	{
 		try
 		{
@@ -133,22 +132,21 @@ public class DatabaseController implements AutoCloseable
 			
 			return null;
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			e.printStackTrace();
-			return null;
+			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
 		}
 	}
 
-	public static void Free(ConnectionHandler cnh)
+	public static void Free(ConnectionHandler cnh) throws CH4P_Exception
 	{
 		try
 		{
 			connectionPool.get(cnh.getId()).setIsAvailable(true);
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			e.printStackTrace();
+			throw new CH4P_Exception("-DatabaseController Free connection error-" + ex.getMessage(), ex.getCause());
 		}
 	}
 }

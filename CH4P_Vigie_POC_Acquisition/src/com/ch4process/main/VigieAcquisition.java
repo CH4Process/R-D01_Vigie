@@ -132,7 +132,7 @@ public class VigieAcquisition implements Callable<Integer>
 		}
 		catch (Exception ex)
 		{
-			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
+			throw new CH4P_Exception("-VigieAcquisition SignalList error-" + ex.getMessage(), ex.getCause());
 		}
 	}
 	/**
@@ -159,7 +159,7 @@ public class VigieAcquisition implements Callable<Integer>
 		}
 		catch(Exception ex)
 		{
-			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
+			throw new CH4P_Exception("-VigieAcquisition DeviceList error-" + ex.getMessage(), ex.getCause());
 		}
 	}
 	
@@ -183,7 +183,7 @@ public class VigieAcquisition implements Callable<Integer>
 		}
 		catch(Exception ex)
 		{
-			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
+			throw new CH4P_Exception("-VigieAcquisition ModbusDeviceList error-" + ex.getMessage(), ex.getCause());
 		}
 	}
 	
@@ -210,7 +210,7 @@ public class VigieAcquisition implements Callable<Integer>
 		}
 		catch(Exception ex)
 		{
-			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
+			throw new CH4P_Exception("-VigieAcquisition DeviceTypeList error-" + ex.getMessage(), ex.getCause());
 		}
 	}
 	/**
@@ -244,7 +244,7 @@ public class VigieAcquisition implements Callable<Integer>
 		}
 		catch (Exception ex)
 		{
-			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
+			throw new CH4P_Exception("-VigieAcquisition SignalTypeList error-" + ex.getMessage(), ex.getCause());
 		}
 	}
 	/**
@@ -269,7 +269,7 @@ public class VigieAcquisition implements Callable<Integer>
 		}
 		catch (Exception ex)
 		{
-			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
+			throw new CH4P_Exception("-VigieAcquisition SignalLevelList error-" + ex.getMessage(), ex.getCause());
 		}
 	}
 	/**
@@ -278,7 +278,7 @@ public class VigieAcquisition implements Callable<Integer>
 	 * @param model
 	 * @return
 	 */
-	private Signal SignalInstance(Signal signal)
+	private Signal SignalInstance(Signal signal) throws CH4P_Exception
 	{
 		String brand = signal.getDevice().getDeviceType().getBrandName();
 		String model = signal.getDevice().getDeviceType().getModelName();
@@ -315,69 +315,77 @@ public class VigieAcquisition implements Callable<Integer>
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
-			return null;
+			throw new CH4P_Exception("-VigieAcquisition SignalInstance error-" + ex.getMessage(), ex.getCause());
 		}
 	}
 	
-	private void SignalConfiguration()
+	private void SignalConfiguration() throws CH4P_Exception
 	{
-		if (signalListRequest_done && signalTypeListRequest_done && signalLevelListRequest_done && deviceListRequest_done && deviceTypeListRequest_done && modbusDeviceListRequest_done)
+		try
 		{
-			// We put the DeviceType variables values in each Device
-			for (Device device:devices.values())
+			if (signalListRequest_done && signalTypeListRequest_done && signalLevelListRequest_done && deviceListRequest_done && deviceTypeListRequest_done && modbusDeviceListRequest_done)
 			{
-				device.setDeviceType(deviceTypes.get(device.getIdDeviceType()));
-			}
-			
-			// We put everything in the Signal object
-			for(Signal signal:signals.values())
-			{
-				signal.setDevice(devices.get(signal.getIdDevice()));
-				signal.setSignalType(signalTypes.get(signal.getIdSignalType()));
-				signal.setSignalLevel(signalLevels.get(signal.getIdSignalLevel()));
-				
-				// If the Signal is from a Modbus Device we have to initialize this
-				if(signal.getSignalType().getIsCom())
+				// We put the DeviceType variables values in each Device
+				for (Device device:devices.values())
 				{
-					if (modbusDevices.containsKey(signal.getIdDevice()))
+					device.setDeviceType(deviceTypes.get(device.getIdDeviceType()));
+				}
+
+				// We put everything in the Signal object
+				for(Signal signal:signals.values())
+				{
+					signal.setDevice(devices.get(signal.getIdDevice()));
+					signal.setSignalType(signalTypes.get(signal.getIdSignalType()));
+					signal.setSignalLevel(signalLevels.get(signal.getIdSignalLevel()));
+
+					// If the Signal is from a Modbus Device we have to initialize this
+					if(signal.getSignalType().getIsCom())
 					{
-						modbusDevices.get(signal.getIdDevice()).addSignal(signal);
+						if (modbusDevices.containsKey(signal.getIdDevice()))
+						{
+							modbusDevices.get(signal.getIdDevice()).addSignal(signal);
+						}
 					}
+
+					// We have to cast the Signal object into the correct children
+					Signal instance = SignalInstance(signal);
+					signals.replace(signal.getIdSignal(), instance);
+
+					// Now that everything is set, we can start the threads
+					CH4P_Multithreading.Submit(instance);
 				}
-				
-				// We have to cast the Signal object into the correct children
-				Signal instance = SignalInstance(signal);
-				signals.replace(signal.getIdSignal(), instance);
-				
-				// Now that everything is set, we can start the threads
-				CH4P_Multithreading.Submit(instance);
-			}
-			
-			// We have to start the ModbusDevices also
-			for(ModbusDevice modbusDevice:modbusDevices.values())
-			{
-				if (devices.containsKey(modbusDevice.getIdDevice()))
+
+				// We have to start the ModbusDevices also
+				for(ModbusDevice modbusDevice:modbusDevices.values())
 				{
-					modbusDevice.setDevice(devices.get(modbusDevice.getIdDevice()));
+					if (devices.containsKey(modbusDevice.getIdDevice()))
+					{
+						modbusDevice.setDevice(devices.get(modbusDevice.getIdDevice()));
+					}
+					CH4P_Multithreading.Submit(modbusDevice);
 				}
-				CH4P_Multithreading.Submit(modbusDevice);
+
+				// We have to clean up some memory space
+				devices = null;
+				deviceTypes = null;
+				signalLevels = null;
+				signalTypes = null;
 			}
-			
-			// We have to clean up some memory space
-			devices = null;
-			deviceTypes = null;
-			signalLevels = null;
-			signalTypes = null;
+		}
+		catch (Exception ex)
+		{
+			throw new CH4P_Exception("-VigieAcquisition SignalConfiguration error-" + ex.getMessage(), ex.getCause());
 		}
 	}
 
 	
 	// Thread code
 	
-	public void start()
+	public void start() throws CH4P_Exception
 	{
-		CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "VigieAcq start : " + Calendar.getInstance().getTime());
+		try
+		{
+		CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "VigieAcq start : " + Calendar.getInstance().getTime());
 		
 		DatabaseController.Init();
 		connectionHandler = DatabaseController.getConnection();
@@ -386,21 +394,22 @@ public class VigieAcquisition implements Callable<Integer>
 		{
 			
 			@Override
-			public void databaseRequestCallback()
+			public void databaseRequestCallback() throws CH4P_Exception
 			{
 				try
 				{
 					SignalList(signalListRequest.getCachedRowSet());
+					signalListRequest_done = true;
+					signalListRequest.close();
+					signalListRequest = null;
+					
+					SignalConfiguration();
 				}
-				catch (CH4P_Exception e)
+				catch (Exception ex)
 				{
-					e.printStackTrace();
+					throw new CH4P_Exception("-VigieAcquisition signalListRequestCallback error-" + ex.getMessage(), ex.getCause());
 				}
-				signalListRequest_done = true;
-				signalListRequest.close();
-				signalListRequest = null;
 				
-				SignalConfiguration();
 			}
 		};
 		
@@ -408,21 +417,22 @@ public class VigieAcquisition implements Callable<Integer>
 		{
 			
 			@Override
-			public void databaseRequestCallback()
+			public void databaseRequestCallback() throws CH4P_Exception
 			{
 				try
 				{
 					DeviceList(deviceListRequest.getCachedRowSet());
+					deviceListRequest_done = true;
+					deviceListRequest.close();
+					deviceListRequest = null;
+
+					SignalConfiguration();
 				}
-				catch (CH4P_Exception e)
+				catch (Exception ex)
 				{
-					e.printStackTrace();
+					throw new CH4P_Exception("-VigieAcquisition deviceListRequestCallback error-" + ex.getMessage(), ex.getCause());
 				}
-				deviceListRequest_done = true;
-				deviceListRequest.close();
-				deviceListRequest = null;
-				
-				SignalConfiguration();
+
 			}
 		};
 		
@@ -430,21 +440,22 @@ public class VigieAcquisition implements Callable<Integer>
 		{
 			
 			@Override
-			public void databaseRequestCallback()
+			public void databaseRequestCallback() throws CH4P_Exception
 			{
 				try
 				{
 					ModbusDeviceList(modbusDeviceListRequest.getCachedRowSet());
+					modbusDeviceListRequest_done = true;
+					modbusDeviceListRequest.close();
+					modbusDeviceListRequest = null;
+
+					SignalConfiguration();
 				}
-				catch (CH4P_Exception e)
+				catch (Exception ex)
 				{
-					e.printStackTrace();
+					throw new CH4P_Exception("-VigieAcquisition modbusDeviceListRequestCallback error-" + ex.getMessage(), ex.getCause());
 				}
-				modbusDeviceListRequest_done = true;
-				modbusDeviceListRequest.close();
-				modbusDeviceListRequest = null;
-				
-				SignalConfiguration();
+
 			}
 		};
 		
@@ -452,63 +463,66 @@ public class VigieAcquisition implements Callable<Integer>
 		{
 			
 			@Override
-			public void databaseRequestCallback()
+			public void databaseRequestCallback() throws CH4P_Exception
 			{
 				try
 				{
 					DeviceTypeList(deviceTypeListRequest.getCachedRowSet());
+					deviceTypeListRequest_done = true;
+					deviceTypeListRequest.close();
+					deviceTypeListRequest = null;
+
+					SignalConfiguration();
 				}
-				catch (CH4P_Exception e)
+				catch (Exception ex)
 				{
-					e.printStackTrace();
+					throw new CH4P_Exception("-VigieAcquisition deviceTypeListRequestCallback error-" + ex.getMessage(), ex.getCause());
 				}
-				deviceTypeListRequest_done = true;
-				deviceTypeListRequest.close();
-				deviceTypeListRequest = null;
-				
-				SignalConfiguration();
+
 			}
 		};
 		signalTypeListRequestCallback = new IDatabaseRequestCallback()
 		{
 			
 			@Override
-			public void databaseRequestCallback()
+			public void databaseRequestCallback() throws CH4P_Exception
 			{
 				try
 				{
 					SignalTypeList(signalTypeListRequest.getCachedRowSet());
+					signalTypeListRequest_done = true;
+					signalTypeListRequest.close();
+					signalTypeListRequest = null;
+
+					SignalConfiguration();
 				}
-				catch (CH4P_Exception e)
+				catch (Exception ex)
 				{
-					e.printStackTrace();
+					throw new CH4P_Exception("-VigieAcquisition signalTypeListRequestCallback error-" + ex.getMessage(), ex.getCause());
 				}
-				signalTypeListRequest_done = true;
-				signalTypeListRequest.close();
-				signalTypeListRequest = null;
-				
-				SignalConfiguration();
+
 			}
 		};
 		signalLevelListRequestCallback = new IDatabaseRequestCallback()
 		{
 			
 			@Override
-			public void databaseRequestCallback()
+			public void databaseRequestCallback() throws CH4P_Exception
 			{
 				try
 				{
 					SignalLevelList(signalLevelListRequest.getCachedRowSet());
+					signalLevelListRequest_done = true;
+					signalLevelListRequest.close();
+					signalLevelListRequest = null;
+
+					SignalConfiguration();
 				}
-				catch (CH4P_Exception e)
+				catch (Exception ex)
 				{
-					e.printStackTrace();
+					throw new CH4P_Exception("-VigieAcquisition signalLevelListRequestCallback error-" + ex.getMessage(), ex.getCause());
 				}
-				signalLevelListRequest_done = true;
-				signalLevelListRequest.close();
-				signalLevelListRequest = null;
-				
-				SignalConfiguration();
+
 			}
 		};
 		
@@ -546,9 +560,14 @@ public class VigieAcquisition implements Callable<Integer>
 		deviceTypeListRequest.doQuery();
 		modbusDeviceListRequest.start();
 		modbusDeviceListRequest.doQuery();
+		}
+		catch (Exception ex)
+		{
+			throw new CH4P_Exception("-VigieAcquisition start error-" + ex.getMessage(), ex.getCause());
+		}
 	}
 	
-	public void run()
+	public void run() throws CH4P_Exception
 	{
 		
 		while(true)
@@ -558,7 +577,7 @@ public class VigieAcquisition implements Callable<Integer>
 				
 				if (signalListRequest_done && signalTypeListRequest_done && signalLevelListRequest_done && deviceListRequest_done && deviceTypeListRequest_done &&  firstRun)
 				{
-					CH4P_Functions.Log(CH4P_Functions.LOG_inConsole, 100, "VigieAcq prête :) : " + Calendar.getInstance().getTime());
+					CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "VigieAcq prête :) : " + Calendar.getInstance().getTime());
 					firstRun = false;
 				}
 				Thread.sleep(1000);
@@ -569,7 +588,7 @@ public class VigieAcquisition implements Callable<Integer>
 			}
 			catch (Exception ex)
 			{
-				ex.printStackTrace();
+				throw new CH4P_Exception("-VigieAcquisition run error-" + ex.getMessage(), ex.getCause());
 			}
 		}
 	}
@@ -584,12 +603,9 @@ public class VigieAcquisition implements Callable<Integer>
 		}
 		catch(Exception ex)
 		{
-			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
+			throw new CH4P_Exception("-VigieAcquisition call error" + ex.getMessage(), ex.getCause());
 		}
-		finally
-		{
-			return null;
-		}
+		return null;
 	}
 		
 }
