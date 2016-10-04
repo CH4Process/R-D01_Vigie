@@ -137,9 +137,9 @@ public class RecordWorker implements Callable<Integer>, ISignalValueListener
 		{
 			eventList.remove(0);
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			e.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 		}
 		finally
 		{
@@ -172,7 +172,7 @@ public class RecordWorker implements Callable<Integer>, ISignalValueListener
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
 		}
 	}

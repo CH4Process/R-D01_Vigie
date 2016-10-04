@@ -39,7 +39,7 @@ public class CH4P_System
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 		}
 		return null;
 	}

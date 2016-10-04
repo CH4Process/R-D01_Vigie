@@ -5,6 +5,7 @@ import java.util.EventListener;
 
 import com.ch4process.events.SignalValueEvent;
 import com.ch4process.utils.CH4P_Exception;
+import com.ch4process.utils.CH4P_Functions;
 import com.yoctopuce.YoctoAPI.YGenericSensor;
 
 public class Signal_Yocto_4_20mA extends Signal
@@ -29,7 +30,7 @@ public class Signal_Yocto_4_20mA extends Signal
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			return false;
 		}
 	}
@@ -46,7 +47,7 @@ public class Signal_Yocto_4_20mA extends Signal
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			return false;
 		}
 	}
@@ -95,7 +96,7 @@ public class Signal_Yocto_4_20mA extends Signal
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
 		}
 	}

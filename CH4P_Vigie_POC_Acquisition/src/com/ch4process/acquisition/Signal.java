@@ -272,7 +272,7 @@ public class Signal implements ISignal
 				}
 				catch (InterruptedException iex)
 				{
-					iex.printStackTrace();
+					CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, iex);
 				}
 				
 			}
@@ -327,7 +327,7 @@ public class Signal implements ISignal
 		
 		catch(Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			return false;
 		}
 	}

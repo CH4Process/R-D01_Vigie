@@ -3,24 +3,65 @@ package com.ch4process.windows;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
-import java.awt.Window.Type;
-import javax.swing.BoxLayout;
-import javax.swing.UIManager;
+import javax.swing.border.EtchedBorder;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import com.ch4process.acquisition.ISignalValueListener;
+import com.ch4process.acquisition.Signal;
+import com.ch4process.events.ILogEventListener;
+import com.ch4process.events.ILogExceptionEventListener;
+import com.ch4process.events.SignalValueEvent;
+import com.ch4process.main.VigieAcquisition;
+import com.ch4process.main.VigieMain;
+import com.ch4process.utils.CH4P_Functions;
+
+import java.awt.Color;
 import java.awt.Font;
-import javax.swing.JTextPane;
+import java.text.SimpleDateFormat;
 
 
-public class VigieMainView extends JFrame
+
+public class VigieMainView extends JFrame implements Callable<Integer>, ISignalValueListener, ILogEventListener, ILogExceptionEventListener
 {
+	boolean init_done = false;
+	
+	Map<Integer, ArrayList<JLabel>> labelList = new HashMap<Integer, ArrayList<JLabel>>();
+	Map<Integer,Signal> signalList;
+	VigieAcquisition vigieAcquisition;
+	
+	Font basicFont = new Font("Arial", Font.PLAIN, 11);
+	Font importantFont = new Font("Arial", Font.BOLD, 11);
+	
+	JTextArea LogPane;
+	JTextArea ExceptionPane;
 	
 	public VigieMainView()
 	{
-		initContent();
 		
-		// Do things
+		setTitle("CH4Process - VIGIE");
+		setResizable(false);
+		setSize(800, 600);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		getContentPane().setLayout(null);
+		//initContent();
 		
 		this.setVisible(true);
+	}
+	
+	@Override
+	public Integer call()
+	{
+		initContent();
+		init_done = true;
 		
 		while (true)
 		{
@@ -31,7 +72,7 @@ public class VigieMainView extends JFrame
 			}
 			catch(InterruptedException ex)
 			{
-				ex.printStackTrace();
+				CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			}
 			
 		}
@@ -45,6 +86,30 @@ public class VigieMainView extends JFrame
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		getContentPane().setLayout(null);
 		
+		this.setVisible(true);
+		
+		JProgressBar progressBar = new JProgressBar(0, 100);
+		progressBar.setBounds(300, 250, 200, 30);
+		getContentPane().add(progressBar);
+		
+		while((vigieAcquisition = VigieMain.getVigieAcquisition()) == null || vigieAcquisition.isInitialized() == false)
+		{
+			try
+			{
+				progressBar.setValue(progressBar.getValue() + 10);
+				Thread.sleep(1000);
+			}
+			catch (Exception ex)
+			{
+				CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
+			}
+		}
+		
+		signalList = vigieAcquisition.getSignalList();
+		
+		getContentPane().remove(progressBar);
+		progressBar = null;
+		
 		JPanel Panel_InstantValues = new JPanel();
 		Panel_InstantValues.setBounds(15, 30, 769, 214);
 		getContentPane().add(Panel_InstantValues);
@@ -54,126 +119,7 @@ public class VigieMainView extends JFrame
 		Panel_Hardware.setBounds(10, 21, 348, 182);
 		Panel_InstantValues.add(Panel_Hardware);
 		Panel_Hardware.setLayout(null);
-		
-		JLabel Signal01_label = new JLabel("Signal01_shortname");
-		Signal01_label.setBounds(10, 11, 110, 14);
-		Signal01_label.setHorizontalAlignment(SwingConstants.LEFT);
-		Panel_Hardware.add(Signal01_label);
-		
-		JLabel Signal01_value = new JLabel("12345.12345");
-		Signal01_value.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal01_value.setBounds(109, 11, 78, 14);
-		Panel_Hardware.add(Signal01_value);
-		
-		JLabel Signal01_unit = new JLabel("xxxxxxxx");
-		Signal01_unit.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal01_unit.setBounds(175, 11, 65, 14);
-		Panel_Hardware.add(Signal01_unit);
-		
-		JLabel Signal01_date = new JLabel("26/09/2016 16h12:22");
-		Signal01_date.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal01_date.setBounds(228, 11, 110, 14);
-		Panel_Hardware.add(Signal01_date);
-		
-		JLabel Signal02_label = new JLabel("Signal02_shortname");
-		Signal02_label.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal02_label.setBounds(10, 36, 110, 14);
-		Panel_Hardware.add(Signal02_label);
-		
-		JLabel Signal02_value = new JLabel("12345.12345");
-		Signal02_value.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal02_value.setBounds(109, 36, 78, 14);
-		Panel_Hardware.add(Signal02_value);
-		
-		JLabel Signal02_unit = new JLabel("xxxxxxxx");
-		Signal02_unit.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal02_unit.setBounds(175, 36, 65, 14);
-		Panel_Hardware.add(Signal02_unit);
-		
-		JLabel Signal02_date = new JLabel("26/09/2016 16h12:22");
-		Signal02_date.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal02_date.setBounds(228, 36, 110, 14);
-		Panel_Hardware.add(Signal02_date);
-		
-		JLabel Signal03_label = new JLabel("Signal03_shortname");
-		Signal03_label.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal03_label.setBounds(10, 61, 110, 14);
-		Panel_Hardware.add(Signal03_label);
-		
-		JLabel Signal03_value = new JLabel("12345.12345");
-		Signal03_value.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal03_value.setBounds(109, 61, 78, 14);
-		Panel_Hardware.add(Signal03_value);
-		
-		JLabel Signal03_unit = new JLabel("xxxxxxxx");
-		Signal03_unit.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal03_unit.setBounds(175, 61, 65, 14);
-		Panel_Hardware.add(Signal03_unit);
-		
-		JLabel Signal03_date = new JLabel("26/09/2016 16h12:22");
-		Signal03_date.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal03_date.setBounds(228, 61, 110, 14);
-		Panel_Hardware.add(Signal03_date);
-		
-		JLabel Signal04_label = new JLabel("Signal04_shortname");
-		Signal04_label.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal04_label.setBounds(10, 86, 110, 14);
-		Panel_Hardware.add(Signal04_label);
-		
-		JLabel Signal04_value = new JLabel("12345.12345");
-		Signal04_value.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal04_value.setBounds(109, 86, 78, 14);
-		Panel_Hardware.add(Signal04_value);
-		
-		JLabel Signal04_unit = new JLabel("xxxxxxxx");
-		Signal04_unit.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal04_unit.setBounds(175, 86, 65, 14);
-		Panel_Hardware.add(Signal04_unit);
-		
-		JLabel Signal04_date = new JLabel("26/09/2016 16h12:22");
-		Signal04_date.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal04_date.setBounds(228, 86, 110, 14);
-		Panel_Hardware.add(Signal04_date);
-		
-		JLabel Signal05_label = new JLabel("Signal05_shortname");
-		Signal05_label.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal05_label.setBounds(10, 111, 110, 14);
-		Panel_Hardware.add(Signal05_label);
-		
-		JLabel Signal05_value = new JLabel("12345.12345");
-		Signal05_value.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal05_value.setBounds(109, 111, 78, 14);
-		Panel_Hardware.add(Signal05_value);
-		
-		JLabel Signal05_unit = new JLabel("xxxxxxxx");
-		Signal05_unit.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal05_unit.setBounds(175, 111, 65, 14);
-		Panel_Hardware.add(Signal05_unit);
-		
-		JLabel Signal05_date = new JLabel("26/09/2016 16h12:22");
-		Signal05_date.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal05_date.setBounds(228, 111, 110, 14);
-		Panel_Hardware.add(Signal05_date);
-		
-		JLabel Signal06_label = new JLabel("Signal06_shortname");
-		Signal06_label.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal06_label.setBounds(10, 136, 110, 14);
-		Panel_Hardware.add(Signal06_label);
-		
-		JLabel Signal06_value = new JLabel("12345.12345");
-		Signal06_value.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal06_value.setBounds(109, 136, 78, 14);
-		Panel_Hardware.add(Signal06_value);
-		
-		JLabel Signal06_unit = new JLabel("xxxxxxxx");
-		Signal06_unit.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal06_unit.setBounds(175, 136, 65, 14);
-		Panel_Hardware.add(Signal06_unit);
-		
-		JLabel Signal06_date = new JLabel("26/09/2016 16h12:22");
-		Signal06_date.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal06_date.setBounds(228, 136, 110, 14);
-		Panel_Hardware.add(Signal06_date);
+		Panel_Hardware.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 		
 		JLabel lblHardware = new JLabel("Hardware");
 		lblHardware.setHorizontalAlignment(SwingConstants.CENTER);
@@ -181,151 +127,12 @@ public class VigieMainView extends JFrame
 		lblHardware.setBounds(110, 3, 149, 17);
 		Panel_InstantValues.add(lblHardware);
 		
-		JPanel panel = new JPanel();
-		panel.setLayout(null);
-		panel.setBounds(411, 21, 348, 182);
-		Panel_InstantValues.add(panel);
-		
-		JLabel label = new JLabel("Signal01_shortname");
-		label.setHorizontalAlignment(SwingConstants.LEFT);
-		label.setBounds(10, 11, 110, 14);
-		panel.add(label);
-		
-		JLabel label_1 = new JLabel("12345.12345");
-		label_1.setHorizontalAlignment(SwingConstants.LEFT);
-		label_1.setBounds(109, 11, 78, 14);
-		panel.add(label_1);
-		
-		JLabel label_2 = new JLabel("xxxxxxxx");
-		label_2.setHorizontalAlignment(SwingConstants.LEFT);
-		label_2.setBounds(175, 11, 65, 14);
-		panel.add(label_2);
-		
-		JLabel label_3 = new JLabel("26/09/2016 16h12:22");
-		label_3.setHorizontalAlignment(SwingConstants.LEFT);
-		label_3.setBounds(228, 11, 110, 14);
-		panel.add(label_3);
-		
-		JLabel label_4 = new JLabel("Signal02_shortname");
-		label_4.setHorizontalAlignment(SwingConstants.LEFT);
-		label_4.setBounds(10, 36, 110, 14);
-		panel.add(label_4);
-		
-		JLabel label_5 = new JLabel("12345.12345");
-		label_5.setHorizontalAlignment(SwingConstants.LEFT);
-		label_5.setBounds(109, 36, 78, 14);
-		panel.add(label_5);
-		
-		JLabel label_6 = new JLabel("xxxxxxxx");
-		label_6.setHorizontalAlignment(SwingConstants.LEFT);
-		label_6.setBounds(175, 36, 65, 14);
-		panel.add(label_6);
-		
-		JLabel label_7 = new JLabel("26/09/2016 16h12:22");
-		label_7.setHorizontalAlignment(SwingConstants.LEFT);
-		label_7.setBounds(228, 36, 110, 14);
-		panel.add(label_7);
-		
-		JLabel label_8 = new JLabel("Signal03_shortname");
-		label_8.setHorizontalAlignment(SwingConstants.LEFT);
-		label_8.setBounds(10, 61, 110, 14);
-		panel.add(label_8);
-		
-		JLabel label_9 = new JLabel("12345.12345");
-		label_9.setHorizontalAlignment(SwingConstants.LEFT);
-		label_9.setBounds(109, 61, 78, 14);
-		panel.add(label_9);
-		
-		JLabel label_10 = new JLabel("xxxxxxxx");
-		label_10.setHorizontalAlignment(SwingConstants.LEFT);
-		label_10.setBounds(175, 61, 65, 14);
-		panel.add(label_10);
-		
-		JLabel label_11 = new JLabel("26/09/2016 16h12:22");
-		label_11.setHorizontalAlignment(SwingConstants.LEFT);
-		label_11.setBounds(228, 61, 110, 14);
-		panel.add(label_11);
-		
-		JLabel label_12 = new JLabel("Signal04_shortname");
-		label_12.setHorizontalAlignment(SwingConstants.LEFT);
-		label_12.setBounds(10, 86, 110, 14);
-		panel.add(label_12);
-		
-		JLabel label_13 = new JLabel("12345.12345");
-		label_13.setHorizontalAlignment(SwingConstants.LEFT);
-		label_13.setBounds(109, 86, 78, 14);
-		panel.add(label_13);
-		
-		JLabel label_14 = new JLabel("xxxxxxxx");
-		label_14.setHorizontalAlignment(SwingConstants.LEFT);
-		label_14.setBounds(175, 86, 65, 14);
-		panel.add(label_14);
-		
-		JLabel label_15 = new JLabel("26/09/2016 16h12:22");
-		label_15.setHorizontalAlignment(SwingConstants.LEFT);
-		label_15.setBounds(228, 86, 110, 14);
-		panel.add(label_15);
-		
-		JLabel label_16 = new JLabel("Signal05_shortname");
-		label_16.setHorizontalAlignment(SwingConstants.LEFT);
-		label_16.setBounds(10, 111, 110, 14);
-		panel.add(label_16);
-		
-		JLabel label_17 = new JLabel("12345.12345");
-		label_17.setHorizontalAlignment(SwingConstants.LEFT);
-		label_17.setBounds(109, 111, 78, 14);
-		panel.add(label_17);
-		
-		JLabel label_18 = new JLabel("xxxxxxxx");
-		label_18.setHorizontalAlignment(SwingConstants.LEFT);
-		label_18.setBounds(175, 111, 65, 14);
-		panel.add(label_18);
-		
-		JLabel label_19 = new JLabel("26/09/2016 16h12:22");
-		label_19.setHorizontalAlignment(SwingConstants.LEFT);
-		label_19.setBounds(228, 111, 110, 14);
-		panel.add(label_19);
-		
-		JLabel label_20 = new JLabel("Signal06_shortname");
-		label_20.setHorizontalAlignment(SwingConstants.LEFT);
-		label_20.setBounds(10, 136, 110, 14);
-		panel.add(label_20);
-		
-		JLabel label_21 = new JLabel("12345.12345");
-		label_21.setHorizontalAlignment(SwingConstants.LEFT);
-		label_21.setBounds(109, 136, 78, 14);
-		panel.add(label_21);
-		
-		JLabel label_22 = new JLabel("xxxxxxxx");
-		label_22.setHorizontalAlignment(SwingConstants.LEFT);
-		label_22.setBounds(175, 136, 65, 14);
-		panel.add(label_22);
-		
-		JLabel label_23 = new JLabel("26/09/2016 16h12:22");
-		label_23.setHorizontalAlignment(SwingConstants.LEFT);
-		label_23.setBounds(228, 136, 110, 14);
-		panel.add(label_23);
-		
-		JLabel Signal07_label = new JLabel("Signal06_shortname");
-		Signal07_label.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal07_label.setBounds(10, 161, 110, 14);
-		panel.add(Signal07_label);
-		
-		JLabel Signal07_value = new JLabel("12345.12345");
-		Signal07_value.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal07_value.setBounds(109, 161, 78, 14);
-		panel.add(Signal07_value);
-		
-		JLabel Signal07_unit = new JLabel("xxxxxxxx");
-		Signal07_unit.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal07_unit.setBounds(175, 161, 65, 14);
-		panel.add(Signal07_unit);
-		
-		JLabel Signal07_date = new JLabel("26/09/2016 16h12:22");
-		Signal07_date.setHorizontalAlignment(SwingConstants.LEFT);
-		Signal07_date.setBounds(228, 161, 110, 14);
-		panel.add(Signal07_date);
-		
+		JPanel Panel_Modbus = new JPanel();
+		Panel_Modbus.setLayout(null);
+		Panel_Modbus.setBounds(411, 21, 348, 182);
+		Panel_InstantValues.add(Panel_Modbus);	
+		Panel_Modbus.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+			
 		JLabel lblModbus = new JLabel("Modbus");
 		lblModbus.setHorizontalAlignment(SwingConstants.CENTER);
 		lblModbus.setFont(new Font("Century Schoolbook", Font.BOLD, 14));
@@ -343,10 +150,13 @@ public class VigieMainView extends JFrame
 		getContentPane().add(Log_panel);
 		Log_panel.setLayout(null);
 		
-		JTextPane LogPane = new JTextPane();
-		LogPane.setBounds(10, 11, 749, 108);
+		LogPane = new JTextArea();
 		LogPane.setEditable(false);
-		Log_panel.add(LogPane);
+		LogPane.setLineWrap(true);
+		LogPane.setWrapStyleWord(true);
+		JScrollPane LogScrollPane = new JScrollPane(LogPane);
+		LogScrollPane.setBounds(10, 11, 749, 108);
+		Log_panel.add(LogScrollPane);
 		
 		JLabel lblLogs = new JLabel("Logs");
 		lblLogs.setHorizontalAlignment(SwingConstants.CENTER);
@@ -360,15 +170,183 @@ public class VigieMainView extends JFrame
 		lblExceptions.setBounds(348, 419, 102, 17);
 		getContentPane().add(lblExceptions);
 		
-		JPanel panel_1 = new JPanel();
-		panel_1.setLayout(null);
-		panel_1.setBounds(15, 440, 769, 130);
-		getContentPane().add(panel_1);
+		JPanel Exception_Panel = new JPanel();
+		Exception_Panel.setLayout(null);
+		Exception_Panel.setBounds(15, 440, 769, 130);
+		getContentPane().add(Exception_Panel);
 		
-		JTextPane ExceptionPane = new JTextPane();
+		ExceptionPane = new JTextArea();
 		ExceptionPane.setEditable(false);
-		ExceptionPane.setBounds(10, 11, 749, 108);
-		panel_1.add(ExceptionPane);
+		ExceptionPane.setLineWrap(true);
+		ExceptionPane.setWrapStyleWord(true);
+		ExceptionPane.setForeground(Color.RED);
+		JScrollPane ExceptionScrollPane = new JScrollPane(ExceptionPane);
+		ExceptionScrollPane.setBounds(10, 11, 749, 108);
+		Exception_Panel.add(ExceptionScrollPane);
 		
+		// Data visualisation generation
+		int x = 10;
+		int y = 10;
+		int w = 0;
+		int h = 15;
+		int gap = 5;
+		
+		// We read the signalList based on the ID to know where to put the JLabel on the view
+		for (int i = 1; i <= 3; i++)
+		{
+			JLabel signalName = new JLabel("Signal-" + i);
+			JLabel signalValue = new JLabel("Value-" + i);
+			JLabel signalUnit = new JLabel("Unit-" + i);
+			JLabel signalDate = new JLabel("Date-" + i);
+			
+			w = 90;
+			signalName.setBounds(x, y, w, h);
+			signalName.setForeground(Color.BLACK);
+			signalName.setFont(basicFont);
+			signalName.setHorizontalAlignment(SwingConstants.CENTER);
+			x += w+gap;
+			w = 70;
+			signalValue.setBounds(x, y, w, h);
+			signalValue.setForeground(Color.BLUE);
+			signalValue.setFont(importantFont);
+			signalValue.setHorizontalAlignment(SwingConstants.CENTER);
+			x += w+gap;
+			w = 40;
+			signalUnit.setBounds(x, y, w, h);
+			signalUnit.setForeground(Color.BLUE);
+			signalUnit.setFont(importantFont);
+			signalUnit.setHorizontalAlignment(SwingConstants.CENTER);
+			x += w+gap;
+			w = 113;
+			signalDate.setBounds(x, y, w, h);
+			signalDate.setForeground(Color.BLACK);
+			signalDate.setFont(basicFont);
+			signalDate.setHorizontalAlignment(SwingConstants.CENTER);
+			
+			ArrayList<JLabel> labels = new ArrayList<JLabel>();
+			labels.add(signalName);
+			labels.add(signalValue);
+			labels.add(signalUnit);
+			labels.add(signalDate);
+			
+			labelList.put(i,labels);
+			
+			Panel_Hardware.add(signalName);
+			Panel_Hardware.add(signalValue);
+			Panel_Hardware.add(signalUnit);
+			Panel_Hardware.add(signalDate);
+
+			y += 25;
+			x = 10;
+		}
+		
+		x = 10;
+		y = 11;
+		
+		// We read the signalList based on the ID to know where to put the JLabel on the view
+		for (int i = 4; i <= signalList.size(); i++)
+		{
+			JLabel signalName = new JLabel("Signal-" + i);
+			JLabel signalValue = new JLabel("Value-" + i);
+			JLabel signalUnit = new JLabel("Unit-" + i);
+			JLabel signalDate = new JLabel("Date-" + i);
+			
+			w = 90;
+			signalName.setBounds(x, y, w, h);
+			signalName.setForeground(Color.BLACK);
+			signalName.setFont(basicFont);
+			signalName.setHorizontalAlignment(SwingConstants.CENTER);
+			x += w+gap;
+			w = 70;
+			signalValue.setBounds(x, y, w, h);
+			signalValue.setForeground(Color.BLUE);
+			signalValue.setFont(importantFont);
+			signalValue.setHorizontalAlignment(SwingConstants.CENTER);
+			x += w+gap;
+			w = 40;
+			signalUnit.setBounds(x, y, w, h);
+			signalUnit.setForeground(Color.BLUE);
+			signalUnit.setFont(importantFont);
+			signalUnit.setHorizontalAlignment(SwingConstants.CENTER);
+			x += w+gap;
+			w = 113;
+			signalDate.setBounds(x, y, w, h);
+			signalDate.setForeground(Color.BLACK);
+			signalDate.setFont(basicFont);
+			signalDate.setHorizontalAlignment(SwingConstants.CENTER);
+			
+			ArrayList<JLabel> labels = new ArrayList<JLabel>();
+			labels.add(signalName);
+			labels.add(signalValue);
+			labels.add(signalUnit);
+			labels.add(signalDate);
+			
+			labelList.put(i,labels);
+			
+			Panel_Modbus.add(signalName);
+			Panel_Modbus.add(signalValue);
+			Panel_Modbus.add(signalUnit);
+			Panel_Modbus.add(signalDate);
+
+			y += 25;
+			x = 10;
+		}
+		
+		this.repaint();
+	}
+
+	@Override
+	public void SignalValueChanged(SignalValueEvent event)
+	{
+		try
+		{
+			Signal signal = signalList.get(event.getIdSignal());
+			Calendar time = Calendar.getInstance();
+			time.setTimeInMillis(event.getDatetime());
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+			String value = "";
+			
+			if (event.getBoolValue() != null)
+			{
+				value = event.getBoolValue().toString();
+			}
+			else if (event.getIntValue() != null)
+			{
+				value = event.getIntValue().toString();
+			}
+			else if (event.getDoubleValue() != null)
+			{
+				value = event.getDoubleValue().toString();
+			}
+			
+			// Update every label each time even if it's not really necessary
+			ArrayList<JLabel> labels = labelList.get(event.getIdSignal());
+			labels.get(0).setText(signal.getShortName());
+			labels.get(1).setText(value);
+			labels.get(2).setText(signal.getSignalType().getUnit());
+			labels.get(3).setText(dateFormat.format(time.getTime()).toString());
+		}
+		catch(Exception ex)
+		{
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
+		}
+	}
+
+	@Override
+	public void onLogEvent(String message)
+	{
+		if (init_done)
+		{
+			LogPane.append(message + "\n");
+		}
+	}
+
+	@Override
+	public void onLogExceptionEvent(String message)
+	{
+		if (init_done)
+		{
+			ExceptionPane.append(message + "\n");
+		}
 	}
 }

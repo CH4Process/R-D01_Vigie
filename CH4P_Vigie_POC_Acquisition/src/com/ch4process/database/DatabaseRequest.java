@@ -4,6 +4,7 @@ import java.sql.*;
 import javax.sql.rowset.CachedRowSet;
 
 import com.ch4process.utils.CH4P_Exception;
+import com.ch4process.utils.CH4P_Functions;
 import com.sun.rowset.CachedRowSetImpl;
 
 /**
@@ -37,9 +38,9 @@ public class DatabaseRequest extends Thread
 			this.request = request;
 			this.dbrc = dbrc;
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			e.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			error = true;
 		}
 	}
@@ -60,9 +61,9 @@ public class DatabaseRequest extends Thread
 		{
 			this.preparedStatement = connectionHandler.getConnection().prepareStatement(request);
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			e.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 		}
 	}
 
@@ -80,9 +81,9 @@ public class DatabaseRequest extends Thread
 				Thread.sleep(1000);
 			}
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			e.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			error = true;
 		}
 	}
@@ -95,9 +96,9 @@ public class DatabaseRequest extends Thread
 			saveResultSet();
 			doCallback();
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			e.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			error = true;
 		}
 		
@@ -110,9 +111,9 @@ public class DatabaseRequest extends Thread
 			this.rowsUpdated = this.preparedStatement.executeUpdate();
 			doCallback();
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			e.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			error = true;
 		}
 	}
@@ -137,7 +138,7 @@ public class DatabaseRequest extends Thread
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 		}
 	}
 	
@@ -149,7 +150,7 @@ public class DatabaseRequest extends Thread
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 		}
 	}
 	
@@ -161,7 +162,7 @@ public class DatabaseRequest extends Thread
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 		}
 	}
 	
@@ -173,7 +174,7 @@ public class DatabaseRequest extends Thread
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 		}
 	}
 	
@@ -187,7 +188,7 @@ public class DatabaseRequest extends Thread
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 		}
 	}
 	
@@ -203,7 +204,7 @@ public class DatabaseRequest extends Thread
 		}
 		catch (SQLException ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			error = true;
 		}
 		finally
@@ -224,7 +225,7 @@ public class DatabaseRequest extends Thread
 		}
 		catch (SQLException ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 		}
 		finally
 		{

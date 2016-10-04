@@ -73,9 +73,9 @@ public class LogWorker implements Callable<Integer>, IScenarioEventListener
 				Thread.sleep(10 * 1000);
 			}
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			e.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 		}
 	}
 	
@@ -106,9 +106,9 @@ public class LogWorker implements Callable<Integer>, IScenarioEventListener
 		{
 			eventList.remove(0);
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			e.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 		}
 		finally
 		{
@@ -126,7 +126,7 @@ public class LogWorker implements Callable<Integer>, IScenarioEventListener
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			return null;
 		}
 		return null;

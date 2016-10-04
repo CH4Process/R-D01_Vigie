@@ -49,7 +49,7 @@ public class VigieSMS extends Thread
 			}
 			catch (InterruptedException ex)
 			{
-				ex.printStackTrace();
+				CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			}
 		}
 	}

@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import com.ch4process.utils.CH4P_Functions;
+
 
 public class SerialCom 
 {
@@ -62,7 +64,7 @@ public class SerialCom
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			return false;
 		}
 	}
@@ -76,7 +78,7 @@ public class SerialCom
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			return false;
 		}
 	}
@@ -90,7 +92,7 @@ public class SerialCom
 		}
 		catch (IOException ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			return false;
 		}
 	}

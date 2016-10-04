@@ -3,6 +3,7 @@ package com.ch4process.acquisition;
 import java.util.concurrent.Callable;
 
 import com.ch4process.utils.CH4P_Exception;
+import com.ch4process.utils.CH4P_Functions;
 import com.yoctopuce.YoctoAPI.YRelay;
 
 public class Commande extends Signal implements IScenarioCommandListener
@@ -24,7 +25,7 @@ public class Commande extends Signal implements IScenarioCommandListener
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			return false;
 		}
 	}

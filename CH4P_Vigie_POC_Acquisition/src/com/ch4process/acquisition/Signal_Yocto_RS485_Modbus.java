@@ -30,7 +30,7 @@ public class Signal_Yocto_RS485_Modbus extends Signal
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
 		}
 	}

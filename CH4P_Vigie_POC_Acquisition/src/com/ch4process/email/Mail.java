@@ -15,7 +15,9 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
+import com.ch4process.utils.CH4P_Functions;
 import com.ch4process.utils.CH4P_PropertiesReader;
+import com.ch4process.utils.CH4P_System;
 
 import javax.mail.internet.InternetAddress;
 import javax.activation.DataHandler;
@@ -31,8 +33,6 @@ import java.io.File;
  */
 public class Mail implements Callable<Integer>
 {
-	private String config = "resources/mail.properties";
-	
 	public static final int AUTH_NONE = 0;
 	public static final int AUTH_SSL = 1;
 	public static final int AUTH_TLS = 2;
@@ -60,7 +60,7 @@ public class Mail implements Callable<Integer>
 		try
 		{
 			CH4P_PropertiesReader propReader = new CH4P_PropertiesReader();
-			Properties prop = propReader.getPropValues(config);
+			Properties prop = propReader.getPropValues(CH4P_System.PATH_Config_Mail);
 			
 			this.smtp_host = prop.getProperty("host");
 			this.authenticationType = Integer.valueOf(prop.getProperty("authentication"));
@@ -72,9 +72,9 @@ public class Mail implements Callable<Integer>
 			propReader = null;
 			
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			e.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 		}
 	}
 
@@ -174,9 +174,9 @@ public class Mail implements Callable<Integer>
 			{
 				Thread.sleep(1000);
 			}
-			catch (Exception e)
+			catch (Exception ex)
 			{
-				e.printStackTrace();
+				CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			}
 		}
 	}
@@ -213,9 +213,9 @@ public class Mail implements Callable<Integer>
 			
 			return true;		
 		} 
-		catch (Exception e) 
+		catch (Exception ex) 
 		{
-			e.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			return false;
 		}
 	}
@@ -265,9 +265,9 @@ public class Mail implements Callable<Integer>
 			Transport.send(message);
 			return true;
 		} 
-		catch (Exception e) 
+		catch (Exception ex) 
 		{
-			e.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			return false;
 		}
 		finally
@@ -334,9 +334,9 @@ public class Mail implements Callable<Integer>
 			this.multipart = mp;
 			return true;
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			e.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			return false;
 		}
 	}

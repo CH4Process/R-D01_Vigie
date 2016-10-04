@@ -4,6 +4,7 @@ import java.util.Calendar;
 
 import com.ch4process.events.SignalValueEvent;
 import com.ch4process.utils.CH4P_Exception;
+import com.ch4process.utils.CH4P_Functions;
 import com.yoctopuce.YoctoAPI.YHumidity;
 
 
@@ -28,7 +29,7 @@ public class Signal_Yocto_Meteo_Humidite extends Signal
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			return false;
 		}
 	}
@@ -50,7 +51,7 @@ public class Signal_Yocto_Meteo_Humidite extends Signal
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			return false;
 		}
 	}
@@ -74,7 +75,7 @@ public class Signal_Yocto_Meteo_Humidite extends Signal
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
 		}
 	}

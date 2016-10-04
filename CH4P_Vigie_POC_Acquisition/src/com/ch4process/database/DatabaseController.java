@@ -7,6 +7,7 @@ import java.util.Properties;
 
 import com.ch4process.utils.CH4P_ConfigManager;
 import com.ch4process.utils.CH4P_Exception;
+import com.ch4process.utils.CH4P_Functions;
 import com.ch4process.utils.CH4P_PropertiesReader;
 
 
@@ -103,7 +104,7 @@ public class DatabaseController implements AutoCloseable
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 		}
 		finally
 		{

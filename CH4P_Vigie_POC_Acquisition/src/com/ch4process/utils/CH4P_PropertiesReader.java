@@ -25,9 +25,9 @@ public class CH4P_PropertiesReader
 				return null;
 			}
 		} 
-		catch (Exception e) 
+		catch (Exception ex) 
 		{
-			e.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			return null;
 		} 
 	}

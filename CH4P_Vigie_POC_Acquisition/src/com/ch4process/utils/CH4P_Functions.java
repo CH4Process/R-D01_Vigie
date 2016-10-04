@@ -1,7 +1,14 @@
 package com.ch4process.utils;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
+
 import javax.swing.JOptionPane;
+
+import com.ch4process.events.ILogEventListener;
+import com.ch4process.events.ILogExceptionEventListener;
 
 public class CH4P_Functions
 {
@@ -14,6 +21,9 @@ public class CH4P_Functions
 	public static final int LEVEL_INFO = 1;
 	public static final int LEVEL_WARNING = 2;
 	public static final int LEVEL_ERROR = 3;
+	
+	public static List<ILogEventListener> logListeners = new ArrayList<ILogEventListener>();
+	public static List<ILogExceptionEventListener> logExceptionListeners = new ArrayList<ILogExceptionEventListener>();
 	
 	
 	public static int boolToInt(boolean value)
@@ -57,6 +67,102 @@ public class CH4P_Functions
 				JOptionPane.showMessageDialog(null, display, "CH4Process - Vigie", JOptionPane.WARNING_MESSAGE);
 				break;
 				
+		}
+		
+		notifyLogEventListeners(display);
+	}
+	
+	public static void LogException(Integer method, Exception ex)
+	{
+		java.io.StringWriter sw = new java.io.StringWriter();
+		java.io.PrintWriter pw = new java.io.PrintWriter(sw);
+		ex.printStackTrace(pw);
+		
+		String display = sw.toString();
+		
+		try
+		{
+			pw.close();
+			sw.close();
+		}
+		catch (IOException e)
+		{
+			pw = null;
+			sw = null;
+		}
+		
+		switch (method)
+		{
+			case LOG_inConsole:
+				System.out.println(display);
+				break;
+				
+			case LOG_inFile:
+				//Log(LOG_inConsole, level, message);
+				break;
+				
+			case LOG_inDatabase:
+				//Log(LOG_inConsole, level, message);
+				break;
+				
+			case LOG_inMail:
+				//Log(LOG_inConsole, level, message);
+				break;
+				
+			case LOG_inMsgBox:
+				JOptionPane.showMessageDialog(null, display, "CH4Process - Vigie", JOptionPane.ERROR_MESSAGE);
+				break;
+				
+		}
+		
+		notifyLogExceptionEventListeners(display);
+	}
+	
+	public static void addLogEventListener(ILogEventListener listener)
+	{
+		if (!logListeners.contains(listener))
+		{
+			logListeners.add(listener);
+		}
+	}
+	
+	public static void removeLogEventListener(ILogEventListener listener)
+	{
+		if (logListeners.contains(listener))
+		{
+			logListeners.remove(listener);
+		}
+	}
+	
+	public static void notifyLogEventListeners(String message)
+	{
+		for(ILogEventListener listener:logListeners)
+		{
+			listener.onLogEvent(message);
+		}
+	}
+	
+	public static void addLogExceptionEventListener(ILogExceptionEventListener listener)
+	{
+		if (!logExceptionListeners.contains(listener))
+		{
+			logExceptionListeners.add(listener);
+		}
+	}
+	
+	public static void removeLogExceptionEventListener(ILogExceptionEventListener listener)
+	{
+		if (logExceptionListeners.contains(listener))
+		{
+			logExceptionListeners.remove(listener);
+		}
+	}
+	
+	public static void notifyLogExceptionEventListeners(String message)
+	{
+		for(ILogExceptionEventListener listener:logExceptionListeners)
+		{
+			listener.onLogExceptionEvent(message);
 		}
 	}
 }

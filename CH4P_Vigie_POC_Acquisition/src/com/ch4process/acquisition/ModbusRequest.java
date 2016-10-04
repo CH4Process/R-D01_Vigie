@@ -149,7 +149,7 @@ public class ModbusRequest
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 		}
 	}
 	
@@ -239,7 +239,7 @@ public class ModbusRequest
 		}
 		catch(Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 		}
 	}
 	
@@ -259,7 +259,7 @@ public class ModbusRequest
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 		}
 	}
 }

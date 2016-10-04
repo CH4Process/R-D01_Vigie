@@ -83,7 +83,7 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			return null;
 		}
 	}
@@ -136,7 +136,7 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			return false;
 		}
 	}
@@ -147,9 +147,9 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 		{
 			eventList.remove(0);
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			e.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "scenarioWorker erreur de suppression d'evenement");
 		}
 		finally
@@ -177,7 +177,7 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 		}
 	}
 	
@@ -188,7 +188,7 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 		}
 	}
 	
@@ -278,7 +278,7 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 		}
 		catch(SQLException ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 		}
 	}
 

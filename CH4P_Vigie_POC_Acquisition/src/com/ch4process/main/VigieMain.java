@@ -1,17 +1,17 @@
 package com.ch4process.main;
 
 import java.util.concurrent.Callable;
-
 import com.ch4process.database.DatabaseController;
-import com.ch4process.utils.CH4P_ConfigManager;
-import com.ch4process.utils.CH4P_Exception;
-import com.ch4process.utils.CH4P_Functions;
-import com.ch4process.utils.CH4P_Multithreading;
+import com.ch4process.utils.*;
+import com.ch4process.windows.*;
 
 public class VigieMain extends Thread
 {
-	static Callable T_Acquisition;
-	static Callable T_Report;
+	static Callable T_Acquisition = null;
+	static Callable T_Report = null;
+	static VigieMainView MainView = null;
+	
+	static VigieAcquisition vigieAcquisition = null;
 	
 	public static void main(String[] args)
 	{
@@ -52,6 +52,7 @@ public class VigieMain extends Thread
 			try
 			{
 				Init_Utils();
+				Init_View();
 			}
 			catch(Exception ex)
 			{
@@ -62,7 +63,7 @@ public class VigieMain extends Thread
 			try
 			{
 				Init_VigieAcquisition();
-				Init_VigieReport();
+				//Init_VigieReport();
 			}
 			catch(Exception ex)
 			{
@@ -73,7 +74,7 @@ public class VigieMain extends Thread
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 		}
 	}
 	
@@ -81,7 +82,8 @@ public class VigieMain extends Thread
 	{
 		try
 		{
-			T_Acquisition = new VigieAcquisition("VigieAcquisition");
+			vigieAcquisition = new VigieAcquisition("VigieAcquisition");
+			T_Acquisition = vigieAcquisition;
 			CH4P_Multithreading.Submit(T_Acquisition);
 		}
 		catch (CH4P_Exception ex)
@@ -107,13 +109,39 @@ public class VigieMain extends Thread
 	{
 		try
 		{
+			CH4P_ConfigManager.Init();
 			DatabaseController.Init();
 			CH4P_Multithreading.Init();
-			CH4P_ConfigManager.Init();
 		}
 		catch (CH4P_Exception ex)
 		{
 			throw new CH4P_Exception(ex.getMessage(), ex.getCause());
 		}
+	}
+	
+	private static void Init_View()
+	{
+		MainView = new VigieMainView();
+		
+		try
+		{
+			CH4P_Multithreading.Submit(MainView);
+			CH4P_Functions.addLogEventListener(MainView);
+			CH4P_Functions.addLogExceptionEventListener(MainView);
+		}
+		catch (CH4P_Exception ex)
+		{
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
+		}
+	}
+	
+	public static VigieMainView getMainView()
+	{
+		return MainView;
+	}
+	
+	public static VigieAcquisition getVigieAcquisition()
+	{
+		return vigieAcquisition;
 	}
 }
