@@ -2,6 +2,7 @@ package com.ch4process.database;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
 
@@ -131,6 +132,7 @@ public class DatabaseController implements AutoCloseable
 				}
 			}
 			
+			CH4P_Functions.Log("com.ch4process.database.DatabaseController", CH4P_Functions.LOG_inConsole, 100, "NO CONNECTION AVAILABLE : " + Calendar.getInstance().getTime());
 			return null;
 		}
 		catch (Exception ex)

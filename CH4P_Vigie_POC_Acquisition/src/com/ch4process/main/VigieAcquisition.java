@@ -356,7 +356,15 @@ public class VigieAcquisition implements Callable<Integer>
 					signals.replace(signal.getIdSignal(), instance);
 
 					// Now that everything is set, we can start the threads
-					CH4P_Multithreading.Submit(instance);
+					if (instance != null)
+					{
+						CH4P_Multithreading.Submit(instance);
+					}
+					else
+					{
+						CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "VigieAcquisition - SignalConfiguration : Instance of Signal is Null ! : " + Calendar.getInstance().getTime().toString());
+					}
+					
 				}
 
 				// We have to start the ModbusDevices also

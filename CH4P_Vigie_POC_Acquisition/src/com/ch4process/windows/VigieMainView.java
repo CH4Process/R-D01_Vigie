@@ -185,40 +185,66 @@ public class VigieMainView extends JFrame implements Callable<Integer>, ISignalV
 		Exception_Panel.add(ExceptionScrollPane);
 		
 		// Data visualisation generation
-		int x = 10;
-		int y = 10;
-		int w = 0;
-		int h = 15;
+		int startx = 10;
+		int starty = 10;
+		int height = 15;
 		int gap = 5;
+		int width_label = 90;
+		int width_value = 70;
+		int width_unit = 40;
+		int width_date = 113;
 		
-		// We read the signalList based on the ID to know where to put the JLabel on the view
-		for (int i = 1; i <= 3; i++)
+		int x_modbus = startx;
+		int x_hardware = startx;
+		int x;
+		int y_modbus = starty;
+		int y_hardware = starty;
+		int y;
+		
+		JPanel Panel;
+		
+		for (Signal signal:signalList.values())
 		{
-			JLabel signalName = new JLabel("Signal-" + i);
-			JLabel signalValue = new JLabel("Value-" + i);
-			JLabel signalUnit = new JLabel("Unit-" + i);
-			JLabel signalDate = new JLabel("Date-" + i);
+			JLabel signalName = new JLabel("Signal-" + signal.getIdSignal());
+			JLabel signalValue = new JLabel("Value-" + signal.getIdSignal());
+			JLabel signalUnit = new JLabel("Unit-" + signal.getIdSignal());
+			JLabel signalDate = new JLabel("Date-" + signal.getIdSignal());
 			
-			w = 90;
-			signalName.setBounds(x, y, w, h);
+			if (signal.getSignalType().getIsCom())
+			{
+				Panel = Panel_Modbus;
+				x = x_modbus;
+				y = y_modbus;
+			}
+			else
+			{
+				Panel = Panel_Hardware;
+				x = x_hardware;
+				y = y_hardware;
+			}
+			
+			signalName.setBounds(x, y, width_label, height);
 			signalName.setForeground(Color.BLACK);
 			signalName.setFont(basicFont);
 			signalName.setHorizontalAlignment(SwingConstants.CENTER);
-			x += w+gap;
-			w = 70;
-			signalValue.setBounds(x, y, w, h);
+			
+			x += width_label + gap;
+			
+			signalValue.setBounds(x, y, width_value, height);
 			signalValue.setForeground(Color.BLUE);
 			signalValue.setFont(importantFont);
 			signalValue.setHorizontalAlignment(SwingConstants.CENTER);
-			x += w+gap;
-			w = 40;
-			signalUnit.setBounds(x, y, w, h);
+			
+			x += width_value + gap;
+			
+			signalUnit.setBounds(x, y, width_unit, height);
 			signalUnit.setForeground(Color.BLUE);
 			signalUnit.setFont(importantFont);
 			signalUnit.setHorizontalAlignment(SwingConstants.CENTER);
-			x += w+gap;
-			w = 113;
-			signalDate.setBounds(x, y, w, h);
+			
+			x += width_unit + gap;
+			
+			signalDate.setBounds(x, y, width_date, height);
 			signalDate.setForeground(Color.BLACK);
 			signalDate.setFont(basicFont);
 			signalDate.setHorizontalAlignment(SwingConstants.CENTER);
@@ -229,67 +255,26 @@ public class VigieMainView extends JFrame implements Callable<Integer>, ISignalV
 			labels.add(signalUnit);
 			labels.add(signalDate);
 			
-			labelList.put(i,labels);
+			labelList.put(signal.getIdSignal(),labels);
 			
-			Panel_Hardware.add(signalName);
-			Panel_Hardware.add(signalValue);
-			Panel_Hardware.add(signalUnit);
-			Panel_Hardware.add(signalDate);
-
+			Panel.add(signalName);
+			Panel.add(signalValue);
+			Panel.add(signalUnit);
+			Panel.add(signalDate);
+			
 			y += 25;
-			x = 10;
-		}
-		
-		x = 10;
-		y = 11;
-		
-		// We read the signalList based on the ID to know where to put the JLabel on the view
-		for (int i = 4; i <= signalList.size(); i++)
-		{
-			JLabel signalName = new JLabel("Signal-" + i);
-			JLabel signalValue = new JLabel("Value-" + i);
-			JLabel signalUnit = new JLabel("Unit-" + i);
-			JLabel signalDate = new JLabel("Date-" + i);
+			x = startx;
 			
-			w = 90;
-			signalName.setBounds(x, y, w, h);
-			signalName.setForeground(Color.BLACK);
-			signalName.setFont(basicFont);
-			signalName.setHorizontalAlignment(SwingConstants.CENTER);
-			x += w+gap;
-			w = 70;
-			signalValue.setBounds(x, y, w, h);
-			signalValue.setForeground(Color.BLUE);
-			signalValue.setFont(importantFont);
-			signalValue.setHorizontalAlignment(SwingConstants.CENTER);
-			x += w+gap;
-			w = 40;
-			signalUnit.setBounds(x, y, w, h);
-			signalUnit.setForeground(Color.BLUE);
-			signalUnit.setFont(importantFont);
-			signalUnit.setHorizontalAlignment(SwingConstants.CENTER);
-			x += w+gap;
-			w = 113;
-			signalDate.setBounds(x, y, w, h);
-			signalDate.setForeground(Color.BLACK);
-			signalDate.setFont(basicFont);
-			signalDate.setHorizontalAlignment(SwingConstants.CENTER);
-			
-			ArrayList<JLabel> labels = new ArrayList<JLabel>();
-			labels.add(signalName);
-			labels.add(signalValue);
-			labels.add(signalUnit);
-			labels.add(signalDate);
-			
-			labelList.put(i,labels);
-			
-			Panel_Modbus.add(signalName);
-			Panel_Modbus.add(signalValue);
-			Panel_Modbus.add(signalUnit);
-			Panel_Modbus.add(signalDate);
-
-			y += 25;
-			x = 10;
+			if (signal.getSignalType().getIsCom())
+			{
+				x_modbus = x;
+				y_modbus = y;
+			}
+			else
+			{
+				x_hardware = x;
+				y_hardware = y;
+			}
 		}
 		
 		this.repaint();
