@@ -66,7 +66,6 @@ public class Signal_Yocto_Meteo_Pression extends Signal
 		{
 			Connect();
 			Init();
-			Refresh();
 			
 			while(true)
 			{

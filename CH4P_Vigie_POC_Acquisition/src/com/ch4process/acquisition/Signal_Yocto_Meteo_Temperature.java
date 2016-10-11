@@ -61,7 +61,6 @@ public class Signal_Yocto_Meteo_Temperature extends Signal
 		{
 			Connect();
 			Init();
-			Refresh();
 			
 			while(true)
 			{

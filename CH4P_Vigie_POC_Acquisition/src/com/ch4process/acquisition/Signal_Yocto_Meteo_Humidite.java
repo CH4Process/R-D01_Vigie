@@ -64,7 +64,6 @@ public class Signal_Yocto_Meteo_Humidite extends Signal
 		{
 			Connect();
 			Init();
-			Refresh();
 			
 			while(true)
 			{

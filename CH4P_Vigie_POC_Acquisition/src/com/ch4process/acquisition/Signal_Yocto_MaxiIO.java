@@ -89,7 +89,6 @@ public class Signal_Yocto_MaxiIO extends Signal
 			
 			Connect();
 			Init();
-			Refresh();
 			
 			while(true)
 			{
