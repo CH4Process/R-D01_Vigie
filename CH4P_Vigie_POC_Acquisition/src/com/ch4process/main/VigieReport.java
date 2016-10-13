@@ -180,11 +180,10 @@ public class VigieReport implements Callable<Integer>
 				if (currentReport == 3 && yield)
 				{
 					yield = false;
-					SendReports();
 					currentReport = 0;
-					
 					// Update reportTime to set it to next week
 					reportTime.add(Calendar.DAY_OF_MONTH, reportSpan);
+					SendReports();
 				}
 				
 				
