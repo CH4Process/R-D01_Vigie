@@ -192,7 +192,7 @@ public class ModbusRequest
 					Signal signal = entry.getKey();
 					index = signal.getAddress() - startAddress;
 					
-					CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "ModbusRequest : Signal " + signal.getShortName() + " value update.");
+					//CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "ModbusRequest : Signal " + signal.getShortName() + " value update.");
 					
 					if (this.values == null)
 					{
