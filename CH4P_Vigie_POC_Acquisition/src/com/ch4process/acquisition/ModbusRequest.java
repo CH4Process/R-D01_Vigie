@@ -176,6 +176,7 @@ public class ModbusRequest
 		catch (YAPI_Exception ex)
 		{
 			isValid = false;
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 		}
 		
 		try

@@ -67,7 +67,7 @@ public class VigieReport implements Callable<Integer>
 	boolean updateTotalizersRequest_done = false;
 	boolean getScenariosRequest_done = false;
 	
-	int currentReport = 0;
+	int currentStep = 0;
 	boolean yield = true;
 	int reportSendLimit = 12;
 	
@@ -131,6 +131,12 @@ public class VigieReport implements Callable<Integer>
 			reportTime.set(Calendar.HOUR_OF_DAY, Integer.valueOf(time[0]));
 			reportTime.set(Calendar.MINUTE, Integer.valueOf(time[1]));
 			reportTime.set(Calendar.SECOND, 0);
+			
+			if (Calendar.getInstance().after(reportTime))
+			{
+				// If we are already marked as AFTER the reportTime then we shift of a week
+				reportTime.add(Calendar.DAY_OF_MONTH, reportSpan);
+			}
 		}
 		catch (Exception ex)
 		{
@@ -144,43 +150,44 @@ public class VigieReport implements Callable<Integer>
 		{
 			try
 			{
-				if (isReportTime())
+				if (isReportTime() && currentStep == 0)
 				{
 					getDatas();
+					currentStep = 1;
 				}
 				
 				// Report based on totalizers
-				if (getDigitalMeasuresRequest_done && getTotalizersRequest_done && currentReport == 0 && yield)
+				if (getDigitalMeasuresRequest_done && getTotalizersRequest_done && currentStep == 1 && yield)
 				{
 					yield = false;
 					FaultsReport();
 					getTotalizersRequest_done = false;
-					currentReport = 1;
+					currentStep = 2;
 				}
 				
 				// Report based on measures
-				if (getAnalogMeasuresRequest_done && getDigitalMeasuresRequest_done && currentReport == 1 && yield)
+				if (getAnalogMeasuresRequest_done && getDigitalMeasuresRequest_done && currentStep == 2 && yield)
 				{
 					yield = false;
 					MeasuresReport();
 					getDigitalMeasuresRequest_done = false;
 					getAnalogMeasuresRequest_done = false;
-					currentReport = 2;
+					currentStep = 3;
 				}
 				
 				// Report based on the scenarios
-				if (getScenariosRequest_done && currentReport == 2 && yield)
+				if (getScenariosRequest_done && currentStep == 3 && yield)
 				{
 					yield = false;
 					ScenariosReport();
 					getScenariosRequest_done = false;
-					currentReport = 3;
+					currentStep = 4;
 				}
 				
-				if (currentReport == 3 && yield)
+				if (currentStep == 4 && yield)
 				{
 					yield = false;
-					currentReport = 0;
+					currentStep = 0;
 					// Update reportTime to set it to next week
 					reportTime.add(Calendar.DAY_OF_MONTH, reportSpan);
 					SendReports();
