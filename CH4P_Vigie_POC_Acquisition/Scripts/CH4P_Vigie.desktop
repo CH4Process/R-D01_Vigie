@@ -1,0 +1,4 @@
+[Desktop Entry]
+Type=Application
+Name=CH4P_Vigie
+Exec=java -jar /home/pi/CH4PROCESS/VIGIE/APPS/CH4P_Vigie.jar
