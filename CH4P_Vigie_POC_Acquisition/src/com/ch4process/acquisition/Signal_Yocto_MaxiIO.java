@@ -35,7 +35,7 @@ public class Signal_Yocto_MaxiIO extends Signal
 	{
 		try
 		{
-			offset = Integer.valueOf(this.address);
+			offset = (int) Math.pow(2, Integer.valueOf(this.address) - 1);
 			ioSensor = YDigitalIO.FindDigitalIO(this.device.serialNumber + ".digitalIO");
 			portMapping = ioSensor.get_portDirection();
 			portSize = ioSensor.get_portSize();
