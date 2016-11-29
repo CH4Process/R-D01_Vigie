@@ -51,8 +51,8 @@ public class VigieMain extends Thread
 			
 			try
 			{
-				Init_View();
 				Init_Utils();
+				Init_View();
 			}
 			catch(Exception ex)
 			{
