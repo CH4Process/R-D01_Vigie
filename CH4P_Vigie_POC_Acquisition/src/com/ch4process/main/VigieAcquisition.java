@@ -83,7 +83,7 @@ public class VigieAcquisition implements Callable<Integer>
 	ScenarioWorker scenarioWorker;
 	LogWorker logWorker;
 	
-	boolean init_done = false;
+	boolean initialized = false;
 	
 	VigieMainView mainView = null;
 	
@@ -589,10 +589,10 @@ public class VigieAcquisition implements Callable<Integer>
 			try
 			{
 				
-				if (signalListRequest_done && signalTypeListRequest_done && signalLevelListRequest_done && deviceListRequest_done && deviceTypeListRequest_done &&  !init_done)
+				if (signalListRequest_done && signalTypeListRequest_done && signalLevelListRequest_done && deviceListRequest_done && deviceTypeListRequest_done &&  !initialized)
 				{
 					CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "VigieAcq prête :) : " + Calendar.getInstance().getTime());
-					init_done = true;
+					initialized = true;
 				}
 				Thread.sleep(1000);
 			}
@@ -629,6 +629,6 @@ public class VigieAcquisition implements Callable<Integer>
 	
 	public boolean isInitialized()
 	{
-		return init_done;
+		return initialized;
 	}
 }

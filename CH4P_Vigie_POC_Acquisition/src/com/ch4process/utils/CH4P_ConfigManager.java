@@ -53,7 +53,7 @@ public class CH4P_ConfigManager
 	private static CH4P_ConfigHolder databaseConfig = null;
 	private static CH4P_ConfigHolder reportConfig = null;
 	
-	private static boolean init_done = false;
+	private static boolean initialized = false;
 	private static CH4P_ConfigManager instance = null;
 
 
@@ -61,7 +61,7 @@ public class CH4P_ConfigManager
 	{
 		try
 		{
-			if (!init_done)
+			if (!initialized)
 			{
 				if (instance == null)
 				{
@@ -70,7 +70,7 @@ public class CH4P_ConfigManager
 
 				instance.ConfigInit();
 
-				init_done = true;
+				initialized = true;
 			}
 		}
 		catch (Exception ex)
@@ -92,6 +92,11 @@ public class CH4P_ConfigManager
 	public static CH4P_ConfigHolder getReportConfig()
 	{
 		return reportConfig;
+	}
+	
+	public static boolean isInitialized()
+	{
+		return initialized;
 	}
 	
 	private void ConfigInit() throws CH4P_Exception

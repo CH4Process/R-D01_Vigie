@@ -1,5 +1,7 @@
 package com.ch4process.windows;
 
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -26,13 +28,17 @@ import com.ch4process.utils.CH4P_Functions;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 
 
 
 public class VigieMainView extends JFrame implements Callable<Integer>, ISignalValueListener, ILogEventListener, ILogExceptionEventListener
 {
-	boolean init_done = false;
+	private static boolean initialized = false;
 	
 	Map<Integer, ArrayList<JLabel>> labelList = new HashMap<Integer, ArrayList<JLabel>>();
 	Map<Integer,Signal> signalList;
@@ -52,7 +58,7 @@ public class VigieMainView extends JFrame implements Callable<Integer>, ISignalV
 		setSize(800, 600);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		getContentPane().setLayout(null);
-		//initContent();
+		initContent();
 		
 		this.setVisible(true);
 	}
@@ -60,8 +66,7 @@ public class VigieMainView extends JFrame implements Callable<Integer>, ISignalV
 	@Override
 	public Integer call()
 	{
-		initContent();
-		init_done = true;
+		initialized = true;
 		
 		while (true)
 		{
@@ -80,15 +85,9 @@ public class VigieMainView extends JFrame implements Callable<Integer>, ISignalV
 	
 	public void initContent()
 	{
-		setTitle("CH4Process - VIGIE");
-		setResizable(false);
-		setSize(800, 600);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		getContentPane().setLayout(null);
-		
-		this.setVisible(true);
-		
 		JProgressBar progressBar = new JProgressBar(0, 100);
+		progressBar.setForeground(Color.BLUE);
+		progressBar.setBackground(Color.LIGHT_GRAY);
 		progressBar.setBounds(300, 250, 200, 30);
 		getContentPane().add(progressBar);
 		
@@ -279,6 +278,54 @@ public class VigieMainView extends JFrame implements Callable<Integer>, ISignalV
 		
 		this.repaint();
 	}
+	
+	public void initLoadingScreen()
+	{
+		JPanel LoadingPane = new JPanel();
+		LoadingPane.setBounds(0, 0, 794, 570);
+		getContentPane().add(LoadingPane);
+		LoadingPane.setLayout(null);
+		
+		ImageIcon logo = null;
+		try
+		{
+			logo = new ImageIcon(((BufferedImage) ImageIO.read(new File("images/logo_grand.png"))).getScaledInstance(300, 100, Image.SCALE_SMOOTH));
+		}
+		catch (IOException e)
+		{
+		}
+		
+		JLabel logo_container = new JLabel(logo);
+		logo_container.setHorizontalAlignment(SwingConstants.CENTER);
+		logo_container.setBounds(LoadingPane.getWidth() / 2 - 150, 50, 300, 100);
+		LoadingPane.add(logo_container);
+		
+		JProgressBar progressBar = new JProgressBar(0, 100);
+		progressBar.setForeground(Color.BLUE);
+		progressBar.setBackground(Color.LIGHT_GRAY);
+		progressBar.setBounds(300, 250, 200, 30);
+		LoadingPane.add(progressBar);
+		
+		ImageIcon logo_vigie = null;
+		try
+		{
+			logo_vigie = new ImageIcon(((BufferedImage) ImageIO.read(new File("images/logo_vigie.png"))).getScaledInstance(126, 150, Image.SCALE_SMOOTH));
+		}
+		catch (IOException e)
+		{
+		}
+		
+		JLabel logo_vigie_container = new JLabel(logo_vigie);
+		logo_vigie_container.setHorizontalAlignment(SwingConstants.CENTER);
+		logo_vigie_container.setBounds(LoadingPane.getWidth() / 2 - 63, 350, 126, 150);
+		LoadingPane.add(logo_vigie_container);
+		
+		JLabel lblLoading = new JLabel("Chargement de la Vigie en cours ...");
+		lblLoading.setFont(new Font("Arial", Font.PLAIN, 20));
+		lblLoading.setForeground(new Color(0, 0, 255));
+		lblLoading.setBounds(250, 200, 350, 25);
+		LoadingPane.add(lblLoading);
+	}
 
 	@Override
 	public void SignalValueChanged(SignalValueEvent event)
@@ -320,7 +367,7 @@ public class VigieMainView extends JFrame implements Callable<Integer>, ISignalV
 	@Override
 	public void onLogEvent(String message)
 	{
-		if (init_done)
+		if (initialized)
 		{
 			LogPane.append(message + "\n");
 		}
@@ -329,9 +376,14 @@ public class VigieMainView extends JFrame implements Callable<Integer>, ISignalV
 	@Override
 	public void onLogExceptionEvent(String message)
 	{
-		if (init_done)
+		if (initialized)
 		{
 			ExceptionPane.append(message + "\n");
 		}
+	}
+
+	public static boolean isInitialized()
+	{
+		return initialized;
 	}
 }

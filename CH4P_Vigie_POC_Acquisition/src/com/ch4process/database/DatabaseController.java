@@ -152,4 +152,9 @@ public class DatabaseController implements AutoCloseable
 			throw new CH4P_Exception("-DatabaseController Free connection error-" + ex.getMessage(), ex.getCause());
 		}
 	}
+	
+	public static boolean isInitialized()
+	{
+		return initialized;
+	}
 }

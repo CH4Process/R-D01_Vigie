@@ -51,8 +51,8 @@ public class VigieMain extends Thread
 			
 			try
 			{
-				Init_Utils();
 				Init_View();
+				Init_Utils();
 			}
 			catch(Exception ex)
 			{
@@ -110,8 +110,12 @@ public class VigieMain extends Thread
 		try
 		{
 			CH4P_ConfigManager.Init();
-			DatabaseController.Init();
-			CH4P_Multithreading.Init();
+			
+			if (CH4P_ConfigManager.isInitialized())
+			{
+				DatabaseController.Init();
+				CH4P_Multithreading.Init();
+			}
 		}
 		catch (CH4P_Exception ex)
 		{
@@ -128,10 +132,19 @@ public class VigieMain extends Thread
 			CH4P_Multithreading.Submit(MainView);
 			CH4P_Functions.addLogEventListener(MainView);
 			CH4P_Functions.addLogExceptionEventListener(MainView);
+			
+			while(! MainView.isInitialized())
+			{
+				Thread.sleep(200);
+			}
 		}
 		catch (CH4P_Exception ex)
 		{
 			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
+		}
+		catch (InterruptedException e)
+		{
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, e);
 		}
 	}
 	

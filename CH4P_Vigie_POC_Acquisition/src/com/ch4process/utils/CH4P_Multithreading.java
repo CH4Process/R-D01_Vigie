@@ -6,17 +6,17 @@ import java.util.concurrent.Executors;
 
 public class CH4P_Multithreading
 {
-	private static boolean init_done = false;
+	private static boolean initialized = false;
 	private static ExecutorService executor;
 	
 	public static void Init() throws CH4P_Exception
 	{
 		try
 		{
-			if (! init_done)
+			if (! initialized)
 			{
 				executor = Executors.newFixedThreadPool(50);
-				init_done = true;
+				initialized = true;
 			}
 		}
 		catch (Exception ex)
@@ -35,6 +35,11 @@ public class CH4P_Multithreading
 		{
 			throw new CH4P_Exception("-CH4P_Multithreading Submit error-" + ex.getMessage(), ex.getCause());
 		}
+	}
+	
+	public static boolean isInitialized()
+	{
+		return initialized;
 	}
 
 }
