@@ -311,16 +311,16 @@ public class Signal implements ISignal
 		
 		try
 		{
-			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " - checkDate.");
+			//CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " - checkDate.");
 			if (Calendar.getInstance().get(Calendar.DAY_OF_MONTH) != lastUpdate.get(Calendar.DAY_OF_MONTH))
 			{
-				CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " - checkDate = true.");
+				//CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " - checkDate = true.");
 				lastUpdate = Calendar.getInstance();
 				return true;
 			}
 			else
 			{
-				CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " - checkDate = false.");
+				//CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " - checkDate = false.");
 				return false;
 			}
 		}

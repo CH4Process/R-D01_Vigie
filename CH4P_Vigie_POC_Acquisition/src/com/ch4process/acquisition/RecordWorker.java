@@ -32,7 +32,7 @@ public class RecordWorker implements Callable<Integer>, ISignalValueListener
 	public void SignalValueChanged(SignalValueEvent event)
 	{
 		eventList.add(event);
-		CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "RecordWorker - Event received ID : " + event.getIdSignal());
+		//CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "RecordWorker - Event received ID : " + event.getIdSignal());
 	}
 	
 	public RecordWorker(ConnectionHandler connectionHandler)
@@ -118,7 +118,7 @@ public class RecordWorker implements Callable<Integer>, ISignalValueListener
 				recordValueRequest_done = false;
 				request.doUpdate();
 				
-				CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "RecordWorker - EventHandling - Update done.");
+				//CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "RecordWorker - EventHandling - Update done.");
 			}
 
 		}
