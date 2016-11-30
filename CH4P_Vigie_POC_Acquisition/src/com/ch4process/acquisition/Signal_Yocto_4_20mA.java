@@ -85,7 +85,6 @@ public class Signal_Yocto_4_20mA extends Signal
 		{
 			Connect();
 			Init();
-			Refresh();
 			
 			while(true)
 			{

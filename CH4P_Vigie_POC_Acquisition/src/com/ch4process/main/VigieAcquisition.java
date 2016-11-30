@@ -16,6 +16,7 @@ import com.ch4process.acquisition.Signal;
 import com.ch4process.acquisition.SignalLevel;
 import com.ch4process.acquisition.SignalType;
 import com.ch4process.acquisition.Signal_Yocto_4_20mA;
+import com.ch4process.acquisition.Signal_Yocto_Color;
 import com.ch4process.acquisition.Signal_Yocto_MaxiIO;
 import com.ch4process.acquisition.Signal_Yocto_Meteo_Humidite;
 import com.ch4process.acquisition.Signal_Yocto_Meteo_Pression;
@@ -45,7 +46,7 @@ public class VigieAcquisition implements Callable<Integer>
 {
 	String threadName;
 	
-	Map<Integer, Signal> signals = new HashMap<Integer,Signal>();
+	Map<Integer,Signal> signals = new HashMap<Integer,Signal>();
 	Map<Integer,Device> devices = new HashMap<Integer,Device>();
 	Map<Integer,ModbusDevice> modbusDevices = new HashMap<Integer,ModbusDevice>();
 	Map<Integer,DeviceType> deviceTypes = new HashMap<Integer,DeviceType>();
@@ -313,6 +314,10 @@ public class VigieAcquisition implements Callable<Integer>
 				else if (model.equals("YOCTO-RS485"))
 				{
 					return new Signal_Yocto_RS485_Modbus(signal);
+				}
+				else if (model.equals("YOCTO-COLOR"))
+				{
+					return new Signal_Yocto_Color(signal);
 				}
 			}
 			return null;

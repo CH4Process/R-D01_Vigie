@@ -70,7 +70,6 @@ public class VigieMain extends Thread
 				CH4P_Functions.Log(VigieMain.class.getName(), CH4P_Functions.LOG_inMsgBox, CH4P_Functions.LEVEL_ERROR, "Erreur pendant l'execution de l'application : " + ex.getMessage());
 			}
 			
-			
 		}
 		catch (Exception ex)
 		{
