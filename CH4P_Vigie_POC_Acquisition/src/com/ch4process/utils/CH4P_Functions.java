@@ -1,12 +1,14 @@
 package com.ch4process.utils;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
 import javax.swing.JOptionPane;
 
+import com.ch4process.email.Mail;
 import com.ch4process.events.ILogEventListener;
 import com.ch4process.events.ILogExceptionEventListener;
 
@@ -164,5 +166,21 @@ public class CH4P_Functions
 		{
 			listener.onLogExceptionEvent(message);
 		}
+	}
+
+	public static void SendMaintenanceMail(String subject, String message)
+	{
+		Mail mail = new Mail();
+		
+		SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH'h'mm");
+		String date = format.format(Calendar.getInstance().getTime());
+		
+		mail.setAuthenticationType(Mail.AUTH_SSL);
+		mail.setFrom(mail.getUsername());
+		mail.setSubject(subject + " " + date);
+		mail.setTo("exploitation@ch4process.fr");
+		mail.setText(message);
+		
+		mail.sendMail();
 	}
 }

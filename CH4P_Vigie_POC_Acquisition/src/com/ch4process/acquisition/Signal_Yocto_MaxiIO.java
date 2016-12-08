@@ -14,6 +14,7 @@ public class Signal_Yocto_MaxiIO extends Signal
 {
 	// Variables
 	Boolean value;
+	Boolean lastValue;
 	Integer portMapping;
 	Integer portState;
 	Integer portSize;
@@ -39,6 +40,8 @@ public class Signal_Yocto_MaxiIO extends Signal
 			ioSensor = YDigitalIO.FindDigitalIO(this.device.serialNumber + ".digitalIO");
 			portMapping = ioSensor.get_portDirection();
 			portSize = ioSensor.get_portSize();
+			countdown = logRate;
+			lastValue = null;
 			
 			if (portMapping != ioSensor.PORTDIRECTION_INVALID && portSize != ioSensor.PORTSIZE_INVALID)
 			{
@@ -63,13 +66,26 @@ public class Signal_Yocto_MaxiIO extends Signal
 			
 			portState = ioSensor.get_portState();
 			value = ((portState & offset) != 0);
-			this.countdown = this.refreshRate;
-			this.value = value;
-			this.isValid = !(portState == ioSensor.PORTSTATE_INVALID);
 			
-			//CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "MaxiIO PortState = " + portState);
-
-			fireValueChanged(new SignalValueEvent(this.getIdSignal(), null, null, this.value, this.isValid(), Calendar.getInstance().getTime().getTime(), this.getSignalType()));
+			isValid = !(portState == ioSensor.PORTSTATE_INVALID);
+			
+			// We have to update the countdown
+			countdown -= refreshRate;
+			
+			// If the current value differs from the stored value OR if the time elapsed exceeds the lograte
+			if ((! lastValue.equals(value)) || (countdown <= 0))
+			{
+				// Either the value has changed or it's time we record it.
+				fireValueChanged(new SignalValueEvent(this.getIdSignal(), null, null, this.value, this.isValid(), Calendar.getInstance().getTime().getTime(), this.getSignalType()));
+				
+				// The value has been updated so we have to reset the countdown
+				countdown = logRate;
+			}
+			
+			// In any case we take the current value and store it.
+			lastValue = value;
+			
+			//fireValueChanged(new SignalValueEvent(this.getIdSignal(), null, null, this.value, this.isValid(), Calendar.getInstance().getTime().getTime(), this.getSignalType()));
 
 			return true;
 
