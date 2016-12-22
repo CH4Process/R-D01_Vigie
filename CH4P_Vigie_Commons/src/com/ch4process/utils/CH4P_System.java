@@ -77,14 +77,13 @@ public class CH4P_System
 		return FileSystems.getDefault().getPath(destination);
 	}
 	
-	public static ArrayList GetProcessList()
+	public static ArrayList<String> GetProcessList()
 	{
 		try
 		{
 			String OS = GetOS();
 
 			Process p = null;
-			BufferedReader input;
 			String processName;
 			ArrayList<String> processes = new ArrayList<String>();
 
@@ -101,7 +100,7 @@ public class CH4P_System
 				p = null;
 			}
 
-			input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
 			while ((processName = input.readLine()) != null) 
 			{
@@ -132,7 +131,7 @@ public class CH4P_System
 			}
 			else if (isLinux(OS))
 			{
-				Runtime.getRuntime().exec("pkill " + processName);
+				Runtime.getRuntime().exec("sudo pkill " + processName);
 			}
 		}
 		catch (Exception ex)
@@ -141,11 +140,11 @@ public class CH4P_System
 		}
 	}
 	
-	public static void StartProcess(String path)
+	public static void StartProcess(String command)
 	{
 		try
 		{
-			Runtime.getRuntime().exec(path);
+			Runtime.getRuntime().exec(command);
 		}
 		catch (Exception ex)
 		{
