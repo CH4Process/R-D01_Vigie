@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.OutputStreamWriter;
+import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
@@ -568,7 +569,7 @@ public class VigieReport implements Callable<Integer>
 
 			while (digitalmeasures.next())
 			{
-				if (dataMap.putIfAbsent(digitalmeasures.getString("label"), reportColumn) != null)
+				if (dataMap.putIfAbsent(digitalmeasures.getString("label"), reportColumn) == null)
 				{
 					reportColumn += 2;
 				}
@@ -584,18 +585,18 @@ public class VigieReport implements Callable<Integer>
 
 			while (analogmesures.next())
 			{
-				if (dataMap.putIfAbsent(analogmesures.getString("label"), reportColumn) != null)
+				if (dataMap.putIfAbsent(analogmesures.getString("label"), reportColumn) == null)
 				{
 					reportColumn += 2;
 				}
 				
 				Integer value = analogmesures.getInt("value");
-				Float precision = analogmesures.getFloat("precision");
+				BigDecimal precision = analogmesures.getBigDecimal("precision");
 				String val;
 				
-				if (precision != null && precision != 0.0f)
+				if (precision != null && precision != BigDecimal.ZERO)
 				{
-					Float f = value * precision;
+					BigDecimal f = precision.multiply(BigDecimal.valueOf(value));
 					val = f.toString();
 				}
 				else
@@ -620,11 +621,11 @@ public class VigieReport implements Callable<Integer>
 			writer.writeNext(new String[] {""});
 			
 			//writer.writeNext(new String[] {"CAPTEUR", "HEURE" , "VALEUR", "UNITE"});
-			ArrayList<String> line = new ArrayList<>();
+			String[] line = new String[reportColumn];
 			
 			for(Map.Entry<String, Integer> data:dataMap.entrySet())
 			{
-				line.add(data.getValue(), data.getKey());
+				line[data.getValue()] = data.getKey();
 			}
 			
 			String currentDatetime = "";
@@ -640,18 +641,18 @@ public class VigieReport implements Callable<Integer>
 				if (! datetime.equals(currentDatetime))
 				{
 					// new datetime so new line
-					writer.writeNext((String[]) line.toArray());
+					writer.writeNext(line);
 					currentDatetime = datetime;
 				}
 				
-				line.set(1, datetime);
-				line.set(dataMap.get(m.label), m.value.toString().replace(".", ","));
-				line.set(dataMap.get(m.label) + 1, m.unit);
+				line[0] = datetime;
+				line[dataMap.get(m.label)] = m.value.toString().replace(".", ",");
+				line[dataMap.get(m.label) + 1] = m.unit;
 				
 				//writer.writeNext(new String[] {m.label, datetime, m.value.toString().replace(".", ","), m.unit });
 			}
 			
-			writer.writeNext((String[]) line.toArray());
+			writer.writeNext(line);
 			writer.close();
 			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "VigieReport : Report generated : " + reportName);	
 			

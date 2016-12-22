@@ -1,6 +1,7 @@
 package com.ch4process.utils;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -183,5 +184,15 @@ public class CH4P_Functions
 		mail.setText(message);
 		
 		mail.sendMail();
+	}
+	
+	public static float Round(float d, int decimalPlace) 
+	{
+        return BigDecimal.valueOf(d).setScale(decimalPlace,BigDecimal.ROUND_HALF_UP).floatValue();
+	}
+	
+	public static double Round(double d, int decimalPlace) 
+	{
+		return BigDecimal.valueOf(d).setScale(decimalPlace,BigDecimal.ROUND_HALF_UP).floatValue();
 	}
 }
