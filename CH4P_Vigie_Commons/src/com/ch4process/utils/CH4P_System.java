@@ -16,6 +16,7 @@ public class CH4P_System
 	public static final String PATH_Config_Database = PATH_Config + "/database.properties";
 	public static final String PATH_Config_Mail = PATH_Config + "/mail.properties";
 	public static final String PATH_Config_Report = PATH_Config + "/report.properties";
+	public static final String PATH_Config_Network = PATH_Config + "/network.properties";
 	public static final String PATH_Vigie_Apps = PATH_Vigie + "/APPS";
 	public static final String PATH_Vigie_Reports = PATH_Vigie + "/REPORTS";
 	public static final String PATH_Vigie_Reports_Sent = PATH_Vigie + "/REPORTS_SENT";
@@ -104,7 +105,7 @@ public class CH4P_System
 
 			while ((processName = input.readLine()) != null) 
 			{
-				processName = processName.replaceAll("\\","");
+				processName = processName.replace("\\","");
 				processes.add(processName.split(",")[0]);
 			}
 			
@@ -127,7 +128,7 @@ public class CH4P_System
 			
 			if (isWindows(OS))
 			{
-				Runtime.getRuntime().exec(System.getenv("windir") +"\\system32\\"+"taskkill.exe /IM " + processName);
+				Runtime.getRuntime().exec(System.getenv("windir") +"\\system32\\"+"taskkill.exe /IM " + processName + "*");
 			}
 			else if (isLinux(OS))
 			{

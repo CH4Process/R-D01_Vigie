@@ -2,6 +2,8 @@ package com.ch4process.utils;
 
 import java.util.Properties;
 
+import jdk.net.NetworkPermission;
+
 public class CH4P_ConfigManager
 {
 	// Internal class
@@ -52,6 +54,7 @@ public class CH4P_ConfigManager
 	private static CH4P_ConfigHolder mailConfig = null;
 	private static CH4P_ConfigHolder databaseConfig = null;
 	private static CH4P_ConfigHolder reportConfig = null;
+	private static CH4P_ConfigHolder networkConfig = null;
 	
 	private static boolean initialized = false;
 	private static CH4P_ConfigManager instance = null;
@@ -94,6 +97,11 @@ public class CH4P_ConfigManager
 		return reportConfig;
 	}
 	
+	public static CH4P_ConfigHolder getNetworkConfig()
+	{
+		return networkConfig;
+	}
+	
 	public static boolean isInitialized()
 	{
 		return initialized;
@@ -106,6 +114,7 @@ public class CH4P_ConfigManager
 			mailConfig = new CH4P_ConfigHolder(CH4P_System.PATH_Config_Mail);
 			databaseConfig = new CH4P_ConfigHolder(CH4P_System.PATH_Config_Database);
 			reportConfig = new CH4P_ConfigHolder(CH4P_System.PATH_Config_Report);
+			networkConfig = new CH4P_ConfigHolder(CH4P_System.PATH_Config_Network);
 		}
 		catch (Exception ex)
 		{
