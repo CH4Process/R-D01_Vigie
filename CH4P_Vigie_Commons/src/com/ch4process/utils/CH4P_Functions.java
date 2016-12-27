@@ -80,7 +80,7 @@ public class CH4P_Functions
 		java.io.PrintWriter pw = new java.io.PrintWriter(sw);
 		ex.printStackTrace(pw);
 		
-		String display = sw.toString();
+		String display = Calendar.getInstance().getTime() + " -- " + sw.toString();
 		
 		try
 		{

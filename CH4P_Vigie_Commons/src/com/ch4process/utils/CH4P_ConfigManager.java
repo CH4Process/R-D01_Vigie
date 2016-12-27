@@ -7,7 +7,7 @@ import jdk.net.NetworkPermission;
 public class CH4P_ConfigManager
 {
 	// Internal class
-	public class CH4P_ConfigHolder
+	public static class CH4P_ConfigHolder
 	{
 		private String fileName;
 		private CH4P_PropertiesReader propReader;
@@ -58,29 +58,7 @@ public class CH4P_ConfigManager
 	
 	private static boolean initialized = false;
 	private static CH4P_ConfigManager instance = null;
-
-
-	public static void Init() throws CH4P_Exception
-	{
-		try
-		{
-			if (!initialized)
-			{
-				if (instance == null)
-				{
-					instance = new CH4P_ConfigManager();
-				}
-
-				instance.ConfigInit();
-
-				initialized = true;
-			}
-		}
-		catch (Exception ex)
-		{
-			throw new CH4P_Exception("-ConfigManager Init error-" + ex.getMessage(), ex.getCause());
-		}
-	}
+	
 	
 	public static CH4P_ConfigHolder getMailConfig()
 	{
@@ -107,13 +85,61 @@ public class CH4P_ConfigManager
 		return initialized;
 	}
 	
-	private void ConfigInit() throws CH4P_Exception
+	public static void LoadAllConfigs() throws CH4P_Exception
+	{
+		try
+		{
+			LoadMailConfig();
+			LoadDatabaseConfig();
+			LoadReportConfig();
+			LoadNetworkConfig();
+		}
+		catch (Exception ex)
+		{
+			throw new CH4P_Exception("-ConfigManager ConfigInit error-" + ex.getMessage(), ex.getCause());
+		}
+	}
+	
+	public static void LoadMailConfig() throws CH4P_Exception
 	{
 		try
 		{
 			mailConfig = new CH4P_ConfigHolder(CH4P_System.PATH_Config_Mail);
+		}
+		catch (Exception ex)
+		{
+			throw new CH4P_Exception("-ConfigManager ConfigInit error-" + ex.getMessage(), ex.getCause());
+		}
+	}
+	
+	public static void LoadDatabaseConfig() throws CH4P_Exception
+	{
+		try
+		{
 			databaseConfig = new CH4P_ConfigHolder(CH4P_System.PATH_Config_Database);
+		}
+		catch (Exception ex)
+		{
+			throw new CH4P_Exception("-ConfigManager ConfigInit error-" + ex.getMessage(), ex.getCause());
+		}
+	}
+	
+	public static void LoadReportConfig() throws CH4P_Exception
+	{
+		try
+		{
 			reportConfig = new CH4P_ConfigHolder(CH4P_System.PATH_Config_Report);
+		}
+		catch (Exception ex)
+		{
+			throw new CH4P_Exception("-ConfigManager ConfigInit error-" + ex.getMessage(), ex.getCause());
+		}
+	}
+	
+	public static void LoadNetworkConfig() throws CH4P_Exception
+	{
+		try
+		{
 			networkConfig = new CH4P_ConfigHolder(CH4P_System.PATH_Config_Network);
 		}
 		catch (Exception ex)
