@@ -86,7 +86,6 @@ public class ModbusRequest
 	{
 		for (Signal signal:signals)
 		{
-			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "ModbusRequest : Signal " + signal.getShortName() + " added.");
 			elements.put(signal, null);			
 		}
 	}
@@ -127,8 +126,6 @@ public class ModbusRequest
 		
 		this.startAddress = lowAddress;
 		this.requestlength = highAddress - lowAddress + size;
-		
-		CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "ModbusRequest : Request - Start = " + startAddress + " - Length = " + requestlength);
 	}
 
 	private void HandleByteOrder(Integer _A, Integer _B)

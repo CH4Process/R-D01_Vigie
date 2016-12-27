@@ -64,8 +64,6 @@ public class RecordWorker implements Callable<Integer>, ISignalValueListener
 				SignalType type = event.getType();
 				DatabaseRequest request;
 				
-				CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "RecordWorker - EventHandling - Event idSignal = " + event.getIdSignal());
-				
 				// Putting the right values in the statement
 				if (type.isTor)
 				{

@@ -305,8 +305,6 @@ public class Signal implements ISignal
 		{
 			lastUpdate = Calendar.getInstance();
 			lastUpdate.set(Calendar.DAY_OF_MONTH, lastUpdate.get(Calendar.DAY_OF_MONTH) - 1);
-			
-			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " - Calendar init to : " + lastUpdate.getTime());
 		}
 		
 		try

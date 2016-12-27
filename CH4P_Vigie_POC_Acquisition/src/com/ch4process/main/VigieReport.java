@@ -137,6 +137,8 @@ public class VigieReport implements Callable<Integer>
 				// If we are already marked as AFTER the reportTime then we shift of a week
 				reportTime.add(Calendar.DAY_OF_MONTH, reportSpan);
 			}
+			
+			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "VigieReport : Next report generation on : " + reportTime.getTime());	
 		}
 		catch (Exception ex)
 		{
@@ -291,7 +293,6 @@ public class VigieReport implements Callable<Integer>
 			
 			if (now.after(reportTime))
 			{
-				CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "VigieReport : isReportTime = true.");
 				return true;
 			}
 			return false;
@@ -367,7 +368,6 @@ public class VigieReport implements Callable<Integer>
 						updateTotalizers.setStatementBoolParameter(3, true); // isValid
 						updateTotalizers.setStatementIntParameter(4, _indexes.getInt("idSignal")); // id
 						updateTotalizersRequest_done = false;
-						CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "VigieReport : UpdateTotalizers : A row has been updated :).");
 						updateTotalizers.doUpdate();
 						
 						while (updateTotalizersRequest_done == false)
