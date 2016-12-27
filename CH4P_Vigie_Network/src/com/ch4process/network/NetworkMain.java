@@ -3,10 +3,16 @@ package com.ch4process.network;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.ConnectException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 
@@ -27,10 +33,7 @@ public class NetworkMain
 	static String START_COMMAND = null;
 	static Integer LOOP_TIME = null;
 	static String SIDE = null;
-	//final static String COMMAND_VPN_SOFTWARE = "sudo /etc/init.d/openvpn start";
-	//final static int STANDARD_WAIT_TIME = 60000;
-	//final static int ERROR_WAIT_TIME = 600000;
-	//final static int ERROR_MAX = 3;
+	static String NAME = null;
 	static boolean internalDown = false;
 	static boolean externalDown = false;
 	static int restartCounter = 0;
@@ -53,7 +56,7 @@ public class NetworkMain
 	{
 		try
 		{
-			CH4P_ConfigManager.Init();	
+			CH4P_ConfigManager.LoadNetworkConfig();	
 			CH4P_Multithreading.Init();
 		}
 		catch (CH4P_Exception e)
@@ -66,7 +69,8 @@ public class NetworkMain
 			
 			if (prop != null)
 			{
-				SIDE = prop.getProperty("SIDE");
+				SIDE = prop.getProperty("side");
+				NAME = prop.getProperty("name");
 				EXTERNAL_SERVER = prop.getProperty("externalServerAddress");
 				EXTERNAL_PORT = Integer.valueOf(prop.getProperty("externalConnectionPort"));
 				INTERNAL_SERVER = prop.getProperty("internalServerAddress");
@@ -80,6 +84,7 @@ public class NetworkMain
 			else
 			{
 				SIDE = "client";
+				NAME = "no name in config";
 				EXTERNAL_SERVER = "www.google.com";
 				EXTERNAL_PORT = 80;
 				INTERNAL_SERVER = "10.4.0.1";
@@ -94,12 +99,14 @@ public class NetworkMain
 	
 	private static void ClientLoop()
 	{
+		CH4P_Functions.Log("VigieNetwork", CH4P_Functions.LOG_inConsole, CH4P_Functions.LEVEL_WARNING, "Initialized - " + NAME);
+		
 		while (true)
 		{
 			try
 			{	
 				// If we can join the server we continue, if not we have to check things ! 
-				if(! TestServer(INTERNAL_SERVER))
+				if(! TestServer(INTERNAL_SERVER, INTERNAL_PORT))
 				{
 					if (! internalDown)
 					{
@@ -108,7 +115,7 @@ public class NetworkMain
 					}
 					
 					// Couldn't join the server... If we have acces to internet we have to reboot the VPN Tunnelling software, if not we have to wait.
-					if (TestServer(EXTERNAL_SERVER))
+					if (TestServer(EXTERNAL_SERVER, EXTERNAL_PORT))
 					{
 						if (externalDown)
 						{
@@ -124,7 +131,6 @@ public class NetworkMain
 							if (processName.toLowerCase().contains(SOFTWARE_NAME))
 							{
 								CH4P_System.KillProcess(SOFTWARE_NAME);
-								//restartCounter ++;
 								Thread.sleep(10000);
 							}
 						}
@@ -145,7 +151,6 @@ public class NetworkMain
 				}
 				else
 				{
-					System.out.println(" -- INTERNAL OK ");
 					// Everything is ok
 					if (internalDown)
 					{
@@ -168,13 +173,24 @@ public class NetworkMain
 		}
 	}
 	
-	private static boolean TestServer(String serverAddress) 
+	private static boolean TestServer(String serverAddress, Integer serverPort) 
 	{
 		try
 		{
-			InetAddress addr = InetAddress.getByName(serverAddress);
-			boolean ping = addr.isReachable(CONNECTION_TIMEOUT);
-			return ping;
+			Socket testSocket = new Socket();
+			testSocket.connect(new InetSocketAddress(serverAddress, serverPort), CONNECTION_TIMEOUT);
+			PrintWriter out = new PrintWriter(testSocket.getOutputStream());
+			out.write(NAME);
+			out.flush();
+			out.close();
+			testSocket.close();
+			
+			return true;
+		}
+		catch(SocketTimeoutException|ConnectException timex)
+		{
+			CH4P_Functions.Log("VigieNetwork", CH4P_Functions.LOG_inConsole, CH4P_Functions.LEVEL_INFO, timex.getMessage() + " " + serverAddress);
+			return false;
 		}
 		catch (Exception ex)
 		{
@@ -185,34 +201,64 @@ public class NetworkMain
 	
 	private static void ServerLoop()
 	{
-		while(true)
+		try
+		{
+			CH4P_Functions.Log("VigieNetwork", CH4P_Functions.LOG_inConsole, CH4P_Functions.LEVEL_INFO, "ServerLoop started.");
+			
+			ConnectionHandlerModule incomingConnections = new ConnectionHandlerModule(INTERNAL_PORT);
+			CH4P_Multithreading.Submit(incomingConnections);
+
+			while(true)
+			{
+				Thread.sleep(500);
+			}
+
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+		}
+	}
+
+	private static class ConnectionHandlerModule implements Callable
+	{
+		ServerSocket socket;
+		Integer port;
+		
+		public ConnectionHandlerModule(Integer _port)
+		{
+			port = _port;
+		}
+
+		@Override
+		public Object call() throws Exception
 		{
 			try
 			{
-				// The server listens to his port and creates a socket for each connection
-				ServerSocket waitingConnection = new ServerSocket(INTERNAL_PORT);
-				Socket socket = waitingConnection.accept();
-				
-				// new ConnectionCheck(socket)
-				// multithreading.submit(ConnectionCheck)
-				
-				ConnectionCheck client = new ConnectionCheck(socket);
-				
-				
+				ServerSocket socket = new ServerSocket(port);
+				while (true)
+				{
+					Socket clientsocket = socket.accept();
+
+					ConnectionCheckModule client = new ConnectionCheckModule(clientsocket);
+					CH4P_Multithreading.Submit(client);
+				}
 			}
 			catch (Exception ex)
 			{
 				ex.printStackTrace();
 			}
+			
+			return null;
 		}
 	}
 	
-	private class ConnectionCheck implements Callable
+	private static class ConnectionCheckModule implements Callable
 	{
 		Socket socket = null;
 		String message;
 		
-		public ConnectionCheck(Socket _socket)
+		public ConnectionCheckModule(Socket _socket)
 		{
 			socket = _socket;
 		}
@@ -220,19 +266,24 @@ public class NetworkMain
 		@Override
 		public Object call() throws Exception
 		{
+			socket.setSoTimeout(CONNECTION_TIMEOUT);
 			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));	
-			message = in.readLine();
 			
-			while (message != null)
+			try
 			{
-				System.out.println(in.readLine());
+				message = in.readLine();
+			}
+			catch (SocketException|SocketTimeoutException sockex)
+			{
+				message = "FAILED " + sockex.getMessage();
 			}
 			
+			CH4P_Functions.Log("VigieNetwork", CH4P_Functions.LOG_inConsole, CH4P_Functions.LEVEL_INFO, "Connection received : " + message);
+
 			in.close();
 			socket.close();
 			return null;
 		}
-		
 	}
-
+	
 }
