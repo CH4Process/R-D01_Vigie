@@ -22,7 +22,8 @@ public class Signal_Yocto_Meteo_Pression extends Signal
 	{
 		try
 		{
-			sensor = YPressure.FindPressure(this.device.serialNumber + ".pressure");
+			//sensor = YPressure.FindPressure(this.device.serialNumber + ".pressure");
+			sensor = YPressure.FindPressureInContext(yapiContext,this.device.serialNumber + ".pressure");
 			return sensor.isOnline(); 
 		}
 		catch (Exception ex)

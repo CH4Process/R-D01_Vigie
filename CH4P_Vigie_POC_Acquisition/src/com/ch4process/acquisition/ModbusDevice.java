@@ -11,6 +11,7 @@ import com.ch4process.events.SignalValueEvent;
 import com.ch4process.utils.CH4P_Exception;
 import com.ch4process.utils.CH4P_Functions;
 import com.yoctopuce.YoctoAPI.YAPI;
+import com.yoctopuce.YoctoAPI.YAPIContext;
 import com.yoctopuce.YoctoAPI.YAPI_Exception;
 import com.yoctopuce.YoctoAPI.YSerialPort;
 
@@ -39,6 +40,9 @@ public class ModbusDevice implements Callable
 	
 	// Event handling
 	EventListenerList listeners = new EventListenerList();
+	
+	// Fix for concurrence problems
+	YAPIContext yapiContext;
 	
 	
 	// Getters and Setters
@@ -140,7 +144,8 @@ public class ModbusDevice implements Callable
 	{
 		try
 		{
-			serialPort = YSerialPort.FindSerialPort(this.device.getSerialNumber());
+			//serialPort = YSerialPort.FindSerialPort(this.device.getSerialNumber());
+			serialPort = YSerialPort.FindSerialPortInContext(yapiContext,this.device.getSerialNumber());
 			Config();
 			
 			if (serialPort.isOnline())
@@ -163,7 +168,9 @@ public class ModbusDevice implements Callable
 	{
 		try
 		{
-			 YAPI.RegisterHub(this.device.getAddress());
+			 //YAPI.RegisterHub(this.device.getAddress());
+			 yapiContext = new YAPIContext();
+			 yapiContext.RegisterHub(this.device.getAddress());
 			 return true;
 		} 
 		catch (YAPI_Exception ex)

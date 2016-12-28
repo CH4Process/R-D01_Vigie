@@ -22,7 +22,8 @@ public class Signal_Yocto_Meteo_Temperature extends Signal
 	{
 		try
 		{
-			sensor = YTemperature.FindTemperature(this.device.serialNumber + ".temperature");
+			//sensor = YTemperature.FindTemperature(this.device.serialNumber + ".temperature");
+			sensor = YTemperature.FindTemperatureInContext(yapiContext,this.device.serialNumber + ".temperature");
 			return sensor.isOnline(); 
 		}
 		catch (Exception ex)

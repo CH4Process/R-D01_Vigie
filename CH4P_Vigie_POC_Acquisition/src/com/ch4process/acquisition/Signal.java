@@ -10,6 +10,7 @@ import javax.swing.event.EventListenerList;
 import com.ch4process.events.SignalValueEvent;
 import com.ch4process.utils.CH4P_Exception;
 import com.yoctopuce.YoctoAPI.YAPI;
+import com.yoctopuce.YoctoAPI.YAPIContext;
 import com.yoctopuce.YoctoAPI.YAPI_Exception;
 import com.ch4process.utils.CH4P_Functions;
 
@@ -44,6 +45,9 @@ public class Signal implements ISignal
 	int retry = 0;
 	int retryMax = 3;
 	int waitOnError = 5;
+	
+	// Fix for the concurrence access problems
+	YAPIContext yapiContext;
 	
 	
 	// Constructors
@@ -253,7 +257,10 @@ public class Signal implements ISignal
 		{
 			try
 			{
-				YAPI.RegisterHub(this.device.getAddress());
+				//YAPI.RegisterHub(this.device.getAddress());
+				yapiContext = new YAPIContext();
+				yapiContext.RegisterHub(this.device.getAddress());
+			
 				retry = 0;
 				return true;
 			} 
