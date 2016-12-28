@@ -137,6 +137,8 @@ public class VigieReport implements Callable<Integer>
 				// If we are already marked as AFTER the reportTime then we shift of a week
 				reportTime.add(Calendar.DAY_OF_MONTH, reportSpan);
 			}
+			
+			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, threadName + " next report generation on : " + reportTime.getTime());
 		}
 		catch (Exception ex)
 		{
