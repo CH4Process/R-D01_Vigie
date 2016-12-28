@@ -11,6 +11,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Properties;
@@ -132,6 +133,7 @@ public class NetworkMain
 							{
 								CH4P_System.KillProcess(SOFTWARE_NAME);
 								Thread.sleep(10000);
+								break;
 							}
 						}
 						
@@ -187,7 +189,7 @@ public class NetworkMain
 			
 			return true;
 		}
-		catch(SocketTimeoutException|ConnectException timex)
+		catch(UnknownHostException|SocketTimeoutException|ConnectException timex)
 		{
 			CH4P_Functions.Log("VigieNetwork", CH4P_Functions.LOG_inConsole, CH4P_Functions.LEVEL_INFO, timex.getMessage() + " " + serverAddress);
 			return false;
