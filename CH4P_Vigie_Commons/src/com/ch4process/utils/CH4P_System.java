@@ -38,7 +38,7 @@ public class CH4P_System
 			}
 			else if (isLinux(OS))
 			{
-				return "/home/" + USER;
+				return System.getProperty("user.home");
 			}
 			else if (isMac(OS))
 			{
