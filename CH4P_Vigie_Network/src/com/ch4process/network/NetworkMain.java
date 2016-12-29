@@ -45,6 +45,8 @@ public class NetworkMain
 	{
 		Init();
 		
+		VigieNetworkView view = new VigieNetworkView(800, 600);
+		
 		switch (SIDE)
 		{
 			case "client": ClientLoop();;break;
