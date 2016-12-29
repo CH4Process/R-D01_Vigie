@@ -25,5 +25,6 @@
 			<attribute name="javadoc_location" value="https://javamail.java.net/nonav/docs/api/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="images"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -52,7 +52,7 @@ public class VigieMain extends Thread
 			try
 			{
 				Init_Utils();
-			//	Init_View();
+				Init_View();
 			}
 			catch(Exception ex)
 			{
@@ -62,7 +62,7 @@ public class VigieMain extends Thread
 			
 			try
 			{
-			//	Init_VigieAcquisition();
+				Init_VigieAcquisition();
 				Init_VigieReport();
 			}
 			catch(Exception ex)
