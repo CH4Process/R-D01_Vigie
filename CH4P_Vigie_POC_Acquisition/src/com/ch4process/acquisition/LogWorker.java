@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.ch4process.database.DatabaseRequest;
 import com.ch4process.database.IDatabaseRequestCallback;
@@ -17,7 +18,7 @@ public class LogWorker implements Callable<Integer>, IScenarioEventListener
 	IDatabaseRequestCallback eventRecordRequestCallback;
 	boolean eventRecordRequest_done = true;
 	
-	List<scenarioEvent> eventList = new LinkedList<>();
+	ConcurrentLinkedQueue<scenarioEvent> eventList = new ConcurrentLinkedQueue<>();
 
 	private class scenarioEvent
 	{
@@ -83,10 +84,10 @@ public class LogWorker implements Callable<Integer>, IScenarioEventListener
 	{
 		if (eventRecordRequest_done == true)
 		{
-			if (eventList.size() > 0)
+			if (! eventList.isEmpty())
 			{
 				
-				scenarioEvent event = eventList.get(0);
+				scenarioEvent event = eventList.peek();
 		
 				eventRecordRequest.setStatementStringParameter(1, event.name);
 				eventRecordRequest.setStatementStringParameter(2, event.message);
@@ -104,7 +105,7 @@ public class LogWorker implements Callable<Integer>, IScenarioEventListener
 	{
 		try
 		{
-			eventList.remove(0);
+			eventList.remove();
 		}
 		catch (Exception ex)
 		{
