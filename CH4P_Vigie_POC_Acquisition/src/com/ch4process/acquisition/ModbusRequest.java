@@ -209,9 +209,9 @@ public class ModbusRequest
 						case "FLOAT32":
 							Float f = Float.intBitsToFloat(myValue << 16 | myValue2);
 							double data = Double.parseDouble(f.toString());
-							if (signal.getSignalType().getCoeff() != null && signal.getSignalType().getCoeff() != 0.0)
+							if (signal.getSignalType().getCoeff() != null && signal.getSignalType().getCoeff() != 0.0 && signal.getSignalType().getPrecision() != null && signal.getSignalType().getPrecision() != 0.0)
 							{
-								data = data / signal.getSignalType().getCoeff();
+								data = data * signal.getSignalType().getCoeff() / signal.getSignalType().getPrecision();
 							}
 							entry.setValue(new SignalValueEvent(signal.getIdSignal(), data, null, null, isValid, Calendar.getInstance().getTime().getTime(), signal.getSignalType()));
 							break;

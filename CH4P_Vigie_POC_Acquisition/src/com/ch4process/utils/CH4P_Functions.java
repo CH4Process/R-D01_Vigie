@@ -45,7 +45,7 @@ public class CH4P_Functions
 	
 	public static void Log(String source, Integer method, Integer level, String message)
 	{
-		String display = source + " :: " + level + " [ " + Calendar.getInstance().getTime().toString() + " ] -- " + message;
+		String display = level + " [ " + Calendar.getInstance().getTime().toString() + " ] -- " + message;
 		
 		switch (method)
 		{

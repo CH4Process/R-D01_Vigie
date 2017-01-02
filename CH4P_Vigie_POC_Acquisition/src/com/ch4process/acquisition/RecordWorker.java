@@ -4,6 +4,7 @@ import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.xml.ws.RequestWrapper;
 
@@ -24,7 +25,7 @@ public class RecordWorker implements Callable<Integer>, ISignalValueListener
 	IDatabaseRequestCallback recordValueRequestCallback;
 	boolean recordValueRequest_done = true;
 	
-	List<SignalValueEvent> eventList = new LinkedList<>();
+	ConcurrentLinkedQueue<SignalValueEvent> eventList = new ConcurrentLinkedQueue<>();
 	
 	Boolean init_done = false;
 	
@@ -58,9 +59,9 @@ public class RecordWorker implements Callable<Integer>, ISignalValueListener
 		
 		if (recordValueRequest_done == true)
 		{
-			if (eventList.size() > 0)
+			if (! eventList.isEmpty())
 			{
-				SignalValueEvent event = eventList.get(0);
+				SignalValueEvent event = eventList.peek();
 				SignalType type = event.getType();
 				DatabaseRequest request;
 				
@@ -126,7 +127,7 @@ public class RecordWorker implements Callable<Integer>, ISignalValueListener
 	{
 		try
 		{
-			eventList.remove(0);
+			eventList.remove();
 		}
 		catch (Exception ex)
 		{

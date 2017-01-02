@@ -403,7 +403,13 @@ public class VigieMainView extends JFrame implements Callable<Integer>, ISignalV
 			}
 			else if (event.getDoubleValue() != null)
 			{
-				value = event.getDoubleValue().toString();
+				Double val = event.getDoubleValue();
+				if (event.getType().getPrecision() != null && event.getType().getPrecision() != 0.0)
+				{
+					val = val * event.getType().getPrecision();
+				}
+				value = val.toString();
+				
 			}
 
 			// Update every label each time even if it's not really necessary

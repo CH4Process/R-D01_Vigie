@@ -238,6 +238,7 @@ public class VigieAcquisition implements Callable<Integer>
 				signalType.setIsCom(listSignalTypes.getBoolean("isCom"));
 				signalType.setIsTotalizer(listSignalTypes.getBoolean("isTotalizer"));
 				signalType.setCoeff(listSignalTypes.getFloat("coeff"));
+				signalType.setPrecision(listSignalTypes.getFloat("precision"));
 				signalType.setUnit(listSignalTypes.getString("unit"));
 				signalType.setMaxValue(listSignalTypes.getInt("maxValue"));
 				signalType.setMinValue(listSignalTypes.getInt("minValue"));

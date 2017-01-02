@@ -9,6 +9,7 @@ public class SignalType
 	Boolean isCom = null;
 	Boolean isTotalizer = null;
 	Float coeff = null;
+	Float precision = null;
 	String unit = null;
 	Integer maxValue = null;
 	Integer minValue = null;
@@ -69,6 +70,14 @@ public class SignalType
 	public void setCoeff(Float coeff)
 	{
 		this.coeff = coeff;
+	}
+	public Float getPrecision()
+	{
+		return precision;
+	}
+	public void setPrecision(Float precision)
+	{
+		this.precision = precision;
 	}
 	public String getUnit()
 	{

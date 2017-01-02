@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.sql.rowset.CachedRowSet;
 import javax.swing.event.EventListenerList;
@@ -26,7 +27,7 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 	IDatabaseRequestCallback scenarioListRequestCallback;
 	boolean scenarioListRequest_done = true;
 	
-	List<SignalValueEvent> eventList = new LinkedList<>();
+	ConcurrentLinkedQueue<SignalValueEvent> eventList = new ConcurrentLinkedQueue<>();
 	List<Scenario> scenarios = new LinkedList<>();
 	EventListenerList listeners = new EventListenerList();
 	
@@ -92,9 +93,9 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 	{
 		if (! busy)
 		{
-			while (eventList.size() > 0)
+			while (! eventList.isEmpty())
 			{		
-				SignalValueEvent event = eventList.get(0);
+				SignalValueEvent event = eventList.peek();
 				
 				for(Scenario scenario : scenarios)
 				{
@@ -145,7 +146,7 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 	{
 		try
 		{
-			eventList.remove(0);
+			eventList.remove();
 		}
 		catch (Exception ex)
 		{

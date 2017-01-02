@@ -21,14 +21,14 @@ public class VigieMain extends Thread
 
 			//EVO DONE : 
 				// Utiliser Executor pour les Threads et basculer les modules en Callable plutôt qu'en Threads.
-				// Les workers doivent être ThreadSafes !! --> FAIT via l'utilisation de LinkedLists	
+				// Les workers doivent être ThreadSafes !! 
 				// Mieux gérer le modbus !
 				// Travailler la mise à jour des valeurs de type Totalizer pour éviter une mise à jour trop fréquente. Peut être en utilisant le countdown ? !!
 				// Fonction de log custom (console, fichier, BDD)
+				// Remplacer tous les PRINTSTACKTRACE par des Log !
 			
 			//EVO 10 : 
 				// Mecanique d'injection / diffusion d'info pour rafraichir les Properties lues (pour permettre l'annulation des SMS ou le changement de la date des rapports
-				// Remplacer tous les PRINTSTACKTRACE par des Log ! 
 				// Logs en BDD
 				// Vraie gestion des exceptions
 				// Contrôleur qui relance les modules crashés
@@ -56,7 +56,7 @@ public class VigieMain extends Thread
 			}
 			catch(Exception ex)
 			{
-				CH4P_Functions.Log(VigieMain.class.getName(), CH4P_Functions.LOG_inMsgBox, CH4P_Functions.LEVEL_ERROR, "Erreur pendant l'initialisation de l'application : " + ex.getMessage());
+				CH4P_Functions.Log("VigieMain", CH4P_Functions.LOG_inMsgBox, CH4P_Functions.LEVEL_ERROR, "Erreur pendant l'initialisation de l'application : " + ex.getMessage());
 				System.exit(0);
 			}
 			
@@ -67,7 +67,7 @@ public class VigieMain extends Thread
 			}
 			catch(Exception ex)
 			{
-				CH4P_Functions.Log(VigieMain.class.getName(), CH4P_Functions.LOG_inMsgBox, CH4P_Functions.LEVEL_ERROR, "Erreur pendant l'execution de l'application : " + ex.getMessage());
+				CH4P_Functions.Log("VigieMain", CH4P_Functions.LOG_inMsgBox, CH4P_Functions.LEVEL_ERROR, "Erreur pendant l'execution de l'application : " + ex.getMessage());
 			}
 			
 		}
