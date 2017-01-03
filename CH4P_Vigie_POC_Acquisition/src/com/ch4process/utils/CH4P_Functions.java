@@ -81,6 +81,7 @@ public class CH4P_Functions
 		ex.printStackTrace(pw);
 		
 		String display = sw.toString();
+		display = " [ " + Calendar.getInstance().getTime().toString() + " ] " + display;
 		
 		try
 		{
