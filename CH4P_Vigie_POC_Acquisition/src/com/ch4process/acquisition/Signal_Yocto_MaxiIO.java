@@ -73,7 +73,7 @@ public class Signal_Yocto_MaxiIO extends Signal
 			countdown -= refreshRate;
 			
 			// If the current value differs from the stored value OR if the time elapsed exceeds the lograte
-			if ((! lastValue.equals(value)) || (countdown <= 0))
+			if ((! value.equals(lastValue)) || (countdown <= 0))
 			{
 				// Either the value has changed or it's time we record it.
 				fireValueChanged(new SignalValueEvent(this.getIdSignal(), null, null, this.value, this.isValid(), Calendar.getInstance().getTime().getTime(), this.getSignalType()));
