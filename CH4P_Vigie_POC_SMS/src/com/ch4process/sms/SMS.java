@@ -12,7 +12,7 @@ public class SMS extends Thread
 	String codePIN;
 	String command;
 	
-	static SMS instance = null;
+	static SMS instance = new SMS();
 	Thread thisThread = null;
 	boolean isAvailable = true;
 	
@@ -28,12 +28,6 @@ public class SMS extends Thread
 	
 	public static SMS getInstance()
 	{
-		// TODO : Handler for multi threadind access
-		if (instance == null)
-		{
-			return new SMS();
-		}
-		
 		return instance;
 	}
 	

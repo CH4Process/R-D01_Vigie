@@ -25,7 +25,8 @@ public class Signal_Yocto_4_20mA extends Signal
 		try
 		{
 			offset = Integer.valueOf(this.address);
-			sensor = YGenericSensor.FindGenericSensor(this.device.serialNumber + ".genericSensor" + offset);
+			//sensor = YGenericSensor.FindGenericSensor(this.device.serialNumber + ".genericSensor" + offset);
+			sensor = YGenericSensor.FindGenericSensorInContext(yapiContext, this.device.serialNumber + ".genericSensor" + offset);
 			return sensor.isOnline(); 
 		}
 		catch (Exception ex)

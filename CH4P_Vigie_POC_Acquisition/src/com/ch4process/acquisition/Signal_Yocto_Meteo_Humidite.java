@@ -24,7 +24,8 @@ public class Signal_Yocto_Meteo_Humidite extends Signal
 	{
 		try
 		{
-			sensor = YHumidity.FindHumidity(this.device.serialNumber + ".humidity");
+			//sensor = YHumidity.FindHumidity(this.device.serialNumber + ".humidity");
+			sensor = YHumidity.FindHumidityInContext(yapiContext,this.device.serialNumber + ".humidity");
 			return sensor.isOnline(); 
 		}
 		catch (Exception ex)

@@ -183,7 +183,7 @@ public class Mail extends Thread
 	{
 		properties = new Properties();
 		properties.put("mail.smtp.host", smtp_host);
-		//properties.put("mail.smtp.timeout", 10000);
+		properties.put("mail.smtp.timeout", 10000);
 		securityProtocol(authenticationType);
 		
 		Authenticator authenticator = new Authenticator()
