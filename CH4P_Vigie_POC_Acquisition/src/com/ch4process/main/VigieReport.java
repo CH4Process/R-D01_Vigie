@@ -576,12 +576,12 @@ public class VigieReport implements Callable<Integer>
 			while (analogmesures.next())
 			{
 				Integer value = analogmesures.getInt("value");
-				Float coeff = analogmesures.getFloat("coeff");
+				Float precision = analogmesures.getFloat("precision");
 				String val;
 				
-				if (coeff != null & coeff != 0.0f)
+				if (precision != null && precision != 0.0f)
 				{
-					Float f = coeff * value;
+					Float f = value * precision;
 					val = f.toString();
 				}
 				else
