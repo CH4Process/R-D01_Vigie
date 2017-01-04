@@ -41,8 +41,12 @@ import com.opencsv.CSVWriter;
 
 public class VigieReport implements Callable<Integer>
 {
-	private String reportSchedule = "23:30";
+	private String reportScheduleHour = "23:30";
 	private Integer reportSpan = 7;
+	private final Integer REPORT_SCHEDULE_DAILY = 1;
+	private final Integer REPORT_SCHEDULE_WEEKLY = 2;
+	private final Integer REPORT_SCHEDULE_MONTHLY = 3;
+	private Integer reportScheduleFrequency = 0;
 	Calendar reportTime;
 	
 	Thread thisThread;
@@ -95,6 +99,63 @@ public class VigieReport implements Callable<Integer>
 		}
 	}
 	
+	private void ScheduleInit()
+	{
+		reportTime = Calendar.getInstance();
+		String[] time;
+		Properties prop = CH4P_ConfigManager.getReportConfig().GetProperties();
+		if (prop != null)
+		{
+			time = prop.getProperty("reporttime").split(":");
+
+			switch (prop.getProperty("reportschedule"))
+			{
+				case "quotidien": 
+					reportScheduleFrequency = REPORT_SCHEDULE_DAILY; 
+					reportSpan = 1;
+					break;
+					
+				case "hebdomadaire": 
+					reportScheduleFrequency = REPORT_SCHEDULE_WEEKLY;
+
+					switch (prop.getProperty("reportday"))
+					{
+						case "lundi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY); break;
+						case "mardi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.TUESDAY); break;
+						case "mercredi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.WEDNESDAY); break;
+						case "jeudi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.THURSDAY); break;
+						case "vendredi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.FRIDAY); break;
+						case "samedi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY); break;
+						case "dimanche": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY); break;
+					}
+					
+					reportSpan = 7;
+					break;
+					
+				case "mensuel":
+					reportScheduleFrequency = REPORT_SCHEDULE_DAILY;
+					reportSpan = 1;
+					break;
+			}
+		}
+		else
+		{
+			time = reportScheduleHour.split(":");
+			reportScheduleFrequency = REPORT_SCHEDULE_DAILY;
+		}
+
+		reportTime.set(Calendar.HOUR_OF_DAY, Integer.valueOf(time[0]));
+		reportTime.set(Calendar.MINUTE, Integer.valueOf(time[1]));
+		reportTime.set(Calendar.SECOND, 0);
+		
+		if (Calendar.getInstance().after(reportTime))
+		{
+			// If we are already marked as AFTER the reportTime then we shift of a week
+			reportTime.add(Calendar.DAY_OF_MONTH, reportSpan);
+		}
+		
+	}
+	
 	public void start() throws CH4P_Exception
 	{
 		try
@@ -102,41 +163,7 @@ public class VigieReport implements Callable<Integer>
 			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, threadName + " start : " + Calendar.getInstance().getTime());
 
 			initDatabaseRelations();
-
-			reportTime = Calendar.getInstance();
-			String[] time;
-			Properties prop = CH4P_ConfigManager.getReportConfig().GetProperties();
-			if (prop != null)
-			{
-				time = prop.getProperty("reporttime").split(":");
-
-				switch (prop.getProperty("reportday"))
-				{
-					case "lundi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY); break;
-					case "mardi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.TUESDAY); break;
-					case "mercredi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.WEDNESDAY); break;
-					case "jeudi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.THURSDAY); break;
-					case "vendredi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.FRIDAY); break;
-					case "samedi": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY); break;
-					case "dimanche": reportTime.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY); break;
-				}
-				reportSpan = Integer.valueOf(prop.getProperty("reportspan"));
-			}
-			else
-			{
-				time = reportSchedule.split(":");
-				reportTime.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
-			}
-
-			reportTime.set(Calendar.HOUR_OF_DAY, Integer.valueOf(time[0]));
-			reportTime.set(Calendar.MINUTE, Integer.valueOf(time[1]));
-			reportTime.set(Calendar.SECOND, 0);
-			
-			if (Calendar.getInstance().after(reportTime))
-			{
-				// If we are already marked as AFTER the reportTime then we shift of a week
-				reportTime.add(Calendar.DAY_OF_MONTH, reportSpan);
-			}
+			ScheduleInit();				
 			
 			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, threadName + " next report generation on : " + reportTime.getTime());
 		}
@@ -293,7 +320,6 @@ public class VigieReport implements Callable<Integer>
 			
 			if (now.after(reportTime))
 			{
-				CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "VigieReport : isReportTime = true.");
 				return true;
 			}
 			return false;
@@ -369,7 +395,6 @@ public class VigieReport implements Callable<Integer>
 						updateTotalizers.setStatementBoolParameter(3, true); // isValid
 						updateTotalizers.setStatementIntParameter(4, _indexes.getInt("idSignal")); // id
 						updateTotalizersRequest_done = false;
-						CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "VigieReport : UpdateTotalizers : A row has been updated :).");
 						updateTotalizers.doUpdate();
 						
 						while (updateTotalizersRequest_done == false)
