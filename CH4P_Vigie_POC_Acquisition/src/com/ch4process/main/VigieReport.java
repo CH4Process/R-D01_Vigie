@@ -611,7 +611,7 @@ public class VigieReport implements Callable<Integer>
 			{
 				SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss dd/MM/yyyy");
 				String datetime = format.format(new Date(m.datetime));
-				writer.writeNext(new String[] {m.label, datetime, m.value.toString(), m.unit });
+				writer.writeNext(new String[] {m.label, datetime, m.value.toString().replace(".", ","), m.unit });
 			}
 			
 			writer.close();
