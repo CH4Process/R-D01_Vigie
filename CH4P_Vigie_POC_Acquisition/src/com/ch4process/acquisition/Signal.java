@@ -337,15 +337,6 @@ public class Signal implements ISignal
 		}
 	}
 	
-	protected void FormatValue(Double value)
-	{
-		if (signalType.coeff != null && signalType.coeff != 0.0)
-		{
-			value = value / signalType.coeff;
-		}
-	}
-	
-	
 	// Event handling code
 	
 	public void addValueListener(ISignalValueListener listener)

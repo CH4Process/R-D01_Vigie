@@ -208,12 +208,27 @@ public class ModbusRequest
 					{
 						case "FLOAT32":
 							Float f = Float.intBitsToFloat(myValue << 16 | myValue2);
-							double data = Double.parseDouble(f.toString());
-							if (signal.getSignalType().getCoeff() != null && signal.getSignalType().getCoeff() != 0.0 && signal.getSignalType().getPrecision() != null && signal.getSignalType().getPrecision() != 0.0)
+							double value = Double.parseDouble(f.toString());
+							
+							// Scaling value
+							if (signal.getSignalType().getCoeff() != null && signal.getSignalType().getCoeff() != 0.0)
 							{
-								data = data * signal.getSignalType().getCoeff() / signal.getSignalType().getPrecision();
+								value = value * signal.getSignalType().getCoeff();
 							}
-							entry.setValue(new SignalValueEvent(signal.getIdSignal(), data, null, null, isValid, Calendar.getInstance().getTime().getTime(), signal.getSignalType()));
+							
+							// Check if value is within boundaries
+							if (!(value > signal.getSignalType().getMinValue() && value < signal.getSignalType().getMaxValue()))
+							{
+								isValid = false;
+							}
+							
+							// Apply precision on the value to keep decimals
+							if (signal.getSignalType().getPrecision() != null && signal.getSignalType().getPrecision() != 0.0)
+							{
+								value = value / signal.getSignalType().getPrecision();
+							}
+							
+							entry.setValue(new SignalValueEvent(signal.getIdSignal(), value, null, null, isValid, Calendar.getInstance().getTime().getTime(), signal.getSignalType()));
 							break;
 						
 						case "INT":
@@ -221,16 +236,16 @@ public class ModbusRequest
 							break;
 							
 						case "BOOL":
-							boolean value;
+							boolean val;
 							if (myValue == 1)
 							{
-								value = true;
+								val = true;
 							}
 							else
 							{
-								value = false;
+								val = false;
 							}
-							entry.setValue(new SignalValueEvent(signal.getIdSignal(), null, null, value, isValid, Calendar.getInstance().getTime().getTime(), signal.getSignalType()));
+							entry.setValue(new SignalValueEvent(signal.getIdSignal(), null, null, val, isValid, Calendar.getInstance().getTime().getTime(), signal.getSignalType()));
 							break;
 					}
 				}
