@@ -532,6 +532,10 @@ public class VigieReport implements Callable<Integer>
 	{
 		try
 		{
+			Map<String, Integer> dataMap = new HashMap<>();
+			dataMap.put("DATE", 0);
+			Integer reportColumn = 1;
+			
 			CachedRowSet digitalmeasures = getDigitalMeasures.getCachedRowSet();
 			CachedRowSet analogmesures = getAnalogMeasures.getCachedRowSet();
 
@@ -564,6 +568,10 @@ public class VigieReport implements Callable<Integer>
 
 			while (digitalmeasures.next())
 			{
+				if (dataMap.putIfAbsent(digitalmeasures.getString("label"), reportColumn) != null)
+				{
+					reportColumn += 2;
+				}
 				measureList.add(new measure(digitalmeasures.getInt("idSignal"), (double) CH4P_Functions.boolToInt(digitalmeasures.getBoolean("value")),
 						digitalmeasures.getTimestamp("datetime").getTime(), digitalmeasures.getString("label"), null));
 			}
@@ -573,8 +581,14 @@ public class VigieReport implements Callable<Integer>
 			
 			analogmesures.beforeFirst();
 			
+
 			while (analogmesures.next())
 			{
+				if (dataMap.putIfAbsent(analogmesures.getString("label"), reportColumn) != null)
+				{
+					reportColumn += 2;
+				}
+				
 				Integer value = analogmesures.getInt("value");
 				Float precision = analogmesures.getFloat("precision");
 				String val;
@@ -605,15 +619,39 @@ public class VigieReport implements Callable<Integer>
 			writer.writeNext(new String[] {"Rapport des mesures du : ", date});
 			writer.writeNext(new String[] {""});
 			
-			writer.writeNext(new String[] {"CAPTEUR", "HEURE" , "VALEUR", "UNITE"});
+			//writer.writeNext(new String[] {"CAPTEUR", "HEURE" , "VALEUR", "UNITE"});
+			ArrayList<String> line = new ArrayList<>();
+			
+			for(Map.Entry<String, Integer> data:dataMap.entrySet())
+			{
+				line.add(data.getValue(), data.getKey());
+			}
+			
+			String currentDatetime = "";
 			
 			for(measure m : measureList)
 			{
-				SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss dd/MM/yyyy");
+				//SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss dd/MM/yyyy");
+				SimpleDateFormat format = new SimpleDateFormat("HH:mm dd/MM/yyyy");
 				String datetime = format.format(new Date(m.datetime));
-				writer.writeNext(new String[] {m.label, datetime, m.value.toString().replace(".", ","), m.unit });
+				
+				// We construct the line to write
+				
+				if (! datetime.equals(currentDatetime))
+				{
+					// new datetime so new line
+					writer.writeNext((String[]) line.toArray());
+					currentDatetime = datetime;
+				}
+				
+				line.set(1, datetime);
+				line.set(dataMap.get(m.label), m.value.toString().replace(".", ","));
+				line.set(dataMap.get(m.label) + 1, m.unit);
+				
+				//writer.writeNext(new String[] {m.label, datetime, m.value.toString().replace(".", ","), m.unit });
 			}
 			
+			writer.writeNext((String[]) line.toArray());
 			writer.close();
 			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "VigieReport : Report generated : " + reportName);	
 			
