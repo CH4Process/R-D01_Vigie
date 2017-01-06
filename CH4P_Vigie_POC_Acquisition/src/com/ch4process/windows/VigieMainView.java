@@ -69,7 +69,7 @@ public class VigieMainView extends JFrame implements Callable<Integer>, ISignalV
 	{
 
 		setTitle("CH4Process - VIGIE");
-		setIconImage(new ImageIcon("images/logo.png").getImage());
+		setIconImage(new ImageIcon(this.getClass().getResource("/images/logo.png")).getImage());
 		setResizable(false);
 		setSize(800, 600);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -221,7 +221,7 @@ public class VigieMainView extends JFrame implements Callable<Integer>, ISignalV
 		ImageIcon logo = null;
 		try
 		{
-			logo = new ImageIcon(((BufferedImage) ImageIO.read(new File("images/logo_grand.png"))).getScaledInstance(300, 100, Image.SCALE_SMOOTH));
+			logo = new ImageIcon(((BufferedImage) ImageIO.read(this.getClass().getResource("/images/logo_grand.png"))).getScaledInstance(300, 100, Image.SCALE_SMOOTH));
 		}
 		catch (IOException e)
 		{
@@ -241,7 +241,7 @@ public class VigieMainView extends JFrame implements Callable<Integer>, ISignalV
 		ImageIcon logo_vigie = null;
 		try
 		{
-			logo_vigie = new ImageIcon(((BufferedImage) ImageIO.read(new File("images/logo_vigie.png"))).getScaledInstance(126, 150, Image.SCALE_SMOOTH));
+			logo_vigie = new ImageIcon(((BufferedImage) ImageIO.read(this.getClass().getResource("/images/logo_vigie.png"))).getScaledInstance(126, 150, Image.SCALE_SMOOTH));
 		}
 		catch (IOException e)
 		{

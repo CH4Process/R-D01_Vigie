@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="resources"/>
 	<classpathentry kind="lib" path="D:/DEV/CODE/LIBRARIES/JAVA/Yoctopuce/YoctoLib.java.23948/Binaries/yoctoAPI.jar" sourcepath="D:/DEV/CODE/LIBRARIES/JAVA/Yoctopuce/YoctoLib.java.23948/Binaries/yoctolib-1.10.23948-SNAPSHOT-sources.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="jar:file:/D:/DEV/CODE/LIBRARIES/JAVA/Yoctopuce/YoctoLib.java.23948/Binaries/yoctolib-1.10.23948-SNAPSHOT-javadoc.jar!/"/>
@@ -25,6 +26,5 @@
 			<attribute name="javadoc_location" value="https://javamail.java.net/nonav/docs/api/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="images"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
