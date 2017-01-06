@@ -356,17 +356,12 @@ public class Signal implements ISignal
 	
 	protected void fireValueChanged(SignalValueEvent event)
 	{
-		// A bit of work to advertise totalizers ONCE A DAY
-		if (!(getSignalType().isTotalizer) || (getSignalType().isTotalizer && checkDate()))
-		{
 			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "Signal : " + this.shortName + " :: fireValueChanged ID - " + event.getIdSignal() + " - DoubleValue : " + event.getDoubleValue() + " - IntValue : " + event.getIntValue() + " - BoolValue : " + event.getBoolValue() + " - Datetime : " + new Date(event.getDatetime()).toString());
 		
 			for (ISignalValueListener listener : getValueListeners())
 			{
 				listener.SignalValueChanged(event);
 			}
-		}
-		
 	}
 
 }
