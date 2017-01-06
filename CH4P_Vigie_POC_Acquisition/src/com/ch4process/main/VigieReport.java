@@ -534,6 +534,7 @@ public class VigieReport implements Callable<Integer>
 		try
 		{
 			Map<String, Integer> dataMap = new HashMap<>();
+			Map<String, String> dataUnitMap = new HashMap<>();
 			dataMap.put("DATE", 0);
 			Integer reportColumn = 1;
 			
@@ -569,12 +570,13 @@ public class VigieReport implements Callable<Integer>
 
 			while (digitalmeasures.next())
 			{
-				if (dataMap.putIfAbsent(digitalmeasures.getString("label"), reportColumn) == null)
+				if (dataMap.putIfAbsent(digitalmeasures.getString("shortName"), reportColumn) == null)
 				{
+					dataUnitMap.put(digitalmeasures.getString("shortName"), "");
 					reportColumn += 2;
 				}
 				measureList.add(new measure(digitalmeasures.getInt("idSignal"), (double) CH4P_Functions.boolToInt(digitalmeasures.getBoolean("value")),
-						digitalmeasures.getTimestamp("datetime").getTime(), digitalmeasures.getString("label"), null));
+						digitalmeasures.getTimestamp("datetime").getTime(), digitalmeasures.getString("shortName"), null));
 			}
 			
 			digitalmeasures = null;
@@ -585,8 +587,9 @@ public class VigieReport implements Callable<Integer>
 
 			while (analogmesures.next())
 			{
-				if (dataMap.putIfAbsent(analogmesures.getString("label"), reportColumn) == null)
+				if (dataMap.putIfAbsent(analogmesures.getString("shortName"), reportColumn) == null)
 				{
+					dataUnitMap.put(analogmesures.getString("shortName"), analogmesures.getString("unit"));
 					reportColumn += 2;
 				}
 				
@@ -607,7 +610,7 @@ public class VigieReport implements Callable<Integer>
 				Double dblVal = Double.parseDouble(val);
 				
 				measureList.add(new measure(analogmesures.getInt("idSignal"), dblVal,
-						analogmesures.getTimestamp("datetime").getTime(), analogmesures.getString("label"), analogmesures.getString("unit")));
+						analogmesures.getTimestamp("datetime").getTime(), analogmesures.getString("shortName"), analogmesures.getString("unit")));
 			}
 			
 			measureList.sort((d1, d2) -> d1.datetime.compareTo(d2.datetime));
@@ -626,6 +629,7 @@ public class VigieReport implements Callable<Integer>
 			for(Map.Entry<String, Integer> data:dataMap.entrySet())
 			{
 				line[data.getValue()] = data.getKey();
+				line[data.getValue() +1] = dataUnitMap.get(data.getKey());
 			}
 			
 			String currentDatetime = "";
@@ -647,8 +651,7 @@ public class VigieReport implements Callable<Integer>
 				
 				line[0] = datetime;
 				line[dataMap.get(m.label)] = m.value.toString().replace(".", ",");
-				line[dataMap.get(m.label) + 1] = m.unit;
-				
+				line[dataMap.get(m.label) + 1] = "";
 				//writer.writeNext(new String[] {m.label, datetime, m.value.toString().replace(".", ","), m.unit });
 			}
 			
