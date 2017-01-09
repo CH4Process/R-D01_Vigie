@@ -216,8 +216,10 @@ public class ModbusRequest
 								value = value * signal.getSignalType().getCoeff();
 							}
 							
-							// Check if value is within boundaries
-							if (!(value > signal.getSignalType().getMinValue() && value < signal.getSignalType().getMaxValue()))
+							// Check if value is within boundaries if boundaries are coherent
+							Integer minVal = signal.getSignalType().getMinValue();
+							Integer maxVal = signal.getSignalType().getMinValue();
+							if (minVal != maxVal && minVal != null && maxVal != null && ! ((value > minVal) &&  (value < maxVal)))
 							{
 								isValid = false;
 							}
