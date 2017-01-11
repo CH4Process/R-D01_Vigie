@@ -17,6 +17,7 @@ public class CH4P_System
 	public static final String PATH_Config_Mail = PATH_Config + "/mail.properties";
 	public static final String PATH_Config_Report = PATH_Config + "/report.properties";
 	public static final String PATH_Config_Network = PATH_Config + "/network.properties";
+	public static final String PATH_Config_RebootToken = PATH_Config + "/RebootToken";
 	public static final String PATH_Vigie_Apps = PATH_Vigie + "/APPS";
 	public static final String PATH_Vigie_Reports = PATH_Vigie + "/REPORTS";
 	public static final String PATH_Vigie_Reports_Sent = PATH_Vigie + "/REPORTS_SENT";

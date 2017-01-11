@@ -1,6 +1,9 @@
 package com.ch4process.network;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -14,6 +17,7 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 
@@ -32,13 +36,16 @@ public class NetworkMain
 	static Integer CONNECTION_TIMEOUT = null;
 	static String SOFTWARE_NAME = null;
 	static String START_COMMAND = null;
+	static String REBOOT_COMMAND = null;
 	static Integer LOOP_TIME = null;
 	static String SIDE = null;
 	static String NAME = null;
+	static Integer TIME_BEFORE_REBOOT = null;
+	static Integer TIME_BEFORE_REBOOT_LIMIT = null;
 	static boolean internalDown = false;
 	static boolean externalDown = false;
-	static int restartCounter = 0;
-	
+	static int elapsedTime = 0;
+	static Date rebootTimeLimit = null;
 	
 	
 	public static void main (String args[])
@@ -59,6 +66,9 @@ public class NetworkMain
 		{
 			CH4P_ConfigManager.LoadNetworkConfig();	
 			CH4P_Multithreading.Init();
+			Calendar time = Calendar.getInstance();
+			time.add(Calendar.HOUR_OF_DAY, TIME_BEFORE_REBOOT_LIMIT);
+			rebootTimeLimit = time.getTime();
 		}
 		catch (CH4P_Exception e)
 		{
@@ -79,8 +89,10 @@ public class NetworkMain
 				CONNECTION_TIMEOUT = Integer.valueOf(prop.getProperty("connectionTimeout")) * 1000;
 				SOFTWARE_NAME = prop.getProperty("softwareName");
 				START_COMMAND = prop.getProperty("startCommand");
+				REBOOT_COMMAND = prop.getProperty("rebootCommand");
 				LOOP_TIME = Integer.valueOf(prop.getProperty("loopTime")) * 1000;
-				
+				TIME_BEFORE_REBOOT = Integer.valueOf(prop.getProperty("loopTime")) * 3600;
+				TIME_BEFORE_REBOOT_LIMIT = Integer.valueOf(prop.getProperty("loopTime")) * 3600;
 			}
 			else
 			{
@@ -90,14 +102,17 @@ public class NetworkMain
 				EXTERNAL_PORT = 80;
 				INTERNAL_SERVER = "10.4.0.1";
 				INTERNAL_PORT = 50401;
-				CONNECTION_TIMEOUT = 5000;
+				CONNECTION_TIMEOUT = 5 * 1000;
 				SOFTWARE_NAME = "notepad";
 				START_COMMAND = "sudo /etc/init.d/openvpn start";
-				LOOP_TIME = 10000;
+				LOOP_TIME = 10 * 1000;
+				TIME_BEFORE_REBOOT = 3 * 3600;
+				TIME_BEFORE_REBOOT_LIMIT = 12;
+				REBOOT_COMMAND = "sudo reboot";
 			}
 		}
 	}
-	
+
 	private static void ClientLoop()
 	{
 		CH4P_Functions.Log("VigieNetwork", CH4P_Functions.LOG_inConsole, CH4P_Functions.LEVEL_WARNING, "Initialized - " + NAME);
@@ -105,7 +120,7 @@ public class NetworkMain
 		while (true)
 		{
 			try
-			{	
+			{
 				// If we can join the server we continue, if not we have to check things ! 
 				if(! TestServer(INTERNAL_SERVER, INTERNAL_PORT))
 				{
@@ -140,6 +155,7 @@ public class NetworkMain
 						// At this point the software is killed or not running, so we start it !
 						CH4P_System.StartProcess(START_COMMAND);
 						
+						elapsedTime = 0;				
 					}
 					else
 					{
@@ -148,7 +164,21 @@ public class NetworkMain
 							CH4P_Functions.Log("VigieNetwork", CH4P_Functions.LOG_inConsole, CH4P_Functions.LEVEL_WARNING, "No internet connection available.");
 							externalDown = true;
 						}
-						// If we can't access internet it may be because of a 3G dongle problem. So we may have to reboot the dongle. TODO : Reboot 3G dongle
+						
+						// Count the time with no internet access
+						elapsedTime += LOOP_TIME / 1000;
+						
+						if (elapsedTime >= TIME_BEFORE_REBOOT)
+						{
+							// If we don't have internet connection for more than the specified time we reboot
+							// But only if the application is running since at least a specific duration
+							
+							if (Calendar.getInstance().after(rebootTimeLimit))
+							{
+								CH4P_System.StartProcess(REBOOT_COMMAND);
+							}
+							
+						}
 					}
 				}
 				else
@@ -160,7 +190,7 @@ public class NetworkMain
 						internalDown = false;
 					}
 					
-					restartCounter = 0;
+					elapsedTime = 0;	
 				}
 				
 				// Whatever happens, we'll wait one minute before trying again.
@@ -173,7 +203,7 @@ public class NetworkMain
 				CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
 			}
 		}
-	}
+	}	
 	
 	private static boolean TestServer(String serverAddress, Integer serverPort) 
 	{
