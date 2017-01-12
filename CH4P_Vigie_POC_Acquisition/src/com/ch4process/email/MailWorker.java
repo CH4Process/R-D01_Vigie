@@ -3,13 +3,14 @@ package com.ch4process.email;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.ch4process.utils.CH4P_Exception;
 import com.ch4process.utils.CH4P_Functions;
 
 public class MailWorker implements Callable<Integer>
 {
-	static List<Mail> mails = new LinkedList<Mail>();
+	static ConcurrentLinkedQueue<Mail> mails = new ConcurrentLinkedQueue<Mail>();
 
 	boolean busy = false;
 	
@@ -21,18 +22,18 @@ public class MailWorker implements Callable<Integer>
 	
 	void removeFirst()
 	{
-		mails.remove(0);
+		mails.remove();
 	}
 	
 	void eventHandling()
 	{
 		try
 		{
-			if (mails.size() > 0 && !busy)
+			if (!mails.isEmpty() && !busy)
 			{
 				busy = true;
 				
-				Mail mail = mails.get(0);
+				Mail mail = mails.peek();
 				
 				if (mail.sendMail())
 				{
