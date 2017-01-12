@@ -20,8 +20,6 @@ public class RequestList
 			"INSERT INTO `AnalogMeasure` (value, datetime, isValid, idSignal) VALUES (?,?,?,?);";
 	public static final String REQUEST_RecordTotalizer = 
 			"UPDATE `Totalizer` SET value = ?, datetime = ?, isValid = ? WHERE idSignal = ?;";
-	public static final String REQUEST_TotalizerToAnalogMeasure =
-			"INSERT INTO `AnalogMeasure` (value, datetime, isValid, idSignal) VALUES (`LALALALA,?,?,?);";
 	public static final String REQUEST_ScenarioList = 
 			"SELECT * FROM `Scenario`;";
 	public static final String REQUEST_ModbusDeviceList = 
