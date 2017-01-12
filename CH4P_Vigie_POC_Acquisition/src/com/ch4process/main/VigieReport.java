@@ -31,7 +31,9 @@ import com.ch4process.database.DatabaseController;
 import com.ch4process.database.DatabaseRequest;
 import com.ch4process.database.IDatabaseRequestCallback;
 import com.ch4process.database.RequestList;
+import com.ch4process.email.IMailCallback;
 import com.ch4process.email.Mail;
+import com.ch4process.email.MailWorker;
 import com.ch4process.utils.CH4P_ConfigManager;
 import com.ch4process.utils.CH4P_Exception;
 import com.ch4process.utils.CH4P_Functions;
@@ -75,6 +77,9 @@ public class VigieReport implements Callable<Integer>
 	int currentStep = 0;
 	boolean yield = true;
 	int reportSendLimit = 12;
+	
+	IMailCallback mailCallback;
+	MailWorker mailWorker;
 	
 	
 	public VigieReport(String name)
@@ -164,7 +169,20 @@ public class VigieReport implements Callable<Integer>
 			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, threadName + " start : " + Calendar.getInstance().getTime());
 
 			initDatabaseRelations();
-			ScheduleInit();				
+			ScheduleInit();		
+			
+			mailCallback = new IMailCallback()
+			{
+				
+				@Override
+				public void mailCallback(boolean result, Mail mail) throws CH4P_Exception
+				{
+					OnMailSent(result, mail);
+				}
+			};
+			
+			mailWorker = new MailWorker(mailCallback);
+			CH4P_Multithreading.Submit(mailWorker);
 			
 			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, threadName + " next report generation on : " + reportTime.getTime());
 		}
@@ -724,21 +742,28 @@ public class VigieReport implements Callable<Integer>
 
 			// Attachments setup
 			mail.addAttachmentsFolder(CH4P_System.PATH_Vigie_Reports);
-
-			if (mail.sendMail())
-			{
-				CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "VigieReport : REPORTS sent !");
-				SaveReports();
-			}
-			else
-			{
-				CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "VigieReport : Failed to send REPORTS !");
-			}
+			
+			mailWorker.addMail(mail);
+			
 		}
 		catch (Exception ex)
 		{
 			throw new CH4P_Exception("-VigieReport SendReports error-" + ex.getMessage(), ex.getCause());
 		}
+	}
+	
+	private void OnMailSent(boolean result, Mail mail) throws CH4P_Exception
+	{
+		if (result)
+		{
+			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "VigieReport : REPORTS sent !");
+			SaveReports();
+		}
+		else
+		{
+			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "VigieReport : Failed to send REPORTS !");
+		}
+		
 	}
 	
 	private void SaveReports() throws CH4P_Exception

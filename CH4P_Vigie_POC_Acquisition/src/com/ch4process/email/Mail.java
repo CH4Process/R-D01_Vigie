@@ -15,6 +15,7 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
+import com.ch4process.utils.CH4P_ConfigManager;
 import com.ch4process.utils.CH4P_Functions;
 import com.ch4process.utils.CH4P_PropertiesReader;
 import com.ch4process.utils.CH4P_System;
@@ -52,6 +53,10 @@ public class Mail implements Callable<Integer>
 	private String subject;
 	private String text;
 	
+	private Integer nbRetry;
+	private Integer retryWaitTime;
+	private Integer currentRetryCount = 0;
+	
 	private boolean busy = false;
 
 	
@@ -59,18 +64,17 @@ public class Mail implements Callable<Integer>
 	{
 		try
 		{
-			CH4P_PropertiesReader propReader = new CH4P_PropertiesReader();
-			Properties prop = propReader.getPropValues(CH4P_System.PATH_Config_Mail);
+			Properties prop = CH4P_ConfigManager.getMailConfig().GetProperties();
 			
 			this.smtp_host = prop.getProperty("host");
 			this.authenticationType = Integer.valueOf(prop.getProperty("authentication"));
 			this.username = prop.getProperty("username");
 			this.password = prop.getProperty("password");
 			this.port = prop.getProperty("port");
+			this.nbRetry = Integer.valueOf(prop.getProperty("nbRetry"));
+			this.retryWaitTime = Integer.valueOf(prop.getProperty("retryWaitTime"));
 			
-			prop = null;
-			propReader = null;
-			
+			prop = null;			
 		}
 		catch (Exception ex)
 		{
@@ -163,6 +167,36 @@ public class Mail implements Callable<Integer>
 	public boolean isBusy()
 	{
 		return busy;
+	}
+	
+	public void setNbRetry(Integer nbRetry)
+	{
+		this.nbRetry = nbRetry;
+	}
+	
+	public Integer getNbRetry()
+	{
+		return nbRetry;
+	}
+	
+	public void setRetryWaitTime(Integer retryWaitTime)
+	{
+		this.retryWaitTime = retryWaitTime;
+	}
+	
+	public Integer getRetryWaitTime()
+	{
+		return retryWaitTime;
+	}
+	
+	public void setCurrentRetryCount(Integer currentRetryCount)
+	{
+		this.currentRetryCount = currentRetryCount;
+	}
+	
+	public Integer getCurrentRetryCount()
+	{
+		return currentRetryCount;
 	}
 
 	@Override

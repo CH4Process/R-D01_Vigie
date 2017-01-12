@@ -16,10 +16,14 @@ import javax.swing.event.EventListenerList;
 
 import com.ch4process.database.DatabaseRequest;
 import com.ch4process.database.IDatabaseRequestCallback;
+import com.ch4process.email.IMailCallback;
 import com.ch4process.email.Mail;
+import com.ch4process.email.MailWorker;
 import com.ch4process.events.SignalValueEvent;
 import com.ch4process.utils.CH4P_ConfigManager;
+import com.ch4process.utils.CH4P_Exception;
 import com.ch4process.utils.CH4P_Functions;
+import com.ch4process.utils.CH4P_Multithreading;
 
 public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 {
@@ -33,6 +37,9 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 	
 	boolean busy = false;
 	boolean init_done = false;
+	
+	IMailCallback mailCallback;
+	MailWorker mailWorker;
 
 	
 	public ScenarioWorker(DatabaseRequest scenarioListRequest)
@@ -42,26 +49,45 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 	
 	private void init()
 	{
-		init_done = true;
-		
-		CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "scenarioWorker start : " + Calendar.getInstance().getTime());
-		
-		scenarioListRequestCallback = new IDatabaseRequestCallback()
+		try
 		{
-			@Override
-			public void databaseRequestCallback()
+			init_done = true;
+
+			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "scenarioWorker start : " + Calendar.getInstance().getTime());
+
+			scenarioListRequestCallback = new IDatabaseRequestCallback()
 			{
-				ScenarioList(scenarioListRequest.getCachedRowSet());
-				scenarioListRequest_done = true;
-				scenarioListRequest.close();
-				scenarioListRequest = null;
-			}
-		};
-		
-		scenarioListRequest.setCallback(scenarioListRequestCallback);
-		scenarioListRequest.start();
-		scenarioListRequest.doQuery();
-		
+				@Override
+				public void databaseRequestCallback()
+				{
+					ScenarioList(scenarioListRequest.getCachedRowSet());
+					scenarioListRequest_done = true;
+					scenarioListRequest.close();
+					scenarioListRequest = null;
+				}
+			};
+
+			scenarioListRequest.setCallback(scenarioListRequestCallback);
+			scenarioListRequest.start();
+			scenarioListRequest.doQuery();
+
+			mailCallback = new IMailCallback()
+			{
+
+				@Override
+				public void mailCallback(boolean result, Mail mail) throws CH4P_Exception
+				{
+					OnMailSent(result, mail);
+				}
+			};
+
+			mailWorker = new MailWorker(mailCallback);
+			CH4P_Multithreading.Submit(mailWorker);
+		}
+		catch (Exception ex)
+		{
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
+		}
 	}
 	@Override
 	public Integer call() throws Exception
@@ -219,16 +245,7 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 		mail.setTo(prop.getProperty("mailsmsaddress"));
 		mail.setText(message);
 		
-		if (mail.sendMail())
-		{
-			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "ScenarioWorker : MAIL_SMS sent !");
-			fireScenarioEvent("MAILSMS", "TO : " + recipients + " -- " + message , Calendar.getInstance().getTime().getTime(), 110);
-		}
-		else
-		{
-			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "ScenarioWorker : Failed to send a MAIL_SMS !");
-		}
-		
+		mailWorker.addMail(mail);		
 	}
 	
 	private void fireCommandEvent(int capteur_id, boolean value)
@@ -312,5 +329,18 @@ public class ScenarioWorker implements Callable<Integer>, ISignalValueListener
 	protected IScenarioEventListener[] getScenarioEventListeners()
 	{
 		return this.listeners.getListeners(IScenarioEventListener.class);
+	}
+	
+	private void OnMailSent(boolean result, Mail mail)
+	{
+		if (result)
+		{
+			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "ScenarioWorker : MAIL_SMS sent !");
+			fireScenarioEvent("MAILSMS", "TO : " + mail.getTo() + " -- " + mail.getText() , Calendar.getInstance().getTime().getTime(), 110);
+		}
+		else
+		{
+			CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "ScenarioWorker : Failed to send a MAIL_SMS !");
+		}
 	}
 }

@@ -11,11 +11,17 @@ import com.ch4process.utils.CH4P_Functions;
 public class MailWorker implements Callable<Integer>
 {
 	static ConcurrentLinkedQueue<Mail> mails = new ConcurrentLinkedQueue<Mail>();
-
 	boolean busy = false;
+	private IMailCallback callback;
 	
 	
-	public static void addMail(Mail mail)
+	
+	public MailWorker(IMailCallback _callback)
+	{
+		callback = _callback;
+	}
+	
+	public void addMail(Mail mail)
 	{
 		mails.add(mail);
 	}
@@ -32,19 +38,28 @@ public class MailWorker implements Callable<Integer>
 			if (!mails.isEmpty() && !busy)
 			{
 				busy = true;
-				
+
 				Mail mail = mails.peek();
+
+				while((mail.getCurrentRetryCount() < mail.getNbRetry()))
+				{
+					mail.setCurrentRetryCount(mail.getCurrentRetryCount() + 1);
+					
+					if (mail.sendMail())
+					{
+						CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "Email successfully sent.");
+						this.callback.mailCallback(true, mail);
+						break;
+					}
+					else
+					{
+						CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "Error during email sending operation.");
+						this.callback.mailCallback(false, mail);
+						Thread.sleep(mail.getRetryWaitTime() * 1000);
+					}
+				}
 				
-				if (mail.sendMail())
-				{
-					CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "Email successfully sent.");
-					removeFirst();
-				}
-				else
-				{
-					CH4P_Functions.Log(this.getClass().getName(), CH4P_Functions.LOG_inConsole, 100, "Error during email sending operation.");
-					removeFirst();
-				}
+				removeFirst();
 				
 				busy = false;
 			}
@@ -73,10 +88,5 @@ public class MailWorker implements Callable<Integer>
 		{
 			return null;
 		}
-		
 	}
-	
-	
-	
-	
 }
