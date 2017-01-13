@@ -16,6 +16,7 @@ public class CH4P_System
 	public static final String PATH_Vigie_Apps = PATH_Vigie + "/APPS";
 	public static final String PATH_Vigie_Reports = PATH_Vigie + "/REPORTS";
 	public static final String PATH_Vigie_Reports_Sent = PATH_Vigie + "/REPORTS_SENT";
+	public static final String PATH_Config_Logging = PATH_Config + "/log.properties";
 	
 	public static String GetRootPath()
 	{
