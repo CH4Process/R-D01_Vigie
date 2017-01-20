@@ -1,5 +1,6 @@
 package com.ch4process.main;
 
+import java.lang.reflect.Field;
 import java.util.concurrent.Callable;
 import com.ch4process.database.DatabaseController;
 import com.ch4process.utils.*;
@@ -53,6 +54,7 @@ public class VigieMain extends Thread
 			{
 				Init_Utils();
 				Init_View();
+				Init_Lib();
 			}
 			catch(Exception ex)
 			{
@@ -155,5 +157,23 @@ public class VigieMain extends Thread
 	public static VigieAcquisition getVigieAcquisition()
 	{
 		return vigieAcquisition;
+	}
+	
+	private static void Init_Lib()
+	{
+		try
+		{
+			String path = System.getProperty("java.library.path") + ";" + CH4P_System.PATH_Libraries;
+			System.setProperty("java.library.path", path);
+			final Field fieldSysPath = ClassLoader.class.getDeclaredField("sys_paths");
+			fieldSysPath.setAccessible(true);
+			fieldSysPath.set(null, null);
+
+			CH4P_Functions.Log(" ------ ", CH4P_Functions.LOG_inConsole, 100,System.getProperty("java.library.path"));
+		}
+		catch (Exception ex)
+		{
+			CH4P_Functions.LogException(CH4P_Functions.LOG_inConsole, ex);
+		}
 	}
 }
